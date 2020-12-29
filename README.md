@@ -31,3 +31,8 @@ The primary components are:
 
 # Architecture
 
+I did some research on IMAP and the availability of libraries in NPMs or PHP. What I found kind of surprised me a bit. I *expected* that Node.js would have some up to date, and active NPMs available for use.
+
+
+---
+<img src="http://webexperiment.info/extcounter/mdcount.php?id=router-log-monitor">
