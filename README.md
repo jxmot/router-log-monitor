@@ -95,14 +95,14 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 
 At first glance making sense of the log entry data seemed *simple*. But I don't believe now that is true. It seems likely that the best organization of the data would be into separate tables for *some of the log types. And perhaps some of them could be grouped into a single table. For example, the tables may be like this:
 
-* Router Actions Table - 
+* Router Actions - 
   * Dynamic DNS
   * Internet connected
   * Internet disconnected
   * Time synchronized with NTP server
   * Admin login
 
-* Router Issue Table - 
+* Router Invasion - 
   * DoS attack: FIN Scan
   * DoS attack: ACK Scan
   * WLAN access rejected
@@ -116,21 +116,33 @@ At first glance making sense of the log entry data seemed *simple*. But I don't 
 * Network Activity - 
   * LAN access from remote
 
-The following diagram illustrates the relationships:
+* ***TBD***
 
-| Message Types                     | Date | Time | IP Address | Port | Source IP | Source Port | MAC | Host | Message |
-| --------------------------------- | ---- | ---- | ---------- | ---- | --------- | ----------- | --- | ---- | ------- |
-| Admin login                       | X    | X    | X          |      |           |             |     |      |         |
-| DHCP IP                           | X    | X    | X          |      |           |             | X   |      |         |
-| DoS attack: FIN Scan              | X    | X    | X          |      |           |             |     |      | X       |
-| DoS attack: ACK Scan              | X    | X    | X          |      |           |             |     |      |         |
-| Dynamic DNS                       | X    | X    |            |      |           |             |     | X    | X       |
-| Initialized, firmware version     | X    | X    |            |      |           |             |     |      | X       |
-| Internet connected                | X    | X    | X          |      |           |             |     |      |         |
-| Internet disconnected             | X    | X    |            |      |           |             |     |      |         |
-| LAN access from remote            | X    | X    | X          | X    | X         | X           |     |      |         |
-| Time synchronized with NTP server | X    | X    |            |      |           |             |     |      |         |
-| WLAN access rejected              | X    | X    |            |      |           |             | X   |      | X       |
+From the above it's clear that there are 5 *categories* and 11 *message types*. The following abbreviations will be used for each of the categories:
+
+* Router Actions - **RA**
+* Router Invasion - **RI**
+* Router LAN Activity - **RL**
+* Router Updates - **RU**
+* Network Activity - **NA**
+ 
+The following diagram illustrates the relationships of the message types to the data fields:
+
+| Message Types                     | Category | Date | Time | IP Address | Port | Source IP | Source Port | MAC | Host | Message |
+| --------------------------------- | -------- | ---- | ---- | ---------- | ---- | --------- | ----------- | --- | ---- | ------- |
+| Admin login                       | RA       | X    | X    | X          |      |           |             |     |      |         |
+| DHCP IP                           | RL       | X    | X    | X          |      |           |             | X   |      |         |
+| DoS attack: FIN Scan              | RI       | X    | X    | X          |      |           |             |     |      | X       |
+| DoS attack: ACK Scan              | RI       | X    | X    | X          |      |           |             |     |      |         |
+| Dynamic DNS                       | RA       | X    | X    |            |      |           |             |     | X    | X       |
+| Initialized, firmware version     | RU       | X    | X    |            |      |           |             |     |      | X       |
+| Internet connected                | RA       | X    | X    | X          |      |           |             |     |      |         |
+| Internet disconnected             | RA       | X    | X    |            |      |           |             |     |      |         |
+| LAN access from remote            | NA       | X    | X    | X          | X    | X         | X           |     |      |         |
+| Time synchronized with NTP server | RA       | X    | X    |            |      |           |             |     |      |         |
+| WLAN access rejected              | RI       | X    | X    |            |      |           |             | X   |      | X       |
+
+(*The table above was created using: [**Table to Markdown**](https://tabletomarkdown.com)*)
 
 ### Database Tables
 
