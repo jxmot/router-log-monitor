@@ -29,8 +29,8 @@ The primary components are:
 
 ## PHP vs. Node.js
 
-<p align="center" style="width:25%;">
-  <img src="./mdimg/scale-php_v_node.png" alt="Index Page" txt="PHP v Node" style="width:25%;"/>
+<p align="center">
+  <img src="./mdimg/scale-php_v_node.png" alt="Index Page" txt="PHP v Node" style="max-width:25%;"/>
 </p>
 
 When I started the initial design of this project I investigated handling all of the imap interactions with JavaScript and Node.js. 
