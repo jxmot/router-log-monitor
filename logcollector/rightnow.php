@@ -19,7 +19,7 @@
     Returns:
         String, the date and time formatted as requested
 */
-function rightnow($fmt, $created = null) {
+function rightnow($fmt, $created = null, $add = false) {
 
     $format = 'Ymd-His-';
 
@@ -27,6 +27,15 @@ function rightnow($fmt, $created = null) {
         $dt = new DateTime('now', new DateTimeZone(tzone()));
     } else {
         $dt = new DateTime($created);
+    }
+
+    // Special for logcollector, the entry in the log
+    // being used for timestamping the file is for the
+    // log sent the day before. And since we know that 
+    // logs are sent daily at midnight we'll just 
+    // subtract a day and will be "correct".
+    if($add === true) {
+        $dt->add(new DateInterval('P1D'));
     }
 
     switch($fmt) {

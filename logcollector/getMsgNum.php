@@ -1,7 +1,14 @@
 <?php
+/*
+    getMsgNum.php - Contains the getMsgNum() function. It
+    extracts the IMAP message number from the plain-text 
+    header.
 
-// $msgnum = getMsgNum($headers[$head_idx])
+    Returns:
 
+        -1 : did not find the message number
+        >=0 : message number
+*/
 function getMsgNum($hdr) {
 $msgnum = -1;
 
@@ -15,4 +22,5 @@ $msgnum = -1;
     //    echo "\nmsg # = {$msgnum}\n\n\n";
     }
     return $msgnum;
+}
 ?>
