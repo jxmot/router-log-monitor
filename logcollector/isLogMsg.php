@@ -26,4 +26,5 @@ function isLogMsg($msgnum) {
         $ret = $header;
     }
     return $ret;
+}
 ?>

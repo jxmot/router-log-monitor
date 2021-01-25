@@ -15,4 +15,5 @@ $msgnum = -1;
     //    echo "\nmsg # = {$msgnum}\n\n\n";
     }
     return $msgnum;
+}
 ?>
