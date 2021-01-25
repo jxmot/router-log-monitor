@@ -35,7 +35,9 @@ function logProcess($mnum) {
     $lastline = $lines[count($lines) - 1];
     // get the date/time from it 
     $splitline = preg_split("/\] /", $lastline);
-    $senttime = "{splitline[1]} -600";
+    echo "splitline = {$splitline[1]}\n";
+    //$senttime = "{$splitline[1]} -600";
+    $senttime = $splitline[1];
     $filestamp = rightnow('name',$senttime);
     // remove the last line
     array_pop($lines);
@@ -45,7 +47,7 @@ function logProcess($mnum) {
     $neworder = array_reverse($lines);
     // 
     // save the file
-    writefile("./{$filestamp}net.log", $implode("\n",$neworder), 'w');
+    writefile("./{$filestamp}net.log", implode("\n",$neworder), 'w');
 }
 
 ?>
