@@ -20,11 +20,12 @@ if ($headers === false) {
 
 foreach($headers as $hdr) {
     $num = getMsgNum($hdr);
+    echo "num = {$num}\n";
     if($num !== -1) {
         $msghdr = isLogMsg($num);
         if($msghdr !== false) {
             logProcess($num);
-            imap_delete(_MAILBOX,$msgnum);
+            //imap_delete(_MAILBOX,$msgnum);
         }
     } else {
         echo rightnow('log') . " - msgmgr.php: getMsgNum() failed [{$hdr}]\n";
