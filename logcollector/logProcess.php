@@ -1,4 +1,8 @@
 <?php
+/*
+    logProcess.php - This is where the message is read
+    and parsed to create the output file.
+*/
 require_once './writefile.php'; // modified
 
 function logProcess($mnum) {
@@ -49,5 +53,4 @@ function logProcess($mnum) {
     // save the file
     writefile(_OUTPATH."{$filestamp}net.log", implode("\n",array_filter($neworder)), 'w');
 }
-
 ?>

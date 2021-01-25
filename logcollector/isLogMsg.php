@@ -1,5 +1,15 @@
 <?php
+/*
+    isLogMsg.php - Contains the isLogMsg() function. It
+    determines if the message is a log message.
 
+    Returns:
+
+        false = this is not a log message
+        header = returns the IMAP message header, not
+        the plain-text. This is an object with message
+        details.
+*/
 define('_LOGSUBJ', 'NETGEAR R6400 Log');
 
 function isLogMsg($msgnum) {
