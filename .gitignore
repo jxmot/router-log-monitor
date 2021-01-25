@@ -18,12 +18,12 @@
 #/_spamassassin/
 #/_www/
 #/logs/
-/*/_*/
 /assets/_*/
 /demos/_*/
 /assets/css/_*/
 /assets/img/_*/
 # misc stuff i want to ignore -
+_*.*
 /logs/*.json
 *.log
 *.bat
