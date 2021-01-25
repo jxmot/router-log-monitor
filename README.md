@@ -118,20 +118,19 @@ At first glance making sense of the log entry data seemed *simple*. But I don't 
 
 The following diagram illustrates the relationships:
 
-|                                   |      |      |            |      | Source     | Source |     |      |         |
-| Message Types                     | Date | Time | IP Address | Port | IP Address | Port   | MAC | Host | Message |
-| --------------------------------- | ---- | ---- | ---------- | ---- | ---------- | ------ | --- | ---- | ------- |
-| Admin login                       | X    | X    | X          |      | X          |        |     |      |         |
-| DHCP IP                           | X    | X    | X          |      | X          |        | X   |      |         |
-| DoS attack: FIN Scan              | X    | X    | X          |      | X          |        |     |      | X       |
-| DoS attack: ACK Scan              | X    | X    | X          |      | X          |        |     |      |         |
-| Dynamic DNS                       | X    | X    |            |      |            |        |     | X    |         |
-| Initialized, firmware version     | X    | X    |            |      |            |        |     |      | X       |
-| Internet connected                | X    | X    | X          |      | X          |        |     |      |         |
-| Internet disconnected             | X    | X    |            |      |            |        |     |      |         |
-| LAN access from remote            | X    | X    | X          | X    | X          | X      |     |      |         |
-| Time synchronized with NTP server | X    | X    |            |      |            |        |     |      |         |
-| WLAN access rejected              | X    | X    |            |      |            |        | X   |      | X       |
+| Message Types                     | Date | Time | IP Address | Port | Source IP | Source Port | MAC | Host | Message |
+| --------------------------------- | ---- | ---- | ---------- | ---- | --------- | ----------- | --- | ---- | ------- |
+| Admin login                       | X    | X    | X          |      |           |             |     |      |         |
+| DHCP IP                           | X    | X    | X          |      |           |             | X   |      |         |
+| DoS attack: FIN Scan              | X    | X    | X          |      |           |             |     |      | X       |
+| DoS attack: ACK Scan              | X    | X    | X          |      |           |             |     |      |         |
+| Dynamic DNS                       | X    | X    |            |      |           |             |     | X    | X       |
+| Initialized, firmware version     | X    | X    |            |      |           |             |     |      | X       |
+| Internet connected                | X    | X    | X          |      |           |             |     |      |         |
+| Internet disconnected             | X    | X    |            |      |           |             |     |      |         |
+| LAN access from remote            | X    | X    | X          | X    | X         | X           |     |      |         |
+| Time synchronized with NTP server | X    | X    |            |      |           |             |     |      |         |
+| WLAN access rejected              | X    | X    |            |      |           |             | X   |      | X       |
 
 ### Database Tables
 
