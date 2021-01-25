@@ -73,6 +73,25 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 
 ## Database Schemas
 
+### Log Record Types
+
+* DHCP IP
+* Dynamic DNS
+* LAN access from remote
+* Internet connected
+* Internet disconnected
+* Time synchronized with NTP server
+* DoS attack: FIN Scan
+* DoS attack: ACK Scan
+* WLAN access rejected
+* Initialized, firmware version
+* Admin login
+
+### Database Tables
+
+
+
+
 
 
 
