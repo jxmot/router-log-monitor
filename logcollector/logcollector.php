@@ -14,7 +14,7 @@ $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
 $imapsrv = "{$accnt->host}:{$accnt->port}/imap/ssl";
 // NOTE: the last arg is a "flag" - 
 //      OP_READONLY = can only read, and cannot set flags
-//       CL_EXPUNGE = expungs on close, but it is being done here explicitly
+//       CL_EXPUNGE = expunges on close, but it is being done here explicitly
 $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword,  OP_READONLY );
 if($mailbox === false) {
     echo rightnow('log') . " - logcollector.php: Failed to connect to server\n";
