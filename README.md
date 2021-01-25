@@ -29,10 +29,6 @@ The primary components are:
 
 ## PHP vs. Node.js
 
-<p align="center">
-  <img src="./mdimg/scale-php_v_node.png" alt="Index Page" txt="PHP v Node" style="max-width:25%;"/>
-</p>
-
 When I started the initial design of this project I investigated handling all of the imap interactions with JavaScript and Node.js. 
 
 I did a lot of research on IMAP and the availability of libraries in NPMs or PHP. What I found kind of surprised me a bit. I *expected* that Node.js would have some up to date, and active NPMs available for use. But that's not what I found. 
