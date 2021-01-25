@@ -18,9 +18,11 @@ $msgqty = imap_num_msg($mailbox);
 if($msgqty === false) {
     echo rightnow('log') . " - logcollector.php: error calling imap_num_msg\n";
     exit(0);
-} else if($msgqty === 0) {
-    echo rightnow('log') . " - logcollector.php: no messages\n";
-    exit(0);
+} else {
+    if($msgqty === 0) {
+        echo rightnow('log') . " - logcollector.php: no messages\n";
+        exit(0);
+    }
 }
 
 define('_IMAPSRV',$imapsrv);
