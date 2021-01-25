@@ -38,7 +38,7 @@ function logProcess($mnum) {
     echo "splitline = {$splitline[1]}\n";
     //$senttime = "{$splitline[1]} -600";
     $senttime = $splitline[1];
-    $filestamp = rightnow('name',$senttime);
+    $filestamp = rightnow('name',$senttime,true);
     // remove the last line
     array_pop($lines);
     // 
