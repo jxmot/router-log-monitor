@@ -54,7 +54,7 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 ## Log Collector
 
 <p align="center">
-  <img src="./mdimg/log-collector-arch.png" alt="Index Page" txt="PHP v Node" style="width:80%;"/>
+  <img src="./mdimg/log-collector-arch.png" alt="Index Page" txt="PHP v Node"  width="80%" height="80%"/>
 </p>
 
 
@@ -63,7 +63,7 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 ## Log Watcher-Processor
 
 <p align="center">
-  <img src="./mdimg/log-watcher-arch.png" alt="Index Page" txt="PHP v Node" style="width:80%;"/>
+  <img src="./mdimg/log-watcher-arch.png" alt="Index Page" txt="PHP v Node"  width="80%" height="80%"/>
 </p>
 
 ### Design
