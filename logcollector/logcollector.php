@@ -2,6 +2,9 @@
 require_once './timezone.php';
 require_once './rightnow.php';  // modified
 
+$appopt = json_decode(file_get_contents('./appoptions.json'));
+define('_OUTPATH', $appopt->outpath);
+
 $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
 $imapsrv = "{$accnt->host}:{$accnt->port}/imap/ssl";
 

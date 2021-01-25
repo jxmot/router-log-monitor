@@ -47,7 +47,7 @@ function logProcess($mnum) {
     $neworder = array_reverse($lines);
     // 
     // save the file
-    writefile("./{$filestamp}net.log", implode("\n",array_filter($neworder)), 'w');
+    writefile(_OUTPATH."{$filestamp}net.log", implode("\n",array_filter($neworder)), 'w');
 }
 
 ?>
