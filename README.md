@@ -91,6 +91,48 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 * Initialized, firmware version
 * Admin login
 
+### Data Relationships
+
+At first glance making sense of the log entry data seemed *simple*. But I don't believe now that is true. It seems likely that the best organization of the data would be into separate tables for *some of the log types. And perhaps some of them could be grouped into a single table. For example, the tables may be like this:
+
+* Router Actions Table - 
+  * Dynamic DNS
+  * Internet connected
+  * Internet disconnected
+  * Time synchronized with NTP server
+  * Admin login
+
+* Router Issue Table - 
+  * DoS attack: FIN Scan
+  * DoS attack: ACK Scan
+  * WLAN access rejected
+
+* Router LAN Activity - 
+  * DHCP IP
+
+* Router Updates - 
+  * Initialized, firmware version 
+
+* Network Activity - 
+  * LAN access from remote
+
+The following diagram illustrates the relationships:
+
+|                                   |      |      |            |      | Source     | Source |     |      |         |
+| Message Types                     | Date | Time | IP Address | Port | IP Address | Port   | MAC | Host | Message |
+| --------------------------------- | ---- | ---- | ---------- | ---- | ---------- | ------ | --- | ---- | ------- |
+| Admin login                       | X    | X    | X          |      | X          |        |     |      |         |
+| DHCP IP                           | X    | X    | X          |      | X          |        | X   |      |         |
+| DoS attack: FIN Scan              | X    | X    | X          |      | X          |        |     |      | X       |
+| DoS attack: ACK Scan              | X    | X    | X          |      | X          |        |     |      |         |
+| Dynamic DNS                       | X    | X    |            |      |            |        |     | X    |         |
+| Initialized, firmware version     | X    | X    |            |      |            |        |     |      | X       |
+| Internet connected                | X    | X    | X          |      | X          |        |     |      |         |
+| Internet disconnected             | X    | X    |            |      |            |        |     |      |         |
+| LAN access from remote            | X    | X    | X          | X    | X          | X      |     |      |         |
+| Time synchronized with NTP server | X    | X    |            |      |            |        |     |      |         |
+| WLAN access rejected              | X    | X    |            |      |            |        | X   |      | X       |
+
 ### Database Tables
 
 
