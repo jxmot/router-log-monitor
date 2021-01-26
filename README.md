@@ -93,7 +93,6 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 
 ### Data Relationships
 
-At first glance making sense of the log entry data seemed *simple*. But I don't believe now that is true. It seems likely that the best organization of the data would be into separate tables for *some of the log types. And perhaps some of them could be grouped into a single table. For example, the tables may be like this:
 
 * Router Actions - 
   * Dynamic DNS
@@ -126,7 +125,7 @@ From the above it's clear that there are 5 *categories* and 11 *message types*. 
 * Router Updates - **RU**
 * Network Activity - **NA**
  
-The following diagram illustrates the relationships of the message types to the data fields:
+The following table illustrates the relationships of the message types to the data fields:
 
 | Message Types                     | Category | Date | Time | IP Address | Port | Source IP | Source Port | MAC | Host | Message |
 | --------------------------------- | -------- | ---- | ---- | ---------- | ---- | --------- | ----------- | --- | ---- | ------- |
