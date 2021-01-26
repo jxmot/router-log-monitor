@@ -7,21 +7,8 @@
 #_*.*
 #
 # And the following folder(s) -
-#node_modules
-#/nbproject/private/
-#/_archive/
-#/_bss/
-#/_portproj/
-#/_scrap/
-#/_sitemap/
-#/_sitelogs/
-#/_spamassassin/
-#/_www/
-#/logs/
-/assets/_*/
-/demos/_*/
-/assets/css/_*/
-/assets/img/_*/
+node_modules
+
 # misc stuff i want to ignore -
 _*.*
 /logs/*.json
