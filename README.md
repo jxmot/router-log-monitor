@@ -126,7 +126,7 @@ From the above it's clear that there are 5 *categories* and 11 *message types*. 
 * Router Updates - **RU**
 * Network Activity - **NA**
  
-The following diagram illustrates the relationships of the message types to the data fields:
+The following table illustrates the relationships of the message types to the data fields:
 
 | Message Types                     | Category | Date | Time | IP Address | Port | Source IP | Source Port | MAC | Host | Message |
 | --------------------------------- | -------- | ---- | ---- | ---------- | ---- | --------- | ----------- | --- | ---- | ------- |
