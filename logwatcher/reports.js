@@ -8,7 +8,10 @@ module.exports = function init(_pevts, _log) {
     var scriptName = path.basename(__filename);
     log(`${scriptName} - init`);
 
+    // https://nodejs.org/docs/latest-v12.x/api/events.html#events_asynchronous_vs_synchronous
     pevts.on('LOG_PROCESSED', (wfile) => {
-        log(`${scriptName} - creating report, last processed file: ${wfile.path}${wfile.filename}`);
+        setImmediate(() => {
+            log(`${scriptName} - creating report, last processed file: ${wfile.path}${wfile.filename}`);
+        });
     });
 };
