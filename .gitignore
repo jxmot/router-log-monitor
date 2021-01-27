@@ -8,7 +8,7 @@
 #
 # And the following folder(s) -
 node_modules
-
+.vscode
 # misc stuff i want to ignore -
 _*.*
 /logs/*.json

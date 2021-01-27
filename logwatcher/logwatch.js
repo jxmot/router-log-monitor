@@ -12,13 +12,12 @@ module.exports = function init(wevts, log) {
 
     var watchit = {
         path: opt.path,
-        rename: 0,
-        change: 0,
         filename: '',
         now: 0 
     };
 
-    var toid;
+    var fqueue = {};
+//    var fqueue = [];
 
     /*
         https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_watchfile_filename_options_listener
@@ -41,53 +40,53 @@ module.exports = function init(wevts, log) {
     
         switch(eventType) {
             case 'error':
-                clearTimeout(toid);
-                watchit.filename = filename;
+                log(`${scriptName} dirwatch event: error ${filename}  ${fqueue.length}`);
+                fqueue.forEach((item, index) => {
+                    clearTimeout(item.toid);
+                });
+                fqueue = [];
                 break;
 
             case 'rename':
-                watchit.rename = watchit.now;
                 watchit.filename = filename;
-                toid = setTimeout(renTO, 500, filename);
+                fqueue[filename] = JSON.parse(JSON.stringify(watchit));
+//                fqueue[filename].toid = setTimeout(renTO, 1000, filename);
+                fqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
             case 'change':
-                if(watchit.rename !== 0) {
-                    watchit.change = watchit.now;
-                    clearTimeout(toid);
-                    fs.stat(`${opt.path}${watchit.filename}`, (err, stats) => {
-                        if(stats.isFile() === true) {
-                            log(`${scriptName} dirwatch event: ${watchit.filename} was created`);
-                            wevts.emit('FILE_CREATED', JSON.parse(JSON.stringify(watchit)));
-                        } else {
-                            log(`${scriptName} dirwatch event: ${watchit.filename} is not a file`);
-                        }
-                        watchit.filename = '';
-                        watchit.rename = 0;
-                        watchit.change = 0;
-                    });
+                if(fqueue[filename] !== undefined) {
+                    clearTimeout(fqueue[filename].toid);
+                    fqueue[filename].toid = null;
+                    log(`${scriptName} dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+                    var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
+                    if(stats.isFile() === true) {
+                        log(`${scriptName} dirwatch event: ${fqueue[filename].path}${filename} was created`);
+                        wevts.emit('FILE_CREATED', {path:fqueue[filename].path,filename:filename});
+                    } else {
+                        log(`${scriptName} dirwatch event: ${filename} is not a file`);
+                    }
+                    delete fqueue[filename];
                 } else {
-                    watchit.change = 0;
-                    watchit.filename = '';
-                    log(`${scriptName} dirwatch event: secondary ${eventType} received`);
+                    log(`${scriptName} dirwatch event: secondary ${eventType} ${filename}`);
                 }
                 break;
         };
     });
 
     function renTO(fname) {
-        if(watchit.filename === fname) {
-            fs.access(`${opt.path}${watchit.filename}`, fs.constants.F_OK, (err) => {
+        if(fqueue[fname] !== undefined) {
+            try {
+                fs.accessSync(`${fqueue[fname].path}${fname}`, fs.constants.F_OK);
+            } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`${scriptName} renTO(): ${opt.path}${watchit.filename} was deleted`);
-                    wevts.emit('FILE_DELETED', JSON.parse(JSON.stringify(watchit)));
-                    watchit.filename = '';
-                    watchit.rename = 0;
-                    watchit.change = 0;
+                    log(`${scriptName} renTO(): ${fqueue[fname].path}${fname} was deleted`);
+                    wevts.emit('FILE_DELETED', {path:fqueue[fname].path,filename:fname});
                 }
-            });
+            }
+            delete fqueue[fname];
         } else {
-            log(`${scriptName} renTO(): in ${opt.path} file ${watchit.filename} was not deleted, got ${fname}`);
+            log(`${scriptName} renTO(): undefined - fqueue[${fname}]`);
         }
     };
 
