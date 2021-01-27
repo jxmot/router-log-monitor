@@ -20,6 +20,14 @@ function log(payload) {
 log('*******************************************');
 log(`${scriptName} - begin app init`);
 
+watch_evts.on('error', (err) => {
+    log(`${scriptName} - watch_evts ERROR ${err}`);
+});
+
+procs_evts.on('error', (err) => {
+    log(`${scriptName} - procs_evts ERROR ${err}`);
+});
+
 const watcher = require('./logwatch.js');
 watcher(watch_evts, log);
 
