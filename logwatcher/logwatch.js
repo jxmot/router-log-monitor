@@ -12,13 +12,16 @@ module.exports = function init(wevts, log) {
 
     var watchit = {
         path: opt.path,
-        rename: 0,
-        change: 0,
+//        rename: 0,
+//        change: 0,
         filename: '',
         now: 0 
     };
 
-    var toid;
+//    var fqueue = {};
+    var fqueue = [];
+
+//    var toid;
 
     /*
         https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_watchfile_filename_options_listener
@@ -41,53 +44,80 @@ module.exports = function init(wevts, log) {
     
         switch(eventType) {
             case 'error':
-                clearTimeout(toid);
-                watchit.filename = filename;
+                log(`${scriptName} dirwatch event: error ${filename}  ${fqueue.length}`);
+                fqueue.forEach((item, index) => {
+                    clearTimeout(item.toid);
+                });
+                fqueue = [];
+//                watchit.filename = '';
+//                watchit.rename = 0;
+//                watchit.change = 0;
                 break;
 
             case 'rename':
-                watchit.rename = watchit.now;
+//                watchit.rename = watchit.now;
                 watchit.filename = filename;
-                toid = setTimeout(renTO, 500, filename);
+                fqueue[filename] = JSON.parse(JSON.stringify(watchit));
+//                fqueue.push(JSON.parse(JSON.stringify(watchit)));
+                fqueue[filename].toid = setTimeout(renTO, 1000, filename);
+//                fqueue[(fqueue.length - 1)].toid = setTimeout(renTO, 1000, fqueue[(fqueue.length - 1)].filename, (fqueue.length - 1));
                 break;
 
             case 'change':
-                if(watchit.rename !== 0) {
-                    watchit.change = watchit.now;
-                    clearTimeout(toid);
-                    fs.stat(`${opt.path}${watchit.filename}`, (err, stats) => {
+                if(fqueue[filename] !== undefined) {
+                    clearTimeout(fqueue[filename].toid);
+                    fqueue[filename].toid = null;
+                    log(`${scriptName} dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+// /                watchit.change = watchit.now;
+// /                if(watchit.rename !== 0) {
+// /                    if((watchit.change - watchit.rename) < 1000) {
+// ^
+                        var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
+//                        var stats = fs.statSync(`${watchit.path}${watchit.filename}`)
                         if(stats.isFile() === true) {
-                            log(`${scriptName} dirwatch event: ${watchit.filename} was created`);
-                            wevts.emit('FILE_CREATED', JSON.parse(JSON.stringify(watchit)));
+                            log(`${scriptName} dirwatch event: ${fqueue[filename].path}${filename} was created`);
+                            wevts.emit('FILE_CREATED', {path:fqueue[filename].path,filename:filename});
+//                            log(`${scriptName} dirwatch event: ${watchit.path}${watchit.filename} was created`);
+//                            wevts.emit('FILE_CREATED', {path:watchit.path,filename:watchit.filename});
                         } else {
-                            log(`${scriptName} dirwatch event: ${watchit.filename} is not a file`);
+                            log(`${scriptName} dirwatch event: ${filename} is not a file`);
+//                            log(`${scriptName} dirwatch event: ${watchit.filename} is not a file`);
                         }
-                        watchit.filename = '';
-                        watchit.rename = 0;
-                        watchit.change = 0;
-                    });
+                        delete fqueue[filename];
+//                      watchit.filename = '';
+//                      watchit.rename = 0;
+//                        watchit.change = 0;
+//                    } else {
+//                        watchit.change = 0;
+//                    }
                 } else {
-                    watchit.change = 0;
-                    watchit.filename = '';
-                    log(`${scriptName} dirwatch event: secondary ${eventType} received`);
+//                    watchit.change = 0;
+//                    watchit.filename = '';
+                    log(`${scriptName} dirwatch event: secondary ${eventType} ${filename}`);
                 }
                 break;
         };
     });
-
+//fqueue[fqidx]
     function renTO(fname) {
-        if(watchit.filename === fname) {
-            fs.access(`${opt.path}${watchit.filename}`, fs.constants.F_OK, (err) => {
+//    function renTO(fname,fqidx) {
+        if(fqueue[fname] !== undefined) {
+//        if(watchit.filename === fname) {
+            try {
+                fs.accessSync(`${fqueue[fname].path}${fname}`, fs.constants.F_OK);
+//                fs.accessSync(`${watchit.path}${watchit.filename}`, fs.constants.F_OK);
+            } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`${scriptName} renTO(): ${opt.path}${watchit.filename} was deleted`);
-                    wevts.emit('FILE_DELETED', JSON.parse(JSON.stringify(watchit)));
-                    watchit.filename = '';
-                    watchit.rename = 0;
-                    watchit.change = 0;
+                    log(`${scriptName} renTO(): ${fqueue[fname].path}${fname} was deleted`);
+                    wevts.emit('FILE_DELETED', {path:fqueue[fname].path,filename:fname});
+//                    log(`${scriptName} renTO(): ${watchit.path}${watchit.filename} was deleted`);
+//                    wevts.emit('FILE_DELETED', {path:watchit.path,filename:fname});
                 }
-            });
-        } else {
-            log(`${scriptName} renTO(): in ${opt.path} file ${watchit.filename} was not deleted, got ${fname}`);
+            }
+            delete fqueue[fname];
+       } else {
+            log(`${scriptName} renTO(): in ${fqueue[fname].path} the file was not deleted, got ${fname}`);
+//            log(`${scriptName} renTO(): in ${watchit.path} file ${watchit.filename} was not deleted, got ${fname}`);
         }
     };
 
