@@ -1,12 +1,16 @@
 
-module.exports = function init(wevts, log) {
-
+module.exports = function init(wevts, _log) {
+    
     var path = require('path');
     var scriptName = path.basename(__filename);
-    log(`${scriptName} - init`);
+    function log(payload) {
+        _log(`${scriptName} ${payload}`);
+    }
+
+    log(`- init`);
 
     const opt = require('./watchopt.js');
-    log(`${scriptName} - watching in ${opt.path}`);
+    log(`- watching in ${opt.path}`);
 
     var fs = require('fs');
 
@@ -17,7 +21,6 @@ module.exports = function init(wevts, log) {
     };
 
     var fqueue = {};
-//    var fqueue = [];
 
     /*
         https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_watchfile_filename_options_listener
@@ -27,7 +30,7 @@ module.exports = function init(wevts, log) {
     var dirwatch = fs.watch(opt.path, (eventType, filename) => {
         // could be either 'rename' or 'change'. new file event and delete
         // also generally emit 'rename'
-        log(`${scriptName} dirwatch event: ${eventType} file: ${filename}`);
+        log(`dirwatch event: ${eventType} file: ${filename}`);
 
         watchit.now = Date.now();
 
@@ -40,7 +43,7 @@ module.exports = function init(wevts, log) {
     
         switch(eventType) {
             case 'error':
-                log(`${scriptName} dirwatch event: error ${filename}  ${fqueue.length}`);
+                log(`dirwatch event: error ${filename}  ${fqueue.length}`);
                 fqueue.forEach((item, index) => {
                     clearTimeout(item.toid);
                 });
@@ -50,7 +53,6 @@ module.exports = function init(wevts, log) {
             case 'rename':
                 watchit.filename = filename;
                 fqueue[filename] = JSON.parse(JSON.stringify(watchit));
-//                fqueue[filename].toid = setTimeout(renTO, 1000, filename);
                 fqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
@@ -58,17 +60,17 @@ module.exports = function init(wevts, log) {
                 if(fqueue[filename] !== undefined) {
                     clearTimeout(fqueue[filename].toid);
                     fqueue[filename].toid = null;
-                    log(`${scriptName} dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+                    log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
                     var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
                     if(stats.isFile() === true) {
-                        log(`${scriptName} dirwatch event: ${fqueue[filename].path}${filename} was created`);
+                        log(`dirwatch event: ${fqueue[filename].path}${filename} was created`);
                         wevts.emit('FILE_CREATED', {path:fqueue[filename].path,filename:filename});
                     } else {
-                        log(`${scriptName} dirwatch event: ${filename} is not a file`);
+                        log(`dirwatch event: ${filename} is not a file`);
                     }
                     delete fqueue[filename];
                 } else {
-                    log(`${scriptName} dirwatch event: secondary ${eventType} ${filename}`);
+                    log(`dirwatch event: secondary ${eventType} ${filename}`);
                 }
                 break;
         };
@@ -80,13 +82,13 @@ module.exports = function init(wevts, log) {
                 fs.accessSync(`${fqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`${scriptName} renTO(): ${fqueue[fname].path}${fname} was deleted`);
+                    log(`renTO(): ${fqueue[fname].path}${fname} was deleted`);
                     wevts.emit('FILE_DELETED', {path:fqueue[fname].path,filename:fname});
                 }
             }
             delete fqueue[fname];
         } else {
-            log(`${scriptName} renTO(): undefined - fqueue[${fname}]`);
+            log(`renTO(): undefined - fqueue[${fname}]`);
         }
     };
 

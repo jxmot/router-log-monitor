@@ -7,19 +7,22 @@ module.exports = (function()  {
     logdata = {
     };
 
-    var log = null;
+    var log_ = null;
     var pevts = null;
+
+    function log(payload) {
+        log_(`${scriptName} ${payload}`);
+    };
 
     logdata.init = function(_pevts, _log) {
         pevts = _pevts;
-        log = _log;
-        log(`${scriptName} - init`);
+        log_ = _log;
+        log(`- init`);
     };
 
     logdata.process = function(wfile) {
         // parse the log data and write to database...
-        log(`${scriptName} - log processed: ${wfile.path}${wfile.filename}`);
-
+        log(`- log processed: ${wfile.path}${wfile.filename}`);
         // announce completion...
         pevts.emit('LOG_PROCESSED', wfile);
     };

@@ -1,9 +1,13 @@
 
-module.exports = function init(wevts, pevts, log) {
-
+module.exports = function init(wevts, pevts, _log) {
+    
     var path = require('path');
     var scriptName = path.basename(__filename);
-    log(`${scriptName} - init`);
+    function log(payload) {
+        _log(`${scriptName} ${payload}`);
+    }
+
+    log(`- init`);
 
     const ldata = require('./logdata.js');
     ldata.init(pevts, log);
@@ -12,14 +16,14 @@ module.exports = function init(wevts, pevts, log) {
 
     wevts.on('FILE_CREATED', (watchit) => {
         setImmediate(() => {
-            log(`${scriptName} - FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
+            log(`- FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
             ldata.process(watchit);
         });
     });
 
     wevts.on('FILE_DELETED', (watchit) => {
         setImmediate(() => {
-            log(`${scriptName} - FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
+            log(`- FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
         });
     });
 };
