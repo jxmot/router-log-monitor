@@ -50,7 +50,8 @@ module.exports = function init(wevts, log) {
             case 'rename':
                 watchit.filename = filename;
                 fqueue[filename] = JSON.parse(JSON.stringify(watchit));
-                fqueue[filename].toid = setTimeout(renTO, 1000, filename);
+//                fqueue[filename].toid = setTimeout(renTO, 1000, filename);
+                fqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
             case 'change':
