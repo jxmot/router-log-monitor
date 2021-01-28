@@ -12,14 +12,17 @@ const procs_evts = new EventEmitter();
 // Run-Time Logging
 var Log = require('./utils/Log.js');
 var logOut = new Log('logs/watcher', 'log', 262144);
-
+// pass this function around to the other modules
 function log(payload) {
     logOut.writeTS(payload);
 };
 
+// start logging
 log('*******************************************');
 log(`${scriptName} - begin app init`);
 
+// event error handlers, if handled here then they 
+// won't crash the app
 watch_evts.on('error', (err) => {
     log(`${scriptName} - watch_evts ERROR ${err}`);
 });

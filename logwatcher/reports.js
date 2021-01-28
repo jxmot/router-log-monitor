@@ -1,6 +1,9 @@
-
+/*
+    reports.js - waits for the LOG_PROCESSED event and 
+    reads the database to generate static reports
+*/
 module.exports = function init(pevts, _log) {
-    
+    // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
