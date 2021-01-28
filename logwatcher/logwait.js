@@ -18,10 +18,10 @@ module.exports = (function(wevts, pevts, _log) {
     /*
         wait for file create and delete events from 
         the watcher. 
-        
+
         Using: 
         https://nodejs.org/docs/latest-v12.x/api/events.html#events_asynchronous_vs_synchronous
-        
+
         More info(start here:
         https://nodejs.dev/learn/the-nodejs-event-loop
     */
