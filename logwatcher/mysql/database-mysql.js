@@ -93,11 +93,12 @@ module.exports = (function(_log) {
                     }
                 };
                 log(`database.openDB() - ERROR connect: [${error.message}  ${error.code}  ${error.errno}]`);
+                _openCallBack(database.dbopen, errObj);
             } else {
                 database.dbopen   = true;
                 database.threadid = connection.threadId;
+                _openCallBack(database.dbopen, null);
             }
-            _openCallBack(database.dbopen, errObj);
         });
     };
 
