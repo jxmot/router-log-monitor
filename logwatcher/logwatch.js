@@ -27,40 +27,53 @@ module.exports = function init(wevts, _log) {
 
         TODO: look at options, set interval to longer?
     */
-    var dirwatch = fs.watch(opt.path, (eventType, filename) => {
+    var dirwatch = fs.watch(opt.path, (evtype, filename) => {
         // could be either 'rename' or 'change'. new file event and delete
         // also generally emit 'rename'
-        log(`dirwatch event: ${eventType} file: ${filename}`);
+        log(`dirwatch event: ${evtype} file: ${filename}`);
 
+        // only used for debugging
         watchit.now = Date.now();
 
         // sequence:
         //  file created = rename -> change
         //  file deleted, touch(linux), copied(linux) = rename
         //  file copied(Win) = rename -> change -> change
-
-        // NOTE: 
-    
-        switch(eventType) {
+        switch(evtype) {
+            // an error occurred...
             case 'error':
+                // anounce it...
                 log(`dirwatch event: error ${filename}  ${fqueue.length}`);
+                // cancel all timeouts
                 fqueue.forEach((item, index) => {
                     clearTimeout(item.toid);
                 });
-                fqueue = [];
+                // clear the queue
+                fqueue = {};
                 break;
 
+            // this is the first event type received when a 
+            // file is created or deleted
             case 'rename':
+                // save some info in the queue...
                 watchit.filename = filename;
                 fqueue[filename] = JSON.parse(JSON.stringify(watchit));
+                // if the time expires then the file was deleted.
                 fqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
+            // this is the second event type received when a 
+            // file is created or deleted.
             case 'change':
+                // there can be a 'change' event with out a 
+                // preceding 'rename'
                 if(fqueue[filename] !== undefined) {
+                    // the file is in the queue, cancel the
+                    // timeout.
                     clearTimeout(fqueue[filename].toid);
                     fqueue[filename].toid = null;
                     log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+                    // let's verify this is a file creation event
                     var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
                     if(stats.isFile() === true) {
                         log(`dirwatch event: ${fqueue[filename].path}${filename} was created`);
@@ -68,14 +81,18 @@ module.exports = function init(wevts, _log) {
                     } else {
                         log(`dirwatch event: ${filename} is not a file`);
                     }
+                    // remove this entry from the queue 
                     delete fqueue[filename];
                 } else {
-                    log(`dirwatch event: secondary ${eventType} ${filename}`);
+                    log(`dirwatch event: secondary ${evtype} ${filename}`);
                 }
                 break;
         };
     });
 
+    /*
+        renTO() - rename time out handler
+    */
     function renTO(fname) {
         if(fqueue[fname] !== undefined) {
             try {
