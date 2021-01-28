@@ -2,7 +2,7 @@
     logwait.js - wait for a file to be created and then
     process it for the database
 */
-module.exports = function init(wevts, pevts, _log) {
+module.exports = (function(wevts, pevts, _log) {
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
@@ -12,8 +12,8 @@ module.exports = function init(wevts, pevts, _log) {
 
     log(`- init`);
 
-    const ldata = require('./logdata.js');
-    ldata.init(pevts, log);
+    // the log processor
+    const ldata = require('./logdata.js')(pevts, _log);
 
     /*
         wait for file create and delete events from 
@@ -37,4 +37,4 @@ module.exports = function init(wevts, pevts, _log) {
             log(`- FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
         });
     });
-};
+});

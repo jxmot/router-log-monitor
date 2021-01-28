@@ -1,25 +1,38 @@
-
-module.exports = function init(wevts, _log) {
-    
+/*
+    logwatch.js - This is where a folder is watched,
+    it looks for new files and when one is created it
+    triggers the FILE_CREATED event. It will also 
+    trigger the FILE_DELETED event when a file is 
+    deleted.
+*/
+module.exports = (function(wevts, _log) {
+    // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
         _log(`${scriptName} ${payload}`);
-    }
+    };
 
     log(`- init`);
 
+    // configure the path to the watched folder
     const opt = require('./watchopt.js');
     log(`- watching in ${opt.path}`);
 
+    // needed for fs.watch(), fs.statSync(), and
+    // fs.accessSync()
     var fs = require('fs');
 
+    // hold the file name that is passed in the
+    // watch event
     var watchit = {
         path: opt.path,
         filename: '',
         now: 0 
     };
 
+    // contains watchit objects that are used for
+    // synchronizing the file create and delete events.
     var fqueue = {};
 
     /*
@@ -124,4 +137,4 @@ module.exports = function init(wevts, _log) {
         20210123-214242-net.log
     
     */
-};
+});

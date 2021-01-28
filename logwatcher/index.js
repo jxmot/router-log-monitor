@@ -31,11 +31,9 @@ procs_evts.on('error', (err) => {
     log(`${scriptName} - procs_evts ERROR ${err}`);
 });
 
-const watcher = require('./logwatch.js');
-watcher(watch_evts, log);
-
-const procs = require('./logprocess.js');
-procs(watch_evts, procs_evts, log);
-
-const reports = require('./reports.js');
-reports(procs_evts, log);
+// Watch for new log files
+const watcher = require('./logwatch.js')(watch_evts, log);
+// Process the log files into the database
+const procs = require('./logprocess.js')(watch_evts, procs_evts, log);
+// Generate static reports
+const reports = require('./reports.js')(procs_evts, log);
