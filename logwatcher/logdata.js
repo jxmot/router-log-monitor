@@ -21,13 +21,14 @@ module.exports = (function(pevts, _log)  {
     var dbopen = false;
     var dbobj = {};
 
-    pevts.on('DB_OPEN', (dbobj) => {
-        if(dbobj.state === true) {
+    pevts.on('DB_OPEN', (_dbobj) => {
+        if(_dbobj.state === true) {
             dbopen = true;
-            dbobj = dbobj.db;
+            dbobj = _dbobj.db;
             log(`- DB_OPEN: success`);
+            readActions();
         } else {
-            log(`- DB_OPEN: ERROR ${dbobj.db.err.message}`);
+            log(`- DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
     });
 
@@ -104,7 +105,18 @@ module.exports = (function(pevts, _log)  {
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
         log(`parseEntry(): ${todstr} ${tstamp}`);
+        return tstamp;
     };
+
+    // read the actions table from the database and populate
+    // an array of action objects
+    function readActions() {
+        dbobj.readAllRows('rlmonitor.actions', (table, result) => {
+            if(result !== null) {
+            } else {
+            }
+        });
+    }
 
     return logdata;
 });
