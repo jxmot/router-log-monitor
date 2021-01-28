@@ -27,6 +27,8 @@ module.exports = (function(pevts, _log)  {
             dbobj = _dbobj.db;
             log(`- DB_OPEN: success`);
             readActions();
+            readActionCats();
+            readKnown();
         } else {
             log(`- DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
@@ -88,29 +90,54 @@ module.exports = (function(pevts, _log)  {
     function parseEntry(_entry, idx) {
         var tmp    = _entry.replace("\n",'')
         var entry  = tmp.replace("\r",'')
-
+        // build the fields and add them to the entry object
         var tstamp = getTimestamp(entry);
+
+        //
+        var actn = getAction(entry);
+
+        // return the entry object
+        //return entObj;
     };
 
     function getTimestamp(entry) {
         var entarr = entry.split(' ');
         /*
-            length minus:
-                -5 = 73.176.4.88,
+            array length minus:
                 -4 = Friday,
                 -3 = Jan
                 -2 = 22,2021
                 -1 = 17:51:54
+
+            We only need -3, -2, and -1.
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        log(`parseEntry(): ${todstr} ${tstamp}`);
+        log(`getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
+    function getAction(entry) {
+        var actID = {
+            id: -1,
+            code: ''
+        };
+        if(actions.length > 0){
+            for(let act of actions) {
+                if(entry.includes(act.description) === true) {
+                    actID.id   = act.actionid;
+                    actID.code = act.catcode;
+                    break;
+                }
+            }
+        }
+        log(`getAction(): ${JSON.stringify(actID)}`);
+        return actID;
+    };
+
+    //////////////////////////////////////////////////////////////////////////
     // read the actions table from the database and populate
     // an array of action objects
-
     var actions = [];
 
     function readActions() {
@@ -118,11 +145,47 @@ module.exports = (function(pevts, _log)  {
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actions.push(JSON.parse(JSON.stringify(row)));
+                    //log(`readActions(): a action - ${JSON.stringify(row)}`);
                 });
             } else {
+                log(`readActions(): ERROR result is null`);
             }
         });
-    }
+    };
+
+    // read the action category table from the database and populate
+    // an array of action category objects
+    var actioncats = [];
+
+    function readActionCats() {
+        dbobj.readAllRows('rlmonitor.actioncats', (table, result) => {
+            if(result !== null) {
+                result.forEach((row, idx) => {
+                    actioncats.push(JSON.parse(JSON.stringify(row)));
+                    //log(`readActionCats(): a actioncat - ${JSON.stringify(row)}`);
+                });
+            } else {
+                log(`readActionCats(): ERROR result is null`);
+            }
+        });
+    };
+
+    // read the known table from the database and populate
+    // an array of known objects
+    var known = [];
+
+    function readKnown() {
+        dbobj.readAllRows('rlmonitor.known', (table, result) => {
+            if(result !== null) {
+                result.forEach((row, idx) => {
+                    known.push(JSON.parse(JSON.stringify(row)));
+                    //log(`readKnown(): a known - ${JSON.stringify(row)}`);
+                });
+            } else {
+                log(`readKnown(): ERROR result is null`);
+            }
+        });
+    };
 
     return logdata;
 });
