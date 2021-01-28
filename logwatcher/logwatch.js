@@ -1,92 +1,131 @@
-
-module.exports = function init(wevts, log) {
-
+/*
+    logwatch.js - This is where a folder is watched,
+    it looks for new files and when one is created it
+    triggers the FILE_CREATED event. It will also 
+    trigger the FILE_DELETED event when a file is 
+    deleted.
+*/
+module.exports = (function(wevts, _log) {
+    // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
-    log(`${scriptName} - init`);
+    function log(payload) {
+        _log(`${scriptName} ${payload}`);
+    };
 
+    log(`- init`);
+
+    // configure the path to the watched folder
     const opt = require('./watchopt.js');
-    log(`${scriptName} - watching in ${opt.path}`);
+    log(`- watching in ${opt.path}`);
 
+    // needed for fs.watch(), fs.statSync(), and
+    // fs.accessSync()
     var fs = require('fs');
 
+    // hold the file name that is passed in the
+    // watch event
     var watchit = {
         path: opt.path,
         filename: '',
         now: 0 
     };
 
+    // contains watchit objects that are used for
+    // synchronizing the file create and delete events.
     var fqueue = {};
-//    var fqueue = [];
 
     /*
         https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_watchfile_filename_options_listener
 
         TODO: look at options, set interval to longer?
     */
-    var dirwatch = fs.watch(opt.path, (eventType, filename) => {
+    var dirwatch = fs.watch(opt.path, (evtype, filename) => {
         // could be either 'rename' or 'change'. new file event and delete
         // also generally emit 'rename'
-        log(`${scriptName} dirwatch event: ${eventType} file: ${filename}`);
+        log(`dirwatch event: ${evtype} file: ${filename}`);
 
+        // only used for debugging
         watchit.now = Date.now();
 
         // sequence:
         //  file created = rename -> change
         //  file deleted, touch(linux), copied(linux) = rename
         //  file copied(Win) = rename -> change -> change
-
-        // NOTE: 
-    
-        switch(eventType) {
+        switch(evtype) {
+            // an error occurred...
             case 'error':
-                log(`${scriptName} dirwatch event: error ${filename}  ${fqueue.length}`);
+                // anounce it...
+                log(`dirwatch event: error ${filename}  ${fqueue.length}`);
+                // cancel all timeouts
                 fqueue.forEach((item, index) => {
                     clearTimeout(item.toid);
                 });
-                fqueue = [];
+                // clear the queue
+                fqueue = {};
                 break;
 
+            // this is the first event type received when a 
+            // file is created or deleted
             case 'rename':
+                // save some info in the queue...
                 watchit.filename = filename;
                 fqueue[filename] = JSON.parse(JSON.stringify(watchit));
-//                fqueue[filename].toid = setTimeout(renTO, 1000, filename);
+                // if the time expires then the file was deleted.
                 fqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
+            // this is the second event type received when a 
+            // file is created or deleted.
             case 'change':
+                // there can be a 'change' event with out a 
+                // preceding 'rename'
                 if(fqueue[filename] !== undefined) {
+                    // the file is in the queue, cancel the
+                    // timeout.
                     clearTimeout(fqueue[filename].toid);
                     fqueue[filename].toid = null;
-                    log(`${scriptName} dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+                    log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+// TODO: try/catch ?
+                    // let's verify this is a file creation event
+                    // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_class_fs_stats
                     var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
                     if(stats.isFile() === true) {
-                        log(`${scriptName} dirwatch event: ${fqueue[filename].path}${filename} was created`);
-                        wevts.emit('FILE_CREATED', {path:fqueue[filename].path,filename:filename});
+                        log(`dirwatch event: ${fqueue[filename].path}${filename} @ ${stats.size}b was created`);
+                        wevts.emit('FILE_CREATED', 
+                                   {
+                                        path:fqueue[filename].path,
+                                        filename:filename,
+                                        size:stats.size
+                                   });
                     } else {
-                        log(`${scriptName} dirwatch event: ${filename} is not a file`);
+                        log(`dirwatch event: ${filename} is not a file`);
                     }
+                    // remove this entry from the queue 
                     delete fqueue[filename];
                 } else {
-                    log(`${scriptName} dirwatch event: secondary ${eventType} ${filename}`);
+                    log(`dirwatch event: secondary ${evtype} ${filename}`);
                 }
                 break;
         };
     });
 
+    /*
+        renTO() - rename time out handler
+    */
     function renTO(fname) {
         if(fqueue[fname] !== undefined) {
             try {
                 fs.accessSync(`${fqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`${scriptName} renTO(): ${fqueue[fname].path}${fname} was deleted`);
+                    log(`renTO(): ${fqueue[fname].path}${fname} was deleted`);
                     wevts.emit('FILE_DELETED', {path:fqueue[fname].path,filename:fname});
                 }
             }
             delete fqueue[fname];
         } else {
-            log(`${scriptName} renTO(): undefined - fqueue[${fname}]`);
+            log(`renTO(): undefined - fqueue[${fname}]`);
         }
     };
 
@@ -105,4 +144,4 @@ module.exports = function init(wevts, log) {
         20210123-214242-net.log
     
     */
-};
+});
