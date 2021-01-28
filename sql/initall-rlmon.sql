@@ -12,6 +12,7 @@ create table known (
 create table ipstats (
     ip varchar(40) not null, 
     primary key(ip),
+    mac varchar(20) default null,
     known boolean default false,
     actioncounts text default '[0,0,0,0,0,0,0,0,0,0,0]' 
 );
