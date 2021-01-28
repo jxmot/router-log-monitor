@@ -10,6 +10,19 @@ module.exports = (function(pevts, _log) {
         _log(`${scriptName} ${payload}`);
     }
 
+    var dbopen = false;
+    var dbobj = {};
+
+    pevts.on('DB_OPEN', (dbobj) => {
+        if(dbobj.state === true) {
+            dbopen = true;
+            dbobj = dbobj.db;
+            log(`- DB_OPEN: success`);
+        } else {
+            log(`- DB_OPEN: ERROR ${dbobj.db.err.message}`);
+        }
+    });
+
     log(`- init`);
 
     // https://nodejs.org/docs/latest-v12.x/api/events.html#events_asynchronous_vs_synchronous
