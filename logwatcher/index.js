@@ -40,10 +40,6 @@ procs_evts.on('error', (err) => {
 */
 var database = require('./mysql/database-mysql.js')(_log);
 
-// When the database is opened continue with
-// the rest of the application
-database.openDB(openDone);
-
 // "database is open" handler
 /*
 
@@ -75,3 +71,6 @@ const watcher = require('./logwatch.js')(watch_evts, _log);
 const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
 // Generate static reports
 const reports = require('./reports.js')(procs_evts, _log);
+
+// 
+database.openDB(openDone);
