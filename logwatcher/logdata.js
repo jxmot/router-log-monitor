@@ -2,31 +2,43 @@
     logdata.js - this is where the log file will be parsed
     and written to the detabase
 */
-module.exports = (function(_pevts, _log)  {
+module.exports = (function(pevts, _log)  {
     
-    var log_ = null;
-    var pevts = null;
-
     logdata = {
     };
 
-    pevts = _pevts;
-
     // set up run-time logging
-    log_ = _log;
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        log_(`${scriptName} ${payload}`);
+        _log(`${scriptName} ${payload}`);
     };
+
+    var dbopen = false;
+    var dbobj = {};
+
+    pevts.on('DB_OPEN', (dbobj) => {
+        if(dbobj.state === true) {
+            dbopen = true;
+            dbobj = dbobj.db;
+            log(`- DB_OPEN: success`);
+        } else {
+            log(`- DB_OPEN: ERROR ${dbobj.db.err.message}`);
+        }
+    });
 
     log(`- init`);
 
     logdata.process = function(wfile) {
-        // parse the log data and write to database...
-        log(`- log processed: ${wfile.path}${wfile.filename}`);
-        // announce completion...
-        pevts.emit('LOG_PROCESSED', wfile);
+        if(dbopen === false) {
+            log(`- process(): database not open`);
+        } else {
+            // parse the log data and write to database...
+            log(`- process(): ${wfile.path}${wfile.filename}`);
+            // announce completion...
+            pevts.emit('LOG_PROCESSED', wfile);
+        }
+        return dbopen;
     };
 
     return logdata;
