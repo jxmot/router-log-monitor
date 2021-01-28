@@ -1,5 +1,5 @@
 /* ************************************************************************ */
-exports.database = (function() {
+module.exports = (function(_log) {
     // Public Data
     database = {
         // database open/closed status
@@ -8,9 +8,9 @@ exports.database = (function() {
         threadid: 0
     };
     // MySQL Package - https://www.npmjs.com/package/mysql
-    var mysql  = require('mysql');
+    const mysql  = require('mysql');
     // Connection Settings, Table Names, SQL Column Definitions reference objects
-    var dbcfg;
+    const dbcfg = require('./_dbcfg.js');
     // Initial Table Data
     var dbdata;
     // SQL Statement Parts
@@ -22,16 +22,25 @@ exports.database = (function() {
     // A row counter used during initialization
     var initRowCount;
     // For logging, defaults to console.log()
-    var log = console.log;
-    /* ******************************************************************** */
-    /*
-        Optionally change where log output goes.
-    */
-    database.setLog = function(newLog){
-        if(newLog !== undefined) log = newLog;
-        else log = console.log;
-    };
+//    var log = console.log;
+//    /* ******************************************************************** */
+//    /*
+//        Optionally change where log output goes.
+//    */
+//    database.setLog = function(newLog){
+//        if(newLog !== undefined) log = newLog;
+//        else log = console.log;
+//    };
     
+    // set up run-time logging
+    var path = require('path');
+    var scriptName = path.basename(__filename);
+    function log(payload) {
+        _log(`${scriptName} ${payload}`);
+    };
+
+
+
     /*
         Open the Connection to the Database
 
@@ -48,12 +57,9 @@ exports.database = (function() {
                 // details
             };
     */
-    database.openDB = function(_dbcfg, callme, callonerror = undefined) {
+    database.openDB = function(callme, callonerror = undefined) {
         // for reporting errors to the client
         var errObj;
-        // if the database configuration data hasn't been read 
-        // yet the read it now
-        if(dbcfg === undefined) dbcfg = _dbcfg;
         // we'll call this when we're done
         let _openCallBack = callme;
         // if already open, then disconnect
@@ -295,167 +301,11 @@ exports.database = (function() {
         }
     };
 
-    /*
-        Initialize a database and tables with data.
-
-        This is the starting point for initializing the database,
-        it's tables and optional data. The content of the config
-        files determines what is created or initialized.
-    */
-    database.initDB = function(_dbcfg, idata, parts, callme) {
-        // save the call back we'll use when we're done
-        let _initCallBack = callme;
-        // make sure that there isn't an open database and there
-        // isn't a current connection
-        if((database.dbopen === false) && (database.threadid === 0)) {
-            // all good, get the necessary configuration and SQL
-            // statement pieces and store them globally within
-            // this object
-            dbcfg  = _dbcfg;
-            sql    = require(parts);
-            dbdata = require(idata);
-            var params = {
-                host: dbcfg.parms.host,
-                user: dbcfg.parms.user,
-                password: dbcfg.parms.password
-            };
-            // create and make the connection to the server
-            initconn = mysql.createConnection(params);
-            initconn.connect(function(error) {
-                if(error) {
-                    log(`database.initDB() - ERROR connect: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _initCallBack(-1);
-                } else {
-                    // first create the database...
-                    initconn.query(createDBStr(), function(error, result) {
-                        if(error) {
-                            log(`database.initDB() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                            _initCallBack(-1);
-                        } else {
-                            // create the table(s)
-                            createTable(0);
-                        }
-                    });
-                }
-            });
-        } else {
-            _initCallBack(-1);
-        }
-    };
-
-    /*
-        Create a Table
-
-        The table and columns are defined as partial SQL statements
-        in the configuration file we "required" earlier. It's contained
-        in 'dbcfg'.
-
-        The 'idx' argument is an index into the table and column arrays
-        found in 'dbcfg'. 
-
-        This function is called recursively and will call initCallBack()
-        and pass it a count of the tables created. Or if the count value
-        is '-1' then an error has occurred.
-    */
-    function createTable(idx) {
-        // are we done?
-        if(idx < dbcfg.table.length) {
-            // assemble the SQL statement and send the query
-            initconn.query(createTableStr(idx), function(error, result) {
-                if(error) {
-                    log(`database.createTable() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    initCallBack(-1);
-                } else {
-                    // recurse...
-                    createTable(idx+1);
-                }
-            });
-        } else {
-            // done
-            log(`database.createTable() - ${idx} tables were created.`);
-            if(dbdata.length > 0) {
-                log(`database.createTable() - creating rows for ${dbdata.length} tables.`);
-                initRows(0, 0, idx);
-            }
-        }
-    };
-
-    function initRows(tidx, ridx, tablecount) {
-        if((tidx === 0) && (ridx === 0)) initRowCount = 0;
-        if(ridx < dbdata[tidx].rows.length) {
-            var table  = dbdata[tidx].table;
-            var record = JSON.parse(JSON.stringify(dbdata[tidx].rows[ridx]));
-            
-            initconn.query('insert into '+dbcfg.parms.database+'.'+table+' set ?', record, function(error, result) {
-                if(error) {
-                    log(`database.initRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    initCallBack(-1);                   
-                } else {
-                    // recurse...
-                    initRowCount += 1;
-                    initRows(tidx, ridx+1, tablecount);
-                }
-            });
-        } else {
-            if((tidx+1) < dbdata.length) initRows((tidx+1), 0, tablecount);
-            else {
-                initconn.end(function(error) {
-                    if(error) {
-                        log(`database.initRows() - ERROR end: [${error.message}  ${error.code}  ${error.errno}]`);
-                        initCallBack(-1);
-                    } else {
-                        // The connection is terminated now 
-                        initCallBack(tablecount, initRowCount);
-                    }
-                });
-            }
-        }
-    };
-
-    /*
-        NOTE: In the comments below the use of "<" and ">" indicate
-        data that is contained in the dbcfg object.
-    */
-
-    /*
-        Create an SQL string - 
-            create database <database-name>;
-    */
-    function createDBStr() {
-        var retStr = sql.parts[sql.CREATE_DB] + dbcfg.parms.database + sql.parts[sql.SQL_ENDS];
-        log(`database.createDBStr() - ${retStr}`);
-        return retStr;
-    };
-
-    /*
-        Create an SQL string - 
-            create table <database-name.table-name>(
-                id integer(<10>) auto_increment not null,
-                primary key(id),
-                <col_1 varchar(12),
-                col_2 varchar(12),
-                col_3 varchar(256)>
-            );
-
-        To Do: make column names, types, and sizes individual 
-        configuration items.
-    */
-    function createTableStr(idx) {
-        var retStr = '';
-        if(idx < dbcfg.table.length) {
-            // create table database.table
-            retStr = retStr + sql.parts[sql.CREATE_TAB] + dbcfg.parms.database + '.' + dbcfg.table[idx];
-            // col_1 varchar(5),col_1 integer(4)); <-- the column definitions go here
-            retStr = retStr + sql.parts[sql.SQL_OPAR] + dbcfg.col[idx] + sql.parts[sql.SQL_ENDF];
-        }
-        log(`database.createTableStr() - ${retStr}`);
-        return retStr;
-    };
-
     function dbRunTimeError(err) {
         log('ERROR : dbRunTimeError() err = ');
         log(err);  
     };
 
+    log(`- init`);
     return database;
-})();
+});
