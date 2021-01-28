@@ -86,11 +86,18 @@ module.exports = (function(wevts, _log) {
                     clearTimeout(fqueue[filename].toid);
                     fqueue[filename].toid = null;
                     log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+// TODO: try/catch ?
                     // let's verify this is a file creation event
+                    // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_class_fs_stats
                     var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
                     if(stats.isFile() === true) {
-                        log(`dirwatch event: ${fqueue[filename].path}${filename} was created`);
-                        wevts.emit('FILE_CREATED', {path:fqueue[filename].path,filename:filename});
+                        log(`dirwatch event: ${fqueue[filename].path}${filename} @ ${stats.size}b was created`);
+                        wevts.emit('FILE_CREATED', 
+                                   {
+                                        path:fqueue[filename].path,
+                                        filename:filename,
+                                        size:stats.size
+                                   });
                     } else {
                         log(`dirwatch event: ${filename} is not a file`);
                     }
