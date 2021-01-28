@@ -87,6 +87,11 @@ module.exports = (function(pevts, _log)  {
     function parseEntry(_entry, idx) {
         var tmp    = _entry.replace("\n",'')
         var entry  = tmp.replace("\r",'')
+
+        var tstamp = getTimestamp(entry);
+    };
+
+    function getTimestamp(entry) {
         var entarr = entry.split(' ');
         /*
             length minus:
