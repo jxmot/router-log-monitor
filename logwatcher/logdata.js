@@ -110,9 +110,15 @@ module.exports = (function(pevts, _log)  {
 
     // read the actions table from the database and populate
     // an array of action objects
+
+    var actions = [];
+
     function readActions() {
         dbobj.readAllRows('rlmonitor.actions', (table, result) => {
             if(result !== null) {
+                result.forEach((row, idx) => {
+                    actions.push(JSON.parse(JSON.stringify(row)));
+                });
             } else {
             }
         });
