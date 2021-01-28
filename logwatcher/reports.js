@@ -3,7 +3,6 @@
     reads the database to generate static reports
 */
 module.exports = (function(pevts, _log) {
-//module.exports = function init(pevts, _log) {
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
@@ -20,4 +19,3 @@ module.exports = (function(pevts, _log) {
         });
     });
 });
-//};
