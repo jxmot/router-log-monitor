@@ -35,7 +35,7 @@ foreach($headers as $hdr) {
         $msghdr = isLogMsg($num);
         if($msghdr !== false) {
             logProcess($num);
-            // TODO: investigate if this is were this should be done
+            // TODO: investigate if this is where this should be done
             //imap_delete(_MAILBOX,$msgnum);
         }
     } else {
