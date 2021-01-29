@@ -35,12 +35,18 @@ foreach($headers as $hdr) {
         $msghdr = isLogMsg($num);
         if($msghdr !== false) {
             logProcess($num);
-            // TODO: investigate if this is where this should be done
-            //imap_delete(_MAILBOX,$msgnum);
+            if(defined('_READONLY') &&  _READONLY === false) {
+                // TODO: investigate if this is where this should be done
+                imap_setflag_full(_MAILBOX, $num, "\\Seen");
+                //      OR 
+                //imap_delete(_MAILBOX,$num);
+            }
+            // TODO: delay, don't blast through the messages.
+            // 
         }
     } else {
-        echo rightnow('log') . " - msgmgr.php: getMsgNum() failed [{$hdr}]\n";
-        exit(0);
+        echo rightnow('log') . " - msgmgr.php: getMsgNum() not UNread [{$hdr}]\n";
+//        exit(0);
     }
 }
 // TODO: investigate(trial-n-error) where the expunge
