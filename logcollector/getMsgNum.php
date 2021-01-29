@@ -11,7 +11,7 @@
 */
 function getMsgNum($hdr) {
 $msgnum = -1;
-
+    // also checks for "U"nread
     if(preg_match("/[U].+[0-9]\)/", $hdr)) {
         //$tmp = preg_split("/[ ].+[0-9]\)/", $headers[$head_idx]);
         $sp1 = preg_split("/\)/", $hdr);
