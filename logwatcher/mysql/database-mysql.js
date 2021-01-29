@@ -72,15 +72,13 @@ module.exports = (function(_log) {
         connection = mysql.createConnection(dbcfg.parms);
 
         // handle errors like when the server closes the
-        // connection, can occur during development when
-        // no sensor data is being collected for a period
-        // of time. if this isn't done the connection will
-        // close and the app will throw an exception and
-        // crash.
-        if(callonerror !== undefined) 
+        // connection, MySQL will keep an inactive connection 
+        // open for only 8 hours. Then it will close it.
+        if(callonerror !== undefined) {
             connection.on('error', (callonerror));
-        else
+        } else {
             connection.on('error', (dbRunTimeError));
+        }
 
         connection.connect(function(error) {
             if(error) {
