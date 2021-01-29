@@ -19,11 +19,11 @@ create table rlmonitor.ipstats (
     ip varchar(40) not null, 
     primary key(ip),
     mac varchar(20) default null,
-    known boolean default false,
     actioncounts varchar(64) default '[0,0,0,0,0,0,0,0,0,0,0]',
     lastcount bigint(16) not null,
-    tstamp bigint(16) default null,
-    ipid integer(5) not null
+    tstamp bigint(16) not null,
+    known boolean default false,
+    ipid integer(5) default null
 );
 
 create table rlmonitor.actioncats (
