@@ -97,8 +97,8 @@ create table netactivity (
 
     ip varchar(40) default null,
     port varchar(6) default null,
-    srcip varchar(40) default null,
-    srcport varchar(6) default null
+    toip  varchar(40) default null,
+    toport  varchar(6) default null
 );
 
 create table updates (
