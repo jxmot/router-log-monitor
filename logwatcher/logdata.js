@@ -92,9 +92,11 @@ module.exports = (function(pevts, _log)  {
         var entry  = tmp.replace("\r",'')
         // build the fields and add them to the entry object
         var tstamp = getTimestamp(entry);
-
-        //
+        // get the action identifiers
         var actn = getAction(entry);
+        // 
+
+        var dbentry = getActionParms(actn, entry);
 
         // return the entry object
         //return entObj;
@@ -133,6 +135,12 @@ module.exports = (function(pevts, _log)  {
         }
         log(`getAction(): ${JSON.stringify(actID)}`);
         return actID;
+    };
+
+    function getActionParms(action, entry) {
+        parms = {};
+
+        return parms;
     };
 
     //////////////////////////////////////////////////////////////////////////
