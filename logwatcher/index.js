@@ -12,9 +12,10 @@ const procs_evts = new EventEmitter();
 // Run-Time Logging
 var Log = require('./utils/Log.js');
 var logOut = new Log('logs/watcher', 'log', 262144);
+var logenable = true;
 // pass this function around to the other modules
 function _log(payload) {
-    logOut.writeTS(payload);
+    if(logenable === true) logOut.writeTS(payload);
 };
 
 function log(payload) {
