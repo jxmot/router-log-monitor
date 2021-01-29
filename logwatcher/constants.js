@@ -24,23 +24,22 @@
 |2       |DHCP IP                          |RL     |
 |6       |Initialized, firmware version    |RU     |
 
-
 */
 module.exports = {
-    LAN_ACC    : 9,       // NA
-    ADM_LOG    : 1,       // RA
-    DYN_DNS    : 5,       // RA
-    INET_CONN  : 7,       // RA
-    INET_DCONN : 8,       // RA
-    TIME_SYNC  : 10,      // RA
-    DOS_FIN    : 3,       // RI
-    DOS_ACK    : 4,       // RI
-    WLAN_REJ   : 11,      // RI
-    DHCP_IP    : 2,       // RL
-    FIRMW_UP   : 6,       // RU
-    NA         : 'NA',
-    RA         : 'RA',
-    RI         : 'RI',
-    RL         : 'RL',
-    RU         : 'RU'
+    NA         : 'NA',  // Network Activity
+    RA         : 'RA',  // Router Actions     
+    RI         : 'RI',  // Router Invasion    
+    RL         : 'RL',  // Router LAN Activity
+    RU         : 'RU',  // Router Updates     
+    LAN_ACC    : 9,     // NA
+    ADM_LOG    : 1,     // RA
+    DYN_DNS    : 5,     // RA
+    INET_CONN  : 7,     // RA
+    INET_DCONN : 8,     // RA
+    TIME_SYNC  : 10,    // RA
+    DOS_FIN    : 3,     // RI
+    DOS_ACK    : 4,     // RI
+    WLAN_REJ   : 11,    // RI
+    DHCP_IP    : 2,     // RL
+    FIRMW_UP   : 6      // RU
 };
