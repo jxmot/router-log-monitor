@@ -41,6 +41,12 @@ create table rlmonitor.actions (
 ------------------------------------------------------
 ------------------------------------------------------
 
+/*
+    use the following after deleting all data:
+
+    alter table rlmonitor.logentry auto_increment = 1;
+*/
+
 create table rlmonitor.logentry (
     entrynumb bigint(16) auto_increment not null, 
     primary key (entrynumb),
