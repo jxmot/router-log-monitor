@@ -86,19 +86,36 @@ module.exports = (function(pevts, _log)  {
         }
     };
 
+    class LogEntry {
+        tstamp = 0;
+        actionid = 0;
+        ip = '';
+        port = '';
+        toip  = '';
+        toport  = ''; 
+        host = '';
+        mac = '';
+        message = '';
+    };
+
     // [Internet connected] IP address: 73.176.4.88, Friday, Jan 22,2021 17:51:54
     function parseEntry(_entry, idx) {
-        var tmp    = _entry.replace("\n",'')
-        var entry  = tmp.replace("\r",'')
+        var tmp    = _entry.replace("\n",'');
+        var entry  = tmp.replace("\r",'');
+
+        var entObj = new LogEntry;
+
         // build the fields and add them to the entry object
-        var tstamp = getTimestamp(entry);
+        entObj.tstamp = getTimestamp(entry);
         // get the action identifiers
         var actn = getAction(entry);
+        entObj.actionid = actn.id
         // 
-
-        var dbentry = getActionParms(actn, entry);
-
+        var parms = getActionParms(actn, entry);
+        // 
+        entObj = Object.assign(entObj, parms);
         // return the entry object
+        log(`parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         //return entObj;
     };
 
@@ -137,10 +154,75 @@ module.exports = (function(pevts, _log)  {
         return actID;
     };
 
-    function getActionParms(action, entry) {
-        parms = {};
+    var constants = require('./constants.js');
 
-        return parms;
+    function getActionParms(action, entry) {
+        var actparms = {};
+        switch(action.code) {
+            case constants.NA:
+// [LAN access from remote] from 73.176.4.88:55216 to 192.168.0.100:59018, Friday, Jan 22,2021 01:24:50
+                var tmp = entry.split('] ');
+                tmp = tmp[1].split(' ');
+                var ipfrom = tmp[1].split(':');
+                var ipto   = tmp[3].split(':');
+                actparms.ip     = ipfrom[0];
+                actparms.port   = ipfrom[1];
+                actparms.toip   = ipto[0];
+                actparms.toport = ipto[1].replace(',','');
+                break;
+            case constants.RA:
+                actparms = parseRA(action, entry);
+                break;
+            case constants.RI:
+// [DoS attack: FIN Scan] (3) attack packets in last 20 sec from ip [162.214.100.81], Wednesday, Jan 20,2021 08:51:46
+// [DoS attack: ACK Scan] (1) attack packets in last 20 sec from ip [106.70.232.86], Sunday, Jan 03,2021 04:48:17
+// [WLAN access rejected: incorrect security] from MAC 18:B4:30:06:D4:7E, Wednesday, Jan 13,2021 18:08:36
+                break;
+            case constants.RL:
+// [DHCP IP: (192.168.0.211)] to MAC address B0:BE:76:CA:E2:F4, Friday, Jan 22,2021 02:00:57
+                break;
+            case constants.RU:
+// [Initialized, firmware version: V1.0.1.52_1.0.36] Friday, Oct 30,2020 15:27:37
+                break;
+
+            default:
+                break;
+        };
+        return actparms;
+    };
+
+    function parseRA(action, entry) {
+        var raparms = {};
+        // 
+        switch(action.id) {
+            case constants.ADM_LOG:
+// [Admin login] from source 192.168.0.7, Wednesday, Jan 13,2021 10:10:14
+                var tmp = entry.split(', ');
+                tmp = tmp[0].split('source ');
+                raparms.ip = tmp[1].replace(',','');
+                break;
+            case constants.DYN_DNS:
+// [Dynamic DNS] host name its.worse-than.tv registration successful, Friday, Jan 22,2021 15:20:46
+                var tmp = entry.split(' ');
+                raparms.host = tmp[4];
+                break;
+            case constants.INET_CONN:
+// [Internet connected] IP address: 73.176.4.88, Friday, Jan 22,2021 17:51:54
+                var tmp = entry.split(', ');
+                tmp = tmp[0].split(': ');
+                raparms.ip = tmp[1].replace(',','');
+                break;
+            case constants.INET_DCONN:
+// [Internet disconnected] Thursday, Nov 07,2019 20:20:00
+                break;
+            case constants.TIME_SYNC:
+// [Time synchronized with NTP server] Friday, Jan 22,2021 17:51:56
+                break;
+
+            default:
+                break;
+        };
+        return raparms;
     };
 
     //////////////////////////////////////////////////////////////////////////
