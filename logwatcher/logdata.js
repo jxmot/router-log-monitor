@@ -44,6 +44,7 @@ module.exports = (function(pevts, _log)  {
             log(`- process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
             // announce completion...
+            console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
         }
         return dbopen;
@@ -93,7 +94,7 @@ module.exports = (function(pevts, _log)  {
                         if(result === true) {
                             log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         } else {
-                             log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                            log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
                         }
                     });
                 });
