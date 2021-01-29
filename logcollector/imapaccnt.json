@@ -2,5 +2,6 @@
     "host":"mail.yourhost.something",
     "port":993,
     "login":"someone@yourhost.something",
-    "pword":"passwordgoeshere"
+    "pword":"passwordgoeshere",
+    "isrdonly":true
 }
