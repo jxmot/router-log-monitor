@@ -42,13 +42,15 @@ create table rlmonitor.actions (
 ------------------------------------------------------
 
 create table rlmonitor.logentry (
+    entrynumb bigint(16) auto_increment not null, 
+    primary key (entrynumb),
+
     tstamp bigint(16) not null, 
-    primary key (tstamp),
-    actionid integer(3) not null,             -- enumerated actions
+    actionid integer(3) not null,
     ip varchar(40) default null,
     port varchar(6) default null,
-    srcip varchar(40) default null,
-    srcport varchar(6) default null,
+    toip varchar(40) default null,
+    toport varchar(6) default null,
     host varchar(128) default null,
     mac varchar(20) default null,
     message varchar(128) default null
@@ -97,8 +99,8 @@ create table netactivity (
 
     ip varchar(40) default null,
     port varchar(6) default null,
-    srcip varchar(40) default null,
-    srcport varchar(6) default null
+    toip  varchar(40) default null,
+    toport  varchar(6) default null
 );
 
 create table updates (
