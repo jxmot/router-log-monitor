@@ -34,11 +34,18 @@ module.exports = (function(pevts, _log)  {
         }
     });
 
+    pevts.on('DB_CLOSED', (_dbobj) => {
+        dbopen = false;
+        dbobj = {};
+        clearTables();
+    });
+
     log(`- init`);
 
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`- process(): database not open`);
+            dbobj = {};
         } else {
             // parse the log data and write to database...
             log(`- process(): ${wfile.path}${wfile.filename}`);
@@ -98,8 +105,6 @@ module.exports = (function(pevts, _log)  {
                         }
                     });
                 });
-    
-                // send LOG_PROCESSED
             }
         } else {
             log(`logToDB(): undefined - wfile`);
