@@ -11,20 +11,43 @@ $appopt = json_decode(file_get_contents('./appoptions.json'));
 define('_OUTPATH', $appopt->outpath);
 // load the IMAP connection parameters
 $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
+// true or false
 define('_READONLY', $accnt->isrdonly);
+
+if(defined('_READONLY') &&  _READONLY === true) {
+    define('_EXPUNGE', false);
+} else {
+    if(defined('_READONLY') &&  _READONLY === false) {
+        // "seen" or "delete"
+        define('_MSGDISPOSE', $accnt->disposemsg);
+        // true or false
+        define('_EXPUNGE', $accnt->expunge);
+        // "onclose" "readbegin" "readend"
+        define('_EXPWHERE', $accnt->expwhere);
+    }
+}
+
 $imapsrv = "{$accnt->host}:{$accnt->port}/imap/ssl";
 // NOTE: the last arg is a "flag" - 
 //      OP_READONLY = can only read, and cannot set flags!!
 //       CL_EXPUNGE = expunges on close, but it is being done here explicitly
-if(defined('_READONLY') &&  _READONLY === true) {
+if(defined('_READONLY') && _READONLY === true) {
     $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword, OP_READONLY);
 } else {
-    $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword);
+    if((defined('_READONLY') && _READONLY === false) &&
+       (defined('_EXPUNGE') && _EXPUNGE === true) &&
+       (defined('_EXPWHERE') && _EXPWHERE === 'onclose')) {
+        $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword, CL_EXPUNGE);   
+    } else {
+        $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword);
+    }
 }
+
 if($mailbox === false) {
     echo rightnow('log') . " - logcollector.php: Failed to connect to server\n";
     exit(0);
 }
+
 // find out how many messages there are in the INBOX
 $msgqty = imap_num_msg($mailbox); 
 if($msgqty === false) {

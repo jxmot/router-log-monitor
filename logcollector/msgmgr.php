@@ -15,7 +15,11 @@ if(!defined('_IMAPSRV') || !defined('_MAILBOX')) {
 // TODO: investigate(trial-n-error) where the expunge
 // should be done
 // get rid of any messages that were marked for deletion
-//imap_expunge(_MAILBOX);
+if((defined('_READONLY') && _READONLY === false) &&
+   (defined('_EXPUNGE') && _EXPUNGE === true) &&
+   (defined('_EXPWHERE') && _EXPWHERE === 'readbegin')) {
+        imap_expunge(_MAILBOX);
+}
 
 // retrieve an array of plain-text message headers, the look
 // like this - 
@@ -30,16 +34,22 @@ if ($headers === false) {
 // is then read the message and create a file from it.
 foreach($headers as $hdr) {
     $num = getMsgNum($hdr);
-    echo "num = {$num}\n";
+    echo  rightnow('log') . " - num = {$num}\n";
     if($num !== -1) {
         $msghdr = isLogMsg($num);
         if($msghdr !== false) {
             logProcess($num);
             if(defined('_READONLY') &&  _READONLY === false) {
-                // TODO: investigate if this is where this should be done
-                imap_setflag_full(_MAILBOX, $num, "\\Seen");
-                //      OR 
-                //imap_delete(_MAILBOX,$num);
+                if(defined('_MSGDISPOSE') &&  _MSGDISPOSE === 'seen') {
+                    // TODO: investigate if this is where this should be done
+                    imap_setflag_full(_MAILBOX, $num, "\\Seen");
+                        echo rightnow('log') . " - num = {$num} has been SEEN\n";
+                } else { //      OR 
+                    if(defined('_MSGDISPOSE') &&  _MSGDISPOSE === 'delete') {
+                        imap_delete(_MAILBOX,$num);
+                        echo rightnow('log') . " - num = {$num} has been DELETED\n";
+                    }
+                }
             }
             // TODO: delay, don't blast through the messages.
             // 
@@ -50,7 +60,11 @@ foreach($headers as $hdr) {
     }
 }
 // TODO: investigate(trial-n-error) where the expunge
-// should be done
-// get rid of any messages that were marked for deletion
-//imap_expunge(_MAILBOX);
+// should be done.
+// 
+if((defined('_READONLY') && _READONLY === false) &&
+   (defined('_EXPUNGE') && _EXPUNGE === true) &&
+   (defined('_EXPWHERE') && _EXPWHERE === 'readend')) {
+        imap_expunge(_MAILBOX);
+}
 ?>
