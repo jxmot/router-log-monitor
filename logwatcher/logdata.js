@@ -191,6 +191,9 @@ module.exports = (function(pevts, _log)  {
                 var tmp = entry.split('IP: (');
                 tmp = tmp[1].split(')] ');
                 actparms.ip = tmp[0];
+                // TODO: look up IP in the known table, if found 
+                // check the watch flag. if true then update 
+                // the ip stats table
                 break;
             case constants.RU:
 // [Initialized, firmware version: V1.0.1.52_1.0.36] Friday, Oct 30,2020 15:27:37
