@@ -1,5 +1,15 @@
 /*
 
+|catcode|description         |
+|-------|--------------------|
+|NA     |Network Activity    |
+|RA     |Router Actions      |
+|RI     |Router Invasion     |
+|RL     |Router LAN Activity |
+|RU     |Router Updates      |
+
+
+
 |actionid|description                      |catcode|
 |--------|---------------------------------|-------|
 |9       |LAN access from remote           |NA     |

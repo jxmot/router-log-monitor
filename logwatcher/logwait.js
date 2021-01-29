@@ -26,6 +26,7 @@ module.exports = (function(wevts, pevts, _log) {
         https://nodejs.dev/learn/the-nodejs-event-loop
     */
     wevts.on('FILE_CREATED', (watchit) => {
+        // run after any queued i/o
         setImmediate(() => {
             log(`- FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
             ldata.process(watchit);
@@ -33,6 +34,7 @@ module.exports = (function(wevts, pevts, _log) {
     });
 
     wevts.on('FILE_DELETED', (watchit) => {
+        // run after any queued i/o
         setImmediate(() => {
             log(`- FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
         });
