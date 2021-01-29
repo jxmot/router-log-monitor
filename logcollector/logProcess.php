@@ -12,7 +12,7 @@ function logProcess($mnum) {
         echo rightnow('log') . " - logProcess.php: ain't got no body\n";
         exit(0);
     }
-//    echo "body = \n{$body}\n\n";
+//    echo rightnow('log') . "body = \n{$body}\n\n";
 
     // https://codingreflections.com/php-parse-html/
     $dom = new DomDocument();
@@ -39,7 +39,7 @@ function logProcess($mnum) {
     $lastline = $lines[count($lines) - 1];
     // get the date/time from it 
     $splitline = preg_split("/\] /", $lastline);
-    echo "splitline = {$splitline[1]}\n";
+    echo rightnow('log') . " - splitline = {$splitline[1]}\n";
     //$senttime = "{$splitline[1]} -600";
     $senttime = $splitline[1];
     $filestamp = rightnow('name',$senttime,true);
