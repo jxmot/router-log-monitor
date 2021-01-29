@@ -49,6 +49,18 @@ module.exports = (function(pevts, _log)  {
         return dbopen;
     };
 
+    class LogEntry {
+        tstamp = 0;
+        actionid = 0;
+        ip = '';
+        port = '';
+        toip  = '';
+        toport  = ''; 
+        host = '';
+        mac = '';
+        message = '';
+    };
+
     function logToDB(wfile) {
         // make sure the file is valid
         if(wfile !== undefined) {
@@ -76,7 +88,14 @@ module.exports = (function(pevts, _log)  {
                 //      write object to db
                 //      next line
                 logarr.forEach((entry, idx) => {
-                    parseEntry(entry, idx);
+                    var newrow = parseEntry(entry, idx);
+                    dbobj.writeRow('rlmonitor.logentry', newrow, (result, target, data) => {
+                        if(result === true) {
+                            log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                        } else {
+                             log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                        }
+                    });
                 });
     
                 // send LOG_PROCESSED
@@ -86,19 +105,6 @@ module.exports = (function(pevts, _log)  {
         }
     };
 
-    class LogEntry {
-        tstamp = 0;
-        actionid = 0;
-        ip = '';
-        port = '';
-        toip  = '';
-        toport  = ''; 
-        host = '';
-        mac = '';
-        message = '';
-    };
-
-    // [Internet connected] IP address: 73.176.4.88, Friday, Jan 22,2021 17:51:54
     function parseEntry(_entry, idx) {
         var tmp    = _entry.replace("\n",'');
         var entry  = tmp.replace("\r",'');
@@ -116,7 +122,7 @@ module.exports = (function(pevts, _log)  {
         entObj = Object.assign(entObj, parms);
         // return the entry object
         log(`parseEntry(): entObj = ${JSON.stringify(entObj)}`);
-        //return entObj;
+        return entObj;
     };
 
     function getTimestamp(entry) {
