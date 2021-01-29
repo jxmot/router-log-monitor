@@ -279,6 +279,7 @@ module.exports = (function(pevts, _log)  {
 
     function readActions() {
         dbobj.readAllRows('rlmonitor.actions', (table, result) => {
+            actions = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actions.push(JSON.parse(JSON.stringify(row)));
@@ -296,6 +297,7 @@ module.exports = (function(pevts, _log)  {
 
     function readActionCats() {
         dbobj.readAllRows('rlmonitor.actioncats', (table, result) => {
+            actioncats = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actioncats.push(JSON.parse(JSON.stringify(row)));
@@ -313,6 +315,7 @@ module.exports = (function(pevts, _log)  {
 
     function readKnown() {
         dbobj.readAllRows('rlmonitor.known', (table, result) => {
+            known = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     known.push(JSON.parse(JSON.stringify(row)));
@@ -323,6 +326,12 @@ module.exports = (function(pevts, _log)  {
             }
         });
     };
+
+    function clearTables() {
+        actions = [];
+        actioncats = [];
+        known = [];
+    }
 
     return logdata;
 });
