@@ -102,6 +102,10 @@ module.exports = (function(_log) {
         });
     };
 
+    function dbRunTimeError(err) {
+        log(`dbRunTimeError() err = ${err}`);
+    };
+
     /*
         Close the Connection to the Database
     */
@@ -300,11 +304,6 @@ module.exports = (function(_log) {
             log('database.countRows() - ERROR - database not open');
             _countCallBack(table, col, -1);
         }
-    };
-
-    function dbRunTimeError(err) {
-        log('ERROR : dbRunTimeError() err = ');
-        log(err);  
     };
 
     log(`- init`);
