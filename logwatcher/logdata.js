@@ -174,15 +174,22 @@ module.exports = (function(pevts, _log)  {
                 actparms = parseRA(action, entry);
                 break;
             case constants.RI:
-// [DoS attack: FIN Scan] (3) attack packets in last 20 sec from ip [162.214.100.81], Wednesday, Jan 20,2021 08:51:46
-// [DoS attack: ACK Scan] (1) attack packets in last 20 sec from ip [106.70.232.86], Sunday, Jan 03,2021 04:48:17
-// [WLAN access rejected: incorrect security] from MAC 18:B4:30:06:D4:7E, Wednesday, Jan 13,2021 18:08:36
+                actparms = parseRI(action, entry);
                 break;
             case constants.RL:
 // [DHCP IP: (192.168.0.211)] to MAC address B0:BE:76:CA:E2:F4, Friday, Jan 22,2021 02:00:57
+                var tmp = entry.split('address ');
+                tmp = tmp[1].split(', ');
+                actparms.mac = tmp[0];
+                var tmp = entry.split('IP: (');
+                tmp = tmp[1].split(')] ');
+                actparms.ip = tmp[0];
                 break;
             case constants.RU:
 // [Initialized, firmware version: V1.0.1.52_1.0.36] Friday, Oct 30,2020 15:27:37
+                var tmp = entry.split('] ');
+                tmp = tmp[0].split('version: ');
+                actparms.message = tmp[1];
                 break;
 
             default:
@@ -223,6 +230,31 @@ module.exports = (function(pevts, _log)  {
                 break;
         };
         return raparms;
+    };
+
+    function parseRI(action, entry) {
+        var riparms = {};
+        // 
+        switch(action.id) {
+            case constants.DOS_FIN:
+            case constants.DOS_ACK:
+// [DoS attack: FIN Scan] (3) attack packets in last 20 sec from ip [162.214.100.81], Wednesday, Jan 20,2021 08:51:46
+// [DoS attack: ACK Scan] (1) attack packets in last 20 sec from ip [106.70.232.86], Sunday, Jan 03,2021 04:48:17
+                var tmp = entry.split('],');
+                tmp = tmp[0].split('ip [');
+                riparms.ip = tmp[1];
+                break;
+            case constants.WLAN_REJ:
+// [WLAN access rejected: incorrect security] from MAC 18:B4:30:06:D4:7E, Wednesday, Jan 13,2021 18:08:36
+                var tmp = entry.split('MAC ');
+                tmp = tmp[1].split(', ');
+                riparms.mac = tmp[0].replace(',','');;
+                break;
+
+            default:
+                break;
+        };
+        return riparms;
     };
 
     //////////////////////////////////////////////////////////////////////////
