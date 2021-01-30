@@ -6,7 +6,7 @@
     "folder":"",
     "comment":"the next 4 items control if, when, and how read messages are disposed.",
     "isrdonly":true,
-    "disposemsg":"delete",
-    "expunge":true,
+    "disposemsg":"seen",
+    "expunge":false,
     "expwhere":"onclose"
 }
