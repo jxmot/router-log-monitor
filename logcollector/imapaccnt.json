@@ -3,6 +3,7 @@
     "port":993,
     "login":"someone@yourhost.something",
     "pword":"passwordgoeshere",
+    "folder":"",
     "comment":"the next 4 items control if, when, and how read messages are disposed.",
     "isrdonly":true,
     "disposemsg":"delete",
