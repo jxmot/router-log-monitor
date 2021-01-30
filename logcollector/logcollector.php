@@ -13,7 +13,26 @@ define('_OUTPATH', $appopt->outpath);
 $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
 // true or false
 define('_READONLY', $accnt->isrdonly);
+/*
+    Mailbox Options: There are 4 items in the imapaccnt.json
+    file that determine - 
 
+        * If the mailbox is to be opened as "read only", and no 
+          changes will be made to its messages.
+        * If not "read only", then look at how a read message 
+          is to be handled. Either mark it as "seen" or mark 
+          it as "deleted".
+        * If messages are to be expunged, either previously or
+          currently marked as "deleted". There are 3 choices 
+          for when expungement occurs (pick one):
+            * "onclose" - messages will be expunged when the 
+              connection is closed
+            * "readbegin" - messages will be expunged just before 
+              the headers are read.
+            * "readend" - messages will be expunged after all
+              have been read and/or marked.
+
+*/
 if(defined('_READONLY') &&  _READONLY === true) {
     define('_EXPUNGE', false);
 } else {
@@ -45,12 +64,14 @@ if(defined('_READONLY') && _READONLY === true) {
     }
 }
 
+// check for success...
 if($mailbox === false) {
-    echo rightnow('log') . " - logcollector.php: Failed to connect to server\n";
+    echo rightnow('log') . " - logcollector.php: Failed connection to server\n";
     exit(0);
 }
 
 // find out how many messages there are in the INBOX
+// TODO: determine worth of $msgqty, remove is worthless
 $msgqty = imap_num_msg($mailbox); 
 if($msgqty === false) {
     echo rightnow('log') . " - logcollector.php: error calling imap_num_msg\n";
