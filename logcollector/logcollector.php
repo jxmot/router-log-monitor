@@ -28,18 +28,20 @@ if(defined('_READONLY') &&  _READONLY === true) {
 }
 
 $imapsrv = "{$accnt->host}:{$accnt->port}/imap/ssl";
+$mbox = "{{$imapsrv}}INBOX{$accnt->folder}";
+
 // NOTE: the last arg is a "flag" - 
 //      OP_READONLY = can only read, and cannot set flags!!
 //       CL_EXPUNGE = expunges on close, but it is being done here explicitly
 if(defined('_READONLY') && _READONLY === true) {
-    $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword, OP_READONLY);
+    $mailbox = imap_open($mbox, $accnt->login, $accnt->pword, OP_READONLY);
 } else {
     if((defined('_READONLY') && _READONLY === false) &&
        (defined('_EXPUNGE') && _EXPUNGE === true) &&
        (defined('_EXPWHERE') && _EXPWHERE === 'onclose')) {
-        $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword, CL_EXPUNGE);   
+        $mailbox = imap_open($mbox, $accnt->login, $accnt->pword, CL_EXPUNGE);   
     } else {
-        $mailbox = imap_open("{{$imapsrv}}INBOX", $accnt->login, $accnt->pword);
+        $mailbox = imap_open($mbox, $accnt->login, $accnt->pword);
     }
 }
 
