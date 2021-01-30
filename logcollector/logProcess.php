@@ -6,31 +6,39 @@
 require_once './writefile.php'; // modified
 
 function logProcess($mnum) {
-
     $body = imap_body(_MAILBOX,$mnum);
     if($body === null) {
         echo rightnow('log') . " - logProcess.php: ain't got no body\n";
         exit(0);
     }
+    $body = strip_tags(str_replace("\r\n","\n",$body));
+
 //    echo rightnow('log') . "body = \n{$body}\n\n";
 
-    // https://codingreflections.com/php-parse-html/
-    $dom = new DomDocument();
-    // need the @, otherwise PHP will complain
-    @$dom->loadHTML($body);
-    $allpre = $dom->getElementsByTagName('pre');
+//    // https://codingreflections.com/php-parse-html/
+//    $dom = new DomDocument();
+//    // need the @, otherwise PHP will complain
+//    @$dom->loadHTML($body);
+//    $allpre = $dom->getElementsByTagName('pre');
+//
+//    // remove empty lines at the end of -
+//    // $allpre[0]->textContent
+//    $lines = explode("\n", $allpre[0]->textContent);
 
-    // remove empty lines at the end of -
-    // $allpre[0]->textContent
-    $lines = explode("\n", $allpre[0]->textContent);
+    $lines = explode("\n", $body);
+
     //      loop this - 
     do {
         $lqty = count($lines);
-        if(strlen($lines[$lqty - 1]) < 5) {
-            array_pop($lines);
-            $dopop = true;
-        } else {
+        if($lqty <= 0) {
             $dopop = false;
+        } else {
+            if(strlen($lines[$lqty - 1]) < 5) {
+                array_pop($lines);
+                $dopop = true;
+            } else {
+                $dopop = false;
+            }
         }
     } while($dopop === true);
 
