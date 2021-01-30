@@ -15,6 +15,7 @@
                 'json' - for use in JSON formatted files
         $created = a date/time string to be used in place of the 
                    current date & time
+        $add = see comment below in function body
 
     Returns:
         String, the date and time formatted as requested
