@@ -68,6 +68,8 @@ module.exports = (function(pevts, _log)  {
         host = '';
         mac = '';
         message = '';
+        logfile = '';
+        logentry = '';
     };
 
     function logToDB(wfile) {
@@ -98,6 +100,9 @@ module.exports = (function(pevts, _log)  {
                 //      next line
                 logarr.forEach((entry, idx) => {
                     var newrow = parseEntry(entry, idx);
+                    // for debugging defective logs
+                    newrow.logfile = wfile.filename;
+                    // write the data...
                     dbobj.writeRow('rlmonitor.logentry', newrow, (result, target, data) => {
                         if(result === true) {
                             if(!logmute) log(` - logToDB(): success - ${target} ${JSON.stringify(data)}`);
@@ -117,7 +122,8 @@ module.exports = (function(pevts, _log)  {
         var entry  = tmp.replace("\r",'');
 
         var entObj = new LogEntry;
-
+        // for debugging defective logs
+        entObj.logentry = entry;
         // build the fields and add them to the entry object
         entObj.tstamp = getTimestamp(entry);
         // get the action identifiers
