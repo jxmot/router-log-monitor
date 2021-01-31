@@ -1,3 +1,4 @@
 {
-"outpath":"../logoutput/"
+"outpath":"../logoutput/",
+"delunk":false
 }
