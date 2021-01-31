@@ -31,7 +31,7 @@ function logProcess($mnum, $hdate = null) {
     } while($dopop === true);
 
     if($hdate !== null) {
-        $filestamp = rightnow('name',$hdate,true);
+        $filestamp = rightnow('name',$hdate,false);
         // it seems that not all log files will have 
         // the "email sent to" in the last line. only
         // remove the line if it contains that string.
