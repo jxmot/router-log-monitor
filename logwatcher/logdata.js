@@ -76,7 +76,7 @@ module.exports = (function(pevts, _log)  {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
+                    log(` - logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
                     // emit error?
                 }
                 return;
