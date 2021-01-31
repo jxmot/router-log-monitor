@@ -9,6 +9,9 @@ require_once './rightnow.php';  // modified
 // load the application options
 $appopt = json_decode(file_get_contents('./appoptions.json'));
 define('_OUTPATH', $appopt->outpath);
+// enable/disable the deletion of messages that do not have
+// the correct subject line
+define('_DELUNKOWN',$appopt->delunk);
 // load the IMAP connection parameters
 $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
 // true or false
