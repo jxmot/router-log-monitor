@@ -101,7 +101,7 @@ for($num = 1;$num <= $mcount; $num++) {
     echoit(rightnow('log') . " - a = {$msghdr->Answered}  D = {$msghdr->Deleted}  d = {$msghdr->Draft}\n");
 
     if($extraout === true) {
-        print_r(imap_headerinfo(_MAILBOX,$mcount));
+        print_r(imap_headerinfo(_MAILBOX,$num));
         break;
     }
 
