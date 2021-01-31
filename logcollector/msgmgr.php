@@ -24,7 +24,7 @@ $mcount = imap_num_msg(_MAILBOX);
 for($num = 1;$num <= $mcount; $num++) {
     $msghdr = isLogMsg($num, true);
     if($msghdr !== false) {
-        logProcess($num);
+        logProcess($num, $msghdr->date);
         if(defined('_READONLY') &&  _READONLY === false) {
             if(defined('_MSGDISPOSE') &&  _MSGDISPOSE === 'seen') {
                 imap_setflag_full(_MAILBOX, imap_uid(_MAILBOX,$num), "\\Seen", ST_UID);
