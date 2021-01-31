@@ -34,7 +34,7 @@ module.exports = (function(wevts, _log) {
 
     // contains watchit objects that are used for
     // synchronizing the file create and delete events.
-    var fqueue = {};
+    var wqueue = {};
 
     /*
         https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_watchfile_filename_options_listener
@@ -57,13 +57,13 @@ module.exports = (function(wevts, _log) {
             // an error occurred...
             case 'error':
                 // anounce it...
-                log(`dirwatch event: error ${filename}  ${fqueue.length}`);
+                log(`dirwatch event: error ${filename}  ${wqueue.length}`);
                 // cancel all timeouts
-                fqueue.forEach((item, index) => {
+                wqueue.forEach((item, index) => {
                     clearTimeout(item.toid);
                 });
                 // clear the queue
-                fqueue = {};
+                wqueue = {};
                 break;
 
             // this is the first event type received when a 
@@ -71,9 +71,9 @@ module.exports = (function(wevts, _log) {
             case 'rename':
                 // save some info in the queue...
                 watchit.filename = filename;
-                fqueue[filename] = JSON.parse(JSON.stringify(watchit));
+                wqueue[filename] = JSON.parse(JSON.stringify(watchit));
                 // if the timer expires then the file was deleted.
-                fqueue[filename].toid = setTimeout(renTO, 500, filename);
+                wqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
             // this is the second event type received when a 
@@ -81,21 +81,21 @@ module.exports = (function(wevts, _log) {
             case 'change':
                 // there can be a 'change' event with out a 
                 // preceding 'rename'
-                if(fqueue[filename] !== undefined) {
+                if(wqueue[filename] !== undefined) {
                     // the file is in the queue, cancel the
                     // timeout.
-                    clearTimeout(fqueue[filename].toid);
-                    fqueue[filename].toid = null;
-                    if(!logmute) log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+                    clearTimeout(wqueue[filename].toid);
+                    wqueue[filename].toid = null;
+                    if(!logmute) log(`dirwatch event: stats on - ${wqueue[filename].path}${filename}`);
 // TODO: try/catch ?
                     // let's verify this is a file creation event
                     // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_class_fs_stats
-                    var stats = fs.statSync(`${fqueue[filename].path}${filename}`);
+                    var stats = fs.statSync(`${wqueue[filename].path}${filename}`);
                     if(stats.isFile() === true) {
-                        log(`dirwatch event: ${fqueue[filename].path}${filename} @ ${stats.size}b was created`);
+                        log(`dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
                         wevts.emit('FILE_CREATED', 
                                    {
-                                        path:fqueue[filename].path,
+                                        path:wqueue[filename].path,
                                         filename:filename,
                                         size:stats.size
                                    });
@@ -103,7 +103,7 @@ module.exports = (function(wevts, _log) {
                         if(!logmute) log(`dirwatch event: ${filename} is not a file`);
                     }
                     // remove this entry from the queue 
-                    delete fqueue[filename];
+                    delete wqueue[filename];
                 } else {
                     if(!logmute) log(`dirwatch event: secondary ${evtype} ${filename}`);
                 }
@@ -115,18 +115,18 @@ module.exports = (function(wevts, _log) {
         renTO() - rename time out handler
     */
     function renTO(fname) {
-        if(fqueue[fname] !== undefined) {
+        if(wqueue[fname] !== undefined) {
             try {
-                fs.accessSync(`${fqueue[fname].path}${fname}`, fs.constants.F_OK);
+                fs.accessSync(`${wqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`renTO(): ${fqueue[fname].path}${fname} was deleted`);
-                    wevts.emit('FILE_DELETED', {path:fqueue[fname].path,filename:fname});
+                    log(`renTO(): ${wqueue[fname].path}${fname} was deleted`);
+                    wevts.emit('FILE_DELETED', {path:wqueue[fname].path,filename:fname});
                 }
             }
-            delete fqueue[fname];
+            delete wqueue[fname];
         } else {
-            log(`renTO(): undefined - fqueue[${fname}]`);
+            log(`renTO(): undefined - wqueue[${fname}]`);
         }
     };
 
