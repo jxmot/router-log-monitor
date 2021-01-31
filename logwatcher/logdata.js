@@ -222,7 +222,7 @@ module.exports = (function(pevts, _log)  {
 // [Admin login] from source 192.168.0.7, Wednesday, Jan 13,2021 10:10:14
                 var tmp = entry.split(', ');
                 tmp = tmp[0].split('source ');
-                raparms.ip = tmp[1].replace(',','');
+                raparms.ip = tmp[1];
                 break;
             case constants.DYN_DNS:
 // [Dynamic DNS] host name its.worse-than.tv registration successful, Friday, Jan 22,2021 15:20:46
@@ -233,7 +233,7 @@ module.exports = (function(pevts, _log)  {
 // [Internet connected] IP address: 73.176.4.88, Friday, Jan 22,2021 17:51:54
                 var tmp = entry.split(', ');
                 tmp = tmp[0].split(': ');
-                raparms.ip = tmp[1].replace(',','');
+                raparms.ip = tmp[1];
                 break;
             case constants.INET_DCONN:
 // [Internet disconnected] Thursday, Nov 07,2019 20:20:00
