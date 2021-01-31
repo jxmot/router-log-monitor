@@ -40,6 +40,7 @@ module.exports = (function(pevts, _log)  {
         clearTables();
     });
 
+    var logmute = true;
     log(`- init`);
 
     logdata.process = function(wfile) {
@@ -99,9 +100,9 @@ module.exports = (function(pevts, _log)  {
                     var newrow = parseEntry(entry, idx);
                     dbobj.writeRow('rlmonitor.logentry', newrow, (result, target, data) => {
                         if(result === true) {
-                            log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                            if(!logmute) log(` - logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         } else {
-                            log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                            log(` - logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
                         }
                     });
                 });
@@ -127,7 +128,7 @@ module.exports = (function(pevts, _log)  {
         // 
         entObj = Object.assign(entObj, parms);
         // return the entry object
-        log(`parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+        if(!logmute) log(` - parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         return entObj;
     };
 
@@ -144,7 +145,7 @@ module.exports = (function(pevts, _log)  {
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        log(`getTimestamp(): ${todstr} ${tstamp}`);
+        if(!logmute) log(` - getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
@@ -162,7 +163,7 @@ module.exports = (function(pevts, _log)  {
                 }
             }
         }
-        log(`getAction(): ${JSON.stringify(actID)}`);
+        if(!logmute) log(` - getAction(): ${JSON.stringify(actID)}`);
         return actID;
     };
 
