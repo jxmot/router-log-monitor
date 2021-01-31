@@ -90,7 +90,7 @@ module.exports = (function(pevts, _log)  {
             if(rdqty === wfile.size) {
                 // body string to array of lines
                 var logstr = buff.toString();
-                var logarr = logstr.split("\r\n");
+                var logarr = logstr.split("\n");
                 // interate through array of lines - 
                 //      parse each line into object
                 //      write object to db
