@@ -12,9 +12,10 @@ const procs_evts = new EventEmitter();
 // Run-Time Logging
 var Log = require('./utils/Log.js');
 var logOut = new Log('logs/watcher', 'log', 262144);
+var logenable = true;
 // pass this function around to the other modules
 function _log(payload) {
-    logOut.writeTS(payload);
+    if(logenable === true) logOut.writeTS(payload);
 };
 
 function log(payload) {
@@ -56,8 +57,7 @@ function openDone(dbopen, errObj) {
     // did we have success?
     if(dbopen === false) {
         // no, log errors and end the transaction
-        log('ERROR : openDone() errObj = ');
-        log(JSON.stringify(errObj));
+        log(`ERROR : openDone() errObj = ${JSON.stringify(errObj)}`);
     } else {
         // do some database stuff
         log('openDone() - success! ready for some database stuff');
@@ -72,5 +72,25 @@ const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
 // Generate static reports
 const reports = require('./reports.js')(procs_evts, _log);
 
-// 
-database.openDB(openDone);
+function onDatabaseError(err) {
+    log(`onDatabaseError() err = ${err}`);
+    if(err.includes('The server closed the connection') === true) {
+        procs_evts.emit('DB_CLOSED', {state:false,db:null});
+        log(`onDatabaseError() sent DB_CLOSED`);
+        setTimeout(openDB,2500); 
+    } else {
+        console.log("*******************************\n");
+        console.log(`onDatabaseError() err = ${err}`);
+        console.log("*******************************\n");
+        process.exit(1);
+    }
+};
+
+// Open the database
+// NOTE: MySQL will keep an inactive connection 
+// open for only 8 hours. Then it will close it.
+function openDB() {
+    database.openDB(openDone, onDatabaseError);
+};
+
+openDB();

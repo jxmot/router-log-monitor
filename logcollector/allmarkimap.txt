@@ -1,0 +1,31 @@
+
+Usage:
+
+    >php allmarkimap.php [-x] [-d -s] [-D -S]
+
+Where:
+    -x      debug mode, no changes made to the mailbox and
+            there is some stuff sent to the console
+
+    -v      verbose mode, tells you more than you probably
+            want to know
+
+    The following applies to all messages that are in
+    the mailbox specified in ./imapaccnt.json.
+
+    -d      all deleted messages, unmark for deletion
+    -u      all seen messages, mark as unseen
+
+    -D      mark all messages as deleted
+    -s      mark all messages as seen
+
+Examples:
+
+    Show this usage information:
+    >php allundelread.php 
+
+    Enable debug mode
+    >php allundelread.php -x
+
+
+

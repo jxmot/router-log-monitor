@@ -34,16 +34,24 @@ module.exports = (function(pevts, _log)  {
         }
     });
 
+    pevts.on('DB_CLOSED', (_dbobj) => {
+        dbopen = false;
+        dbobj = {};
+        clearTables();
+    });
+
     log(`- init`);
 
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`- process(): database not open`);
+            dbobj = {};
         } else {
             // parse the log data and write to database...
             log(`- process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
             // announce completion...
+            console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
         }
         return dbopen;
@@ -93,12 +101,10 @@ module.exports = (function(pevts, _log)  {
                         if(result === true) {
                             log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         } else {
-                             log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                            log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
                         }
                     });
                 });
-    
-                // send LOG_PROCESSED
             }
         } else {
             log(`logToDB(): undefined - wfile`);
@@ -190,6 +196,9 @@ module.exports = (function(pevts, _log)  {
                 var tmp = entry.split('IP: (');
                 tmp = tmp[1].split(')] ');
                 actparms.ip = tmp[0];
+                // TODO: look up IP in the known table, if found 
+                // check the watch flag. if true then update 
+                // the ip stats table
                 break;
             case constants.RU:
 // [Initialized, firmware version: V1.0.1.52_1.0.36] Friday, Oct 30,2020 15:27:37
@@ -270,6 +279,7 @@ module.exports = (function(pevts, _log)  {
 
     function readActions() {
         dbobj.readAllRows('rlmonitor.actions', (table, result) => {
+            actions = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actions.push(JSON.parse(JSON.stringify(row)));
@@ -287,6 +297,7 @@ module.exports = (function(pevts, _log)  {
 
     function readActionCats() {
         dbobj.readAllRows('rlmonitor.actioncats', (table, result) => {
+            actioncats = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actioncats.push(JSON.parse(JSON.stringify(row)));
@@ -304,6 +315,7 @@ module.exports = (function(pevts, _log)  {
 
     function readKnown() {
         dbobj.readAllRows('rlmonitor.known', (table, result) => {
+            known = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     known.push(JSON.parse(JSON.stringify(row)));
@@ -314,6 +326,12 @@ module.exports = (function(pevts, _log)  {
             }
         });
     };
+
+    function clearTables() {
+        actions = [];
+        actioncats = [];
+        known = [];
+    }
 
     return logdata;
 });
