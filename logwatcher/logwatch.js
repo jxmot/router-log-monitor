@@ -13,6 +13,7 @@ module.exports = (function(wevts, _log) {
         _log(`${scriptName} ${payload}`);
     };
 
+    var logmute = true;
     log(`- init`);
 
     // configure the path to the watched folder
@@ -43,7 +44,7 @@ module.exports = (function(wevts, _log) {
     var dirwatch = fs.watch(opt.path, (evtype, filename) => {
         // could be either 'rename' or 'change'. new file event and delete
         // also generally emit 'rename'
-        log(`dirwatch event: ${evtype} file: ${filename}`);
+        if(!logmute) log(`dirwatch event: ${evtype} file: ${filename}`);
 
         // only used for debugging
         watchit.now = Date.now();
@@ -71,7 +72,7 @@ module.exports = (function(wevts, _log) {
                 // save some info in the queue...
                 watchit.filename = filename;
                 fqueue[filename] = JSON.parse(JSON.stringify(watchit));
-                // if the time expires then the file was deleted.
+                // if the timer expires then the file was deleted.
                 fqueue[filename].toid = setTimeout(renTO, 500, filename);
                 break;
 
@@ -85,11 +86,11 @@ module.exports = (function(wevts, _log) {
                     // timeout.
                     clearTimeout(fqueue[filename].toid);
                     fqueue[filename].toid = null;
-                    log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
+                    if(!logmute) log(`dirwatch event: stats on - ${fqueue[filename].path}${filename}`);
 // TODO: try/catch ?
                     // let's verify this is a file creation event
                     // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_class_fs_stats
-                    var stats = fs.statSync(`${fqueue[filename].path}${filename}`)
+                    var stats = fs.statSync(`${fqueue[filename].path}${filename}`);
                     if(stats.isFile() === true) {
                         log(`dirwatch event: ${fqueue[filename].path}${filename} @ ${stats.size}b was created`);
                         wevts.emit('FILE_CREATED', 
@@ -99,12 +100,12 @@ module.exports = (function(wevts, _log) {
                                         size:stats.size
                                    });
                     } else {
-                        log(`dirwatch event: ${filename} is not a file`);
+                        if(!logmute) log(`dirwatch event: ${filename} is not a file`);
                     }
                     // remove this entry from the queue 
                     delete fqueue[filename];
                 } else {
-                    log(`dirwatch event: secondary ${evtype} ${filename}`);
+                    if(!logmute) log(`dirwatch event: secondary ${evtype} ${filename}`);
                 }
                 break;
         };
