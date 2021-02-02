@@ -21,17 +21,7 @@ module.exports = (function(_log) {
     var initconn;
     // A row counter used during initialization
     var initRowCount;
-    // For logging, defaults to console.log()
-//    var log = console.log;
-//    /* ******************************************************************** */
-//    /*
-//        Optionally change where log output goes.
-//    */
-//    database.setLog = function(newLog){
-//        if(newLog !== undefined) log = newLog;
-//        else log = console.log;
-//    };
-    
+
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
