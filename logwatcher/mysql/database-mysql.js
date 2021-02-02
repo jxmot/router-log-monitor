@@ -142,8 +142,13 @@ module.exports = (function(_log) {
             connection.query('insert into '+table+' set ?', record, function(error, result) {
                 if(error) {
                     log(`database.writeRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _writeCallBack(false, table, record);
-                } else _writeCallBack(true, table, record);
+                    _writeCallBack(false, table, record, null);
+                } else {
+                    // If you are inserting a row into a table with an auto 
+                    // increment primary key, you can retrieve the insert id
+                    // with - results.insertId
+                    _writeCallBack(true, table, record, results.insertId);
+                }
             });
         } else {
             log('database.writeRow() - ERROR database not open');
