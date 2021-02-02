@@ -29,7 +29,10 @@ module.exports = (function(_log) {
         _log(`${scriptName} ${payload}`);
     };
 
-
+    // gives module user access to config
+    database.getDBCcfg = function() {
+        return dbcfg;
+    };
 
     /*
         Open the Connection to the Database
