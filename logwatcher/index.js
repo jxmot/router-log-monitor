@@ -76,7 +76,7 @@ function onDatabaseError(err) {
     log(`onDatabaseError() err = ${err}`);
     if(err.includes('The server closed the connection') === true) {
         procs_evts.emit('DB_CLOSED', {state:false,db:null});
-        log(`onDatabaseError() sent DB_CLOSED`);
+        log(`onDatabaseError() sent DB_CLOSED, reopening database...`);
         setTimeout(openDB,2500); 
     } else {
         console.log("*******************************\n");
