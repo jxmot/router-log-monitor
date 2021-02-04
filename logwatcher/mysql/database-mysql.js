@@ -146,13 +146,13 @@ module.exports = (function(_log) {
                 } else {
                     // If you are inserting a row into a table with an auto 
                     // increment primary key, you can retrieve the insert id
-                    // with - results.insertId
-                    _writeCallBack(true, table, record, results.insertId);
+                    // with - result.insertId
+                    _writeCallBack(true, table, record, result.insertId);
                 }
             });
         } else {
             log('database.writeRow() - ERROR database not open');
-            _writeCallBack(false, table, record);
+            _writeCallBack(false, table, record, null);
         }
     };
 
@@ -256,12 +256,12 @@ module.exports = (function(_log) {
             connection.query('delete from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
                     log(`database.deleteRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _deleteCallBack(table, false, 0);
-                } else _deleteCallBack(table, true, result.affectedRows);
+                    _deleteCallBack(false, table, error);
+                } else _deleteCallBack(true, table, result);
             });
         } else {
             log('database.deleteRow() - ERROR - database not open');
-            _deleteCallBack(table, false, 0);
+            _deleteCallBack(false, table, {error:{message:"database not open"}});
         }
     };
 
