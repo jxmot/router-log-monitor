@@ -5,7 +5,7 @@
 */
 require_once './writefile.php'; // modified
 
-function logProcess($mnum) {
+function logProcess($mnum, $hdate = null) {
     $body = imap_body(_MAILBOX,$mnum);
     if($body === null) {
         echo rightnow('log') . " - logProcess.php: ain't got no body\n";
@@ -30,16 +30,28 @@ function logProcess($mnum) {
         }
     } while($dopop === true);
 
-    // read last line
-    // [email sent to: someone@somewhere.net] Friday, Jan 22,2021 00:01:01
-    $lastline = $lines[count($lines) - 1];
-    // get the date/time from it 
-    $splitline = preg_split("/\] /", $lastline);
-    echo rightnow('log') . " - splitline = {$splitline[1]}\n";
-    $senttime = $splitline[1];
-    $filestamp = rightnow('name',$senttime,true);
-    // remove the last line
-    array_pop($lines);
+    if($hdate !== null) {
+        $filestamp = rightnow('name',$hdate,false);
+        // it seems that not all log files will have 
+        // the "email sent to" in the last line. only
+        // remove the line if it contains that string.
+        if(strpos($lines[count($lines) - 1], 'email sent to') !== false) {
+            // remove the last line
+            array_pop($lines);
+        }
+    } else {
+        // read last line
+        // [email sent to: someone@somewhere.net] Friday, Jan 22,2021 00:01:01
+        $lastline = $lines[count($lines) - 1];
+        // get the date/time from it 
+        $splitline = preg_split("/\] /", $lastline);
+        echo rightnow('log') . " - splitline = {$splitline[1]}\n";
+        $senttime = $splitline[1];
+        $filestamp = rightnow('name',$senttime,true);
+        // remove the last line
+        array_pop($lines);
+    }
+
     // the log data is arranged new -> old, this 
     // would be the spot to reverse it to old -> new
     $neworder = array_reverse($lines);

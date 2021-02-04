@@ -59,7 +59,10 @@ create table rlmonitor.logentry (
     toport varchar(6) default null,
     host varchar(128) default null,
     mac varchar(20) default null,
-    message varchar(128) default null
+    message varchar(128) default null,
+-- temporary
+    logfile varchar(64) default null,
+    logentry varchar(512) default null
 );
 
 

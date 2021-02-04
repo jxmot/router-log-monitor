@@ -6,6 +6,8 @@
 require_once('./isLogMsg.php');
 require_once('./logProcess.php');
 
+if(!defined('_DELUNKOWN')) define('_DELUNKOWN', false);
+
 // safety check, make sure we are connected
 if(!defined('_IMAPSRV') || !defined('_MAILBOX')) {
     echo rightnow('log') . " - msgmgr.php: not connected\n";
@@ -22,9 +24,9 @@ if((defined('_READONLY') && _READONLY === false) &&
 
 $mcount = imap_num_msg(_MAILBOX);
 for($num = 1;$num <= $mcount; $num++) {
-    $msghdr = isLogMsg($num, true);
+    $msghdr = isLogMsg($num, _DELUNKOWN);
     if($msghdr !== false) {
-        logProcess($num);
+        logProcess($num, $msghdr->date);
         if(defined('_READONLY') &&  _READONLY === false) {
             if(defined('_MSGDISPOSE') &&  _MSGDISPOSE === 'seen') {
                 imap_setflag_full(_MAILBOX, imap_uid(_MAILBOX,$num), "\\Seen", ST_UID);

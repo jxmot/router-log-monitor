@@ -20,6 +20,7 @@ $ret = false;
         if(strpos($header->subject, _LOGSUBJ) === false) {
             $ret = false;
             if($rmv === true) imap_delete(_MAILBOX,$msgnum);
+            else imap_setflag_full(_MAILBOX, imap_uid(_MAILBOX,$msgnum), "\\Seen \\Flagged", ST_UID);
         } else {
             $ret = $header;
         }

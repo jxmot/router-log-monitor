@@ -21,17 +21,7 @@ module.exports = (function(_log) {
     var initconn;
     // A row counter used during initialization
     var initRowCount;
-    // For logging, defaults to console.log()
-//    var log = console.log;
-//    /* ******************************************************************** */
-//    /*
-//        Optionally change where log output goes.
-//    */
-//    database.setLog = function(newLog){
-//        if(newLog !== undefined) log = newLog;
-//        else log = console.log;
-//    };
-    
+
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
@@ -39,7 +29,10 @@ module.exports = (function(_log) {
         _log(`${scriptName} ${payload}`);
     };
 
-
+    // gives module user access to config
+    database.getDBCcfg = function() {
+        return dbcfg;
+    };
 
     /*
         Open the Connection to the Database
@@ -149,12 +142,17 @@ module.exports = (function(_log) {
             connection.query('insert into '+table+' set ?', record, function(error, result) {
                 if(error) {
                     log(`database.writeRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _writeCallBack(false, table, record);
-                } else _writeCallBack(true, table, record);
+                    _writeCallBack(false, table, record, null);
+                } else {
+                    // If you are inserting a row into a table with an auto 
+                    // increment primary key, you can retrieve the insert id
+                    // with - result.insertId
+                    _writeCallBack(true, table, record, result.insertId);
+                }
             });
         } else {
             log('database.writeRow() - ERROR database not open');
-            _writeCallBack(false, table, record);
+            _writeCallBack(false, table, record, null);
         }
     };
 
@@ -258,12 +256,12 @@ module.exports = (function(_log) {
             connection.query('delete from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
                     log(`database.deleteRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _deleteCallBack(table, false, 0);
-                } else _deleteCallBack(table, true, result.affectedRows);
+                    _deleteCallBack(false, table, error);
+                } else _deleteCallBack(true, table, result);
             });
         } else {
             log('database.deleteRow() - ERROR - database not open');
-            _deleteCallBack(table, false, 0);
+            _deleteCallBack(false, table, {error:{message:"database not open"}});
         }
     };
 

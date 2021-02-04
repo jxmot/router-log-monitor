@@ -20,12 +20,14 @@ module.exports = (function(pevts, _log)  {
 
     var dbopen = false;
     var dbobj = {};
+    var dbcfg = {};
 
     pevts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
             dbopen = true;
             dbobj = _dbobj.db;
             log(`- DB_OPEN: success`);
+            dbcfg = dbobj.getDBCcfg();
             readActions();
             readActionCats();
             readKnown();
@@ -40,6 +42,7 @@ module.exports = (function(pevts, _log)  {
         clearTables();
     });
 
+    var logmute = true;
     log(`- init`);
 
     logdata.process = function(wfile) {
@@ -51,7 +54,7 @@ module.exports = (function(pevts, _log)  {
             log(`- process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
             // announce completion...
-            console.log("LOG_PROCESSED DONE DONE DONE\n");
+            //console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
         }
         return dbopen;
@@ -67,6 +70,8 @@ module.exports = (function(pevts, _log)  {
         host = '';
         mac = '';
         message = '';
+        logfile = '';
+        logentry = '';
     };
 
     function logToDB(wfile) {
@@ -76,7 +81,7 @@ module.exports = (function(pevts, _log)  {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
+                    log(` - logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
                     // emit error?
                 }
                 return;
@@ -90,18 +95,42 @@ module.exports = (function(pevts, _log)  {
             if(rdqty === wfile.size) {
                 // body string to array of lines
                 var logstr = buff.toString();
-                var logarr = logstr.split("\r\n");
+                var logarr = logstr.split("\n");
                 // interate through array of lines - 
                 //      parse each line into object
                 //      write object to db
                 //      next line
                 logarr.forEach((entry, idx) => {
                     var newrow = parseEntry(entry, idx);
-                    dbobj.writeRow('rlmonitor.logentry', newrow, (result, target, data) => {
+                    // for debugging defective logs
+                    newrow.logfile = wfile.filename;
+                    // write the data...
+                    // the log entry table has an auto increment primary key, 
+                    // it is called "entrynumb". After the record is written
+                    // its value is in "insertId".
+                    //
+                    // 
+                    var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
+                    dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
                         if(result === true) {
-                            log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                            if(!logmute) log(` - logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                            // are "bad" records to be handled?
+                            if(wfile.movebad === true) {
+                                // if the time stamp is BEFORE the "minimum" time 
+                                // stamp then it's a bad record and won't be usable.
+                                if(wfile.mintstamp > data.tstamp) {
+                                    log(` - logToDB(): BAD timestamp - ${target} ${insertId} ${data.tstamp}`);
+                                    // the table we're using has an auto increment primary
+                                    // ID. And we call it 'entrynumb' in the table. After
+                                    // the row is written we will merge it with the row
+                                    // data and write that to the table used for storing
+                                    // "bad" entries.
+                                    var badrec = Object.assign(data, {entrynumb:insertId});
+                                    saveBadEntry(badrec, wfile);
+                                }
+                            }
                         } else {
-                            log(`logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                            log(` - logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
                         }
                     });
                 });
@@ -111,12 +140,36 @@ module.exports = (function(pevts, _log)  {
         }
     };
 
+    function saveBadEntry(badrec, wfile) {
+        // write the data...
+        var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
+        dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
+            if(result === true) {
+                log(`saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
+                if(wfile.delbad === true) {
+                    // remove bad record from log entry table
+                    var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
+                    dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (result, target, affected) => {
+                        if(result === true) {
+                            log(`saveBadEntry(): deleted bad entry in ${badplace}`);
+                        } else {
+                            log(`saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
+                        }
+                    });
+                }
+            } else {
+                log(`saveBadEntry(): FAILED to save bad entry in ${dest}`);
+            }
+        });
+    };
+
     function parseEntry(_entry, idx) {
         var tmp    = _entry.replace("\n",'');
         var entry  = tmp.replace("\r",'');
 
         var entObj = new LogEntry;
-
+        // for debugging defective logs
+        entObj.logentry = entry;
         // build the fields and add them to the entry object
         entObj.tstamp = getTimestamp(entry);
         // get the action identifiers
@@ -127,7 +180,7 @@ module.exports = (function(pevts, _log)  {
         // 
         entObj = Object.assign(entObj, parms);
         // return the entry object
-        log(`parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+        if(!logmute) log(` - parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         return entObj;
     };
 
@@ -144,7 +197,7 @@ module.exports = (function(pevts, _log)  {
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        log(`getTimestamp(): ${todstr} ${tstamp}`);
+        if(!logmute) log(` - getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
@@ -162,7 +215,7 @@ module.exports = (function(pevts, _log)  {
                 }
             }
         }
-        log(`getAction(): ${JSON.stringify(actID)}`);
+        if(!logmute) log(` - getAction(): ${JSON.stringify(actID)}`);
         return actID;
     };
 
@@ -221,7 +274,7 @@ module.exports = (function(pevts, _log)  {
 // [Admin login] from source 192.168.0.7, Wednesday, Jan 13,2021 10:10:14
                 var tmp = entry.split(', ');
                 tmp = tmp[0].split('source ');
-                raparms.ip = tmp[1].replace(',','');
+                raparms.ip = tmp[1];
                 break;
             case constants.DYN_DNS:
 // [Dynamic DNS] host name its.worse-than.tv registration successful, Friday, Jan 22,2021 15:20:46
@@ -232,7 +285,7 @@ module.exports = (function(pevts, _log)  {
 // [Internet connected] IP address: 73.176.4.88, Friday, Jan 22,2021 17:51:54
                 var tmp = entry.split(', ');
                 tmp = tmp[0].split(': ');
-                raparms.ip = tmp[1].replace(',','');
+                raparms.ip = tmp[1];
                 break;
             case constants.INET_DCONN:
 // [Internet disconnected] Thursday, Nov 07,2019 20:20:00
