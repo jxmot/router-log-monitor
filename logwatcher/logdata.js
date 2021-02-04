@@ -105,9 +105,30 @@ module.exports = (function(pevts, _log)  {
                     // for debugging defective logs
                     newrow.logfile = wfile.filename;
                     // write the data...
-                    dbobj.writeRow('rlmonitor.logentry', newrow, (result, target, data) => {
+                    // the log entry table has an auto increment primary key, 
+                    // it is called "entrynumb". After the record is written
+                    // its value is in "insertId".
+                    //
+                    // 
+                    var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
+                    dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
                         if(result === true) {
                             if(!logmute) log(` - logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                            // are "bad" records to be handled?
+                            if(wfile.movebad === true) {
+                                // if the time stamp is BEFORE the "minimum" time 
+                                // stamp then it's a bad record and won't be usable.
+                                if(wfile.mintstamp > data.tstamp) {
+                                    log(` - logToDB(): BAD timestamp - ${target} ${insertId} ${data.tstamp}`);
+                                    // the table we're using has an auto increment primary
+                                    // ID. And we call it 'entrynumb' in the table. After
+                                    // the row is written we will merge it with the row
+                                    // data and write that to the table used for storing
+                                    // "bad" entries.
+                                    var badrec = Object.assign(data, {entrynumb:insertId});
+                                    saveBadEntry(badrec, wfile);
+                                }
+                            }
                         } else {
                             log(` - logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
                         }
@@ -117,6 +138,29 @@ module.exports = (function(pevts, _log)  {
         } else {
             log(`logToDB(): undefined - wfile`);
         }
+    };
+
+    function saveBadEntry(badrec, wfile) {
+        // write the data...
+        var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
+        dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
+            if(result === true) {
+                log(`saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
+                if(wfile.delbad === true) {
+                    // remove bad record from log entry table
+                    var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
+                    dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (result, target, affected) => {
+                        if(result === true) {
+                            log(`saveBadEntry(): deleted bad entry in ${badplace}`);
+                        } else {
+                            log(`saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
+                        }
+                    });
+                }
+            } else {
+                log(`saveBadEntry(): FAILED to save bad entry in ${dest}`);
+            }
+        });
     };
 
     function parseEntry(_entry, idx) {
