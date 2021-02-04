@@ -45,6 +45,8 @@ module.exports = (function(pevts, _log)  {
     var logmute = true;
     log(`- init`);
 
+    var badcount = 0;
+
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`- process(): database not open`);
@@ -56,7 +58,7 @@ module.exports = (function(pevts, _log)  {
             // announce completion...
             //console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
-            log(`- process(): ${badcount} log entries found in ${wfile.path}${wfile.filename}`);
+            log(`- process(): ${badcount} BAD log entries found in ${wfile.path}${wfile.filename}`);
             badcount = 0;
         }
         return dbopen;
@@ -75,8 +77,6 @@ module.exports = (function(pevts, _log)  {
         logfile = '';
         logentry = '';
     };
-
-    var badcount = 0;
 
     function logToDB(wfile) {
         // make sure the file is valid
