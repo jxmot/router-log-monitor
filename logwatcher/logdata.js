@@ -20,12 +20,14 @@ module.exports = (function(pevts, _log)  {
 
     var dbopen = false;
     var dbobj = {};
+    var dbcfg = {};
 
     pevts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
             dbopen = true;
             dbobj = _dbobj.db;
             log(`- DB_OPEN: success`);
+            dbcfg = dbobj.getDBCcfg();
             readActions();
             readActionCats();
             readKnown();
