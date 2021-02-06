@@ -42,7 +42,7 @@ module.exports = (function(pevts, _log)  {
         clearTables();
     });
 
-    var logmute = true;
+    var logmute = false;
     log(`- init`);
 
     var badcount = 0;
@@ -81,29 +81,33 @@ module.exports = (function(pevts, _log)  {
     function logToDB(wfile) {
         // make sure the file is valid
         if(wfile !== undefined) {
+            if(!logmute) log(`- logToDB(): checking ${wfile.path}${wfile.filename}`);
             try {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(` - logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
+                    log(`- logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
                     // emit error?
                 }
                 return;
             }
             // valid, open and read it 
             // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_opensync_path_flags_mode
-            var fd = fs.openSync(wfile.path+wfile.filename, 'r');
-            var buff = Buffer.alloc(wfile.size);
-            var rdqty = fs.readSync(fd, buff);
-            fs.closeSync(fd);
-            if(rdqty === wfile.size) {
+            if(!logmute) log(`- logToDB(): opening ${wfile.path}${wfile.filename}`);
+            // Was using fs.readSync() but there was a bug. For info can be found
+            // at - https://github.com/jxmot/nodejs-readSync-bug
+            var logstr = fs.readFileSync(`${wfile.path}${wfile.filename}`, 'utf8');         
+            if(logstr.length === wfile.size) {
+                if(!logmute) log(`- logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
+
                 // body string to array of lines
-                var logstr = buff.toString();
                 var logarr = logstr.split("\n");
+
                 // interate through array of lines - 
                 //      parse each line into object
                 //      write object to db
                 //      next line
+                if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
                 logarr.forEach((entry, idx) => {
                     var newrow = parseEntry(entry, idx);
                     // for debugging defective logs
@@ -379,10 +383,10 @@ module.exports = (function(pevts, _log)  {
             if(result !== null) {
                 result.forEach((row, idx) => {
                     known.push(JSON.parse(JSON.stringify(row)));
-                    //log(`readKnown(): a known - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`- readKnown(): known - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`readKnown(): ERROR result is null`);
+                log(`- readKnown(): ERROR result is null`);
             }
         });
     };
