@@ -11,7 +11,7 @@ const procs_evts = new EventEmitter();
 
 // Run-Time Logging
 var Log = require('./utils/Log.js');
-var logOut = new Log('logs/watcher', 'log', 524288);
+var logOut = new Log('logs/watcher', 'log', 1048576);
 var logenable = true;
 // pass this function around to the other modules
 function _log(payload) {
@@ -43,7 +43,6 @@ var database = require('./mysql/database-mysql.js')(_log);
 
 // "database is open" handler
 /*
-
         errObj = {
             parms: dbcfg.parms,
             err: {
