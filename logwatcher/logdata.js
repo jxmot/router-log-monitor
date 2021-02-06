@@ -58,7 +58,7 @@ module.exports = (function(pevts, _log)  {
             // announce completion...
             //console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
-            log(`- process(): ${badcount} BAD log entries found in ${wfile.path}${wfile.filename}`);
+            log(`- process(): done ${wfile.path}${wfile.filename}`);
             badcount = 0;
         }
         return dbopen;
@@ -117,7 +117,7 @@ module.exports = (function(pevts, _log)  {
                     var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
                     dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
                         if(result === true) {
-                            if(!logmute) log(` - logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                            if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
                             // are "bad" records to be handled?
                             if(wfile.movebad === true) {
                                 // if the time stamp is BEFORE the "minimum" time 
@@ -134,13 +134,15 @@ module.exports = (function(pevts, _log)  {
                                 }
                             }
                         } else {
-                            log(` - logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                            log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                         }
                     });
                 });
+            } else {
+                log(`- logToDB(): ERROR: read ${logstr.length} of ${wfile.size} - ${wfile.path}${wfile.filename}`);
             }
         } else {
-            log(`logToDB(): undefined - wfile`);
+            log(`- logToDB(): undefined - wfile`);
         }
     };
 
@@ -150,20 +152,20 @@ module.exports = (function(pevts, _log)  {
         dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
             if(result === true) {
                 badcount += 1;
-                if(!logmute) log(`saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
+                if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
                     var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
                     dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (result, target, affected) => {
                         if(result === true) {
-                            if(!logmute) log(`saveBadEntry(): deleted bad entry in ${badplace}`);
+                            if(!logmute) log(`- saveBadEntry(): deleted bad entry in ${badplace}`);
                         } else {
-                            log(`saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
+                            log(`- saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
                         }
                     });
                 }
             } else {
-                log(`saveBadEntry(): FAILED to save bad entry in ${dest}`);
+                log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
         });
     };
@@ -185,7 +187,7 @@ module.exports = (function(pevts, _log)  {
         // 
         entObj = Object.assign(entObj, parms);
         // return the entry object
-        if(!logmute) log(` - parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+        if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         return entObj;
     };
 
@@ -202,7 +204,7 @@ module.exports = (function(pevts, _log)  {
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        if(!logmute) log(` - getTimestamp(): ${todstr} ${tstamp}`);
+        if(!logmute) log(`- getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
@@ -220,7 +222,7 @@ module.exports = (function(pevts, _log)  {
                 }
             }
         }
-        if(!logmute) log(` - getAction(): ${JSON.stringify(actID)}`);
+        if(!logmute) log(`- getAction(): ${JSON.stringify(actID)}`);
         return actID;
     };
 
@@ -341,10 +343,10 @@ module.exports = (function(pevts, _log)  {
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actions.push(JSON.parse(JSON.stringify(row)));
-                    //log(`readActions(): a action - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`- readActions(): action - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`readActions(): ERROR result is null`);
+                log(`- readActions(): ERROR result is null`);
             }
         });
     };
@@ -359,10 +361,10 @@ module.exports = (function(pevts, _log)  {
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actioncats.push(JSON.parse(JSON.stringify(row)));
-                    //log(`readActionCats(): a actioncat - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`- readActionCats(): actioncat - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`readActionCats(): ERROR result is null`);
+                log(`- readActionCats(): ERROR result is null`);
             }
         });
     };

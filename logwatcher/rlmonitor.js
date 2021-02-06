@@ -57,10 +57,10 @@ function openDone(dbopen, errObj) {
     // did we have success?
     if(dbopen === false) {
         // no, log errors and end the transaction
-        log(`ERROR : openDone() errObj = ${JSON.stringify(errObj)}`);
+        log(`- ERROR : openDone() errObj = ${JSON.stringify(errObj)}`);
     } else {
         // do some database stuff
-        log('openDone() - success! ready for some database stuff');
+        log('- openDone() - success! ready for some database stuff');
     }
     procs_evts.emit('DB_OPEN', {state:dbopen,db:(dbopen === true ? database : errObj)});
 };
@@ -74,9 +74,9 @@ const reports = require('./reports.js')(procs_evts, _log);
 
 function onDatabaseError(err) {
     log(`onDatabaseError() err = ${err}`);
-    if(err.includes('The server closed the connection') === true) {
+    if(err.message.includes('The server closed the connection') === true) {
         procs_evts.emit('DB_CLOSED', {state:false,db:null});
-        log(`onDatabaseError() sent DB_CLOSED, reopening database...`);
+        log(`- onDatabaseError() sent DB_CLOSED, reopening database...`);
         setTimeout(openDB,2500); 
     } else {
         console.log("*******************************\n");
