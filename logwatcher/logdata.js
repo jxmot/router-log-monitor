@@ -342,7 +342,8 @@ module.exports = (function(pevts, _log)  {
     var actions = [];
 
     function readActions() {
-        dbobj.readAllRows('rlmonitor.actions', (table, result) => {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONS_IDX]}`;
+        dbobj.readAllRows(dbtable, (table, result) => {
             actions = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
@@ -360,7 +361,8 @@ module.exports = (function(pevts, _log)  {
     var actioncats = [];
 
     function readActionCats() {
-        dbobj.readAllRows('rlmonitor.actioncats', (table, result) => {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONCATS_IDX]}`;
+        dbobj.readAllRows(dbtable, (table, result) => {
             actioncats = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
@@ -378,7 +380,8 @@ module.exports = (function(pevts, _log)  {
     var known = [];
 
     function readKnown() {
-        dbobj.readAllRows('rlmonitor.known', (table, result) => {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_KNOWN_IDX]}`;
+        dbobj.readAllRows(dbtable, (table, result) => {
             known = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
