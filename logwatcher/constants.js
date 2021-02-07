@@ -13,7 +13,7 @@ Implemented so far:
 
 |actionid|description                      |catcode|
 |--------|---------------------------------|-------|
-|12      |UPNP Activity                    |NA     |
+|12      |UPnP set event                   |NA     |
 |9       |LAN access from remote           |NA     |
 |1       |Admin login                      |RA     |
 |5       |Dynamic DNS                      |RA     |
@@ -45,7 +45,7 @@ Full List(?):
 |Site allowed                     |            |RP     |
 |Site blocked                     |            |RP     |
 |Time synchronized with NTP server|Y           |       |
-|UPNP Activity                    |Y           |       |
+|UPnP set event                   |Y           |       |
 |USB device attached              |            |RA     |
 |USB device detached              |            |RA     |
 |WLAN access rejected             |Y           |       |
