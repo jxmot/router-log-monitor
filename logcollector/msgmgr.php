@@ -48,6 +48,9 @@ for($num = 1;$num <= $mcount; $num++) {
         // only be reading 1 message at a time, as it is received.
         // Reading bulk is only happening because there are messages
         // to catch up on.
+        if(defined('_PROCDELAY') && _PROCDELAY > 0) {
+            sleep(_PROCDELAY);
+        }
     }
 }
 // Is expungement enabled?
