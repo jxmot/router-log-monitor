@@ -42,7 +42,7 @@ module.exports = (function(pevts, _log)  {
         clearTables();
     });
 
-    var logmute = false;
+    var logmute = true;
     log(`- init`);
 
     var badcount = 0;
