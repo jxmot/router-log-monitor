@@ -61,6 +61,7 @@ module.exports = (function(pevts, _log)  {
             log(`- process(): done ${wfile.path}${wfile.filename}`);
             badcount = 0;
         }
+        
         return dbopen;
     };
 
@@ -140,6 +141,7 @@ module.exports = (function(pevts, _log)  {
                         } else {
                             log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                         }
+                        delete data;
                     });
                 });
             } else {
@@ -171,6 +173,7 @@ module.exports = (function(pevts, _log)  {
             } else {
                 log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
+            delete wfile;
         });
     };
 
@@ -237,14 +240,28 @@ module.exports = (function(pevts, _log)  {
         switch(action.code) {
             case constants.NA:
 // [LAN access from remote] from 73.176.4.88:55216 to 192.168.0.100:59018, Friday, Jan 22,2021 01:24:50
-                var tmp = entry.split('] ');
-                tmp = tmp[1].split(' ');
-                var ipfrom = tmp[1].split(':');
-                var ipto   = tmp[3].split(':');
-                actparms.ip     = ipfrom[0];
-                actparms.port   = ipfrom[1];
-                actparms.toip   = ipto[0];
-                actparms.toport = ipto[1].replace(',','');
+                if(action.id === constants.LAN_ACC) {
+                    let tmp = entry.split('] ');
+                    tmp = tmp[1].split(' ');
+                    let ipfrom = tmp[1].split(':');
+                    let ipto   = tmp[3].split(':');
+                    actparms.ip     = ipfrom[0];
+                    actparms.port   = ipfrom[1];
+                    actparms.toip   = ipto[0];
+                    actparms.toport = ipto[1].replace(',','');
+                } else {
+// [UPnP set event: Public_UPNP_C3] from source 192.168.0.7, Monday, Jun 04,2018 02:59:36
+                    if(action.id === constants.UPNP_EVENT) {
+                        // extract the UPnP message
+                        let tmp = entry.split('] ');
+                        tmp = tmp[0].split(': ');
+                        actparms.message = tmp[1];
+                        // extract the IP
+                        tmp = entry.split(', ');
+                        tmp = tmp[0].split('source ');
+                        actparms.ip = tmp[1];
+                    }
+                }
                 break;
             case constants.RA:
                 actparms = parseRA(action, entry);
@@ -252,25 +269,26 @@ module.exports = (function(pevts, _log)  {
             case constants.RI:
                 actparms = parseRI(action, entry);
                 break;
-            case constants.RL:
+            case constants.RL: {
 // [DHCP IP: (192.168.0.211)] to MAC address B0:BE:76:CA:E2:F4, Friday, Jan 22,2021 02:00:57
-                var tmp = entry.split('address ');
+                let tmp = entry.split('address ');
                 tmp = tmp[1].split(', ');
                 actparms.mac = tmp[0];
-                var tmp = entry.split('IP: (');
+                tmp = entry.split('IP: (');
                 tmp = tmp[1].split(')] ');
                 actparms.ip = tmp[0];
                 // TODO: look up IP in the known table, if found 
                 // check the watch flag. if true then update 
                 // the ip stats table
                 break;
-            case constants.RU:
+            }
+            case constants.RU: {
 // [Initialized, firmware version: V1.0.1.52_1.0.36] Friday, Oct 30,2020 15:27:37
-                var tmp = entry.split('] ');
+                let tmp = entry.split('] ');
                 tmp = tmp[0].split('version: ');
                 actparms.message = tmp[1];
                 break;
-
+            }
             default:
                 break;
         };

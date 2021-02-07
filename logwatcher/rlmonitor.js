@@ -11,7 +11,8 @@ const procs_evts = new EventEmitter();
 
 // Run-Time Logging
 var Log = require('./utils/Log.js');
-var logOut = new Log('logs/watcher', 'log', 1048576);
+var opt = require('./runlogopt.js');
+var logOut = new Log(opt.file, opt.extn, opt.size);
 var logenable = true;
 // pass this function around to the other modules
 function _log(payload) {
