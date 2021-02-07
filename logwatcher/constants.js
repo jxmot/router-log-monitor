@@ -9,9 +9,11 @@
 |RU     |Router Updates      |
 
 
+Implemented so far:
 
 |actionid|description                      |catcode|
 |--------|---------------------------------|-------|
+|12      |UPNP Activity                    |NA     |
 |9       |LAN access from remote           |NA     |
 |1       |Admin login                      |RA     |
 |5       |Dynamic DNS                      |RA     |
@@ -24,6 +26,35 @@
 |2       |DHCP IP                          |RL     |
 |6       |Initialized, firmware version    |RU     |
 
+
+Full List(?):
+
+|description                      |implemented?|catcode|
+|---------------------------------|------------|-------|
+|Admin login                      |Y           |       |
+|DHCP IP                          |Y           |       |
+|Dynamic DNS                      |Y           |       |
+|DoS attack                       |Y x 2       |       |
+|email failed                     |            |RA     |
+|email sent to                    |            |RA     |
+|Initialized                      |Y           |       |
+|Internet connected               |Y           |       |
+|Internet disconnected            |Y           |       |
+|LAN access from remote           |Y           |       |
+|Service blocked                  |            |RP     |
+|Site allowed                     |            |RP     |
+|Site blocked                     |            |RP     |
+|Time synchronized with NTP server|Y           |       |
+|UPNP Activity                    |Y           |       |
+|USB device attached              |            |RA     |
+|USB device detached              |            |RA     |
+|WLAN access rejected             |Y           |       |
+
+|catcode|description         |
+|-------|--------------------|
+|RP     |Router Protection   |
+
+
 */
 module.exports = {
     NA         : 'NA',  // Network Activity
@@ -31,6 +62,7 @@ module.exports = {
     RI         : 'RI',  // Router Invasion    
     RL         : 'RL',  // Router LAN Activity
     RU         : 'RU',  // Router Updates     
+    UPNP_EVENT : 12,    // NA
     LAN_ACC    : 9,     // NA
     ADM_LOG    : 1,     // RA
     DYN_DNS    : 5,     // RA

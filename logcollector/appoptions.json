@@ -1,4 +1,5 @@
 {
-"outpath":"../logoutput/",
-"delunk":false
+    "outpath":"../logoutput/",
+    "delunk":false,
+    "procdelay":5
 }

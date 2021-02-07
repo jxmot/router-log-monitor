@@ -12,6 +12,8 @@ define('_OUTPATH', $appopt->outpath);
 // enable/disable the deletion of messages that do not have
 // the correct subject line
 define('_DELUNKOWN',$appopt->delunk);
+// the number of seconds to wait before processing the next msg
+define('_PROCDELAY',$appopt->procdelay);
 // load the IMAP connection parameters
 $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
 // true or false

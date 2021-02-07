@@ -11,6 +11,7 @@ module.exports = (function(wevts, pevts, _log) {
     }
 
     log(`- init`);
+    var logmute = true;
 
     // the log processor
     const ldata = require('./logdata.js')(pevts, _log);
@@ -26,11 +27,11 @@ module.exports = (function(wevts, pevts, _log) {
         https://nodejs.dev/learn/the-nodejs-event-loop
     */
     wevts.on('FILE_CREATED', (watchit) => {
-        log(`- FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
+        if(!logmute) log(`- FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
         ldata.process(JSON.parse(JSON.stringify(watchit)));
     });
 
     wevts.on('FILE_DELETED', (watchit) => {
-        log(`- FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
+        if(!logmute) log(`- FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
     });
 });

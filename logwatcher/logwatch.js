@@ -131,7 +131,7 @@ module.exports = (function(wevts, _log) {
                 fs.accessSync(`${wqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`renTO(): ${wqueue[fname].path}${fname} was deleted`);
+                    if(!logmute) log(`renTO(): ${wqueue[fname].path}${fname} was deleted`);
                     wevts.emit('FILE_DELETED', {path:wqueue[fname].path,filename:fname});
                 }
             }

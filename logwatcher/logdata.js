@@ -45,6 +45,8 @@ module.exports = (function(pevts, _log)  {
     var logmute = true;
     log(`- init`);
 
+    var badcount = 0;
+
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`- process(): database not open`);
@@ -56,7 +58,10 @@ module.exports = (function(pevts, _log)  {
             // announce completion...
             //console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
+            log(`- process(): done ${wfile.path}${wfile.filename}`);
+            badcount = 0;
         }
+        
         return dbopen;
     };
 
@@ -77,29 +82,33 @@ module.exports = (function(pevts, _log)  {
     function logToDB(wfile) {
         // make sure the file is valid
         if(wfile !== undefined) {
+            if(!logmute) log(`- logToDB(): checking ${wfile.path}${wfile.filename}`);
             try {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(` - logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
+                    log(`- logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
                     // emit error?
                 }
                 return;
             }
             // valid, open and read it 
             // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_opensync_path_flags_mode
-            var fd = fs.openSync(wfile.path+wfile.filename, 'r');
-            var buff = Buffer.alloc(wfile.size);
-            var rdqty = fs.readSync(fd, buff);
-            fs.closeSync(fd);
-            if(rdqty === wfile.size) {
+            if(!logmute) log(`- logToDB(): opening ${wfile.path}${wfile.filename}`);
+            // Was using fs.readSync() but there was a bug. For info can be found
+            // at - https://github.com/jxmot/nodejs-readSync-bug
+            var logstr = fs.readFileSync(`${wfile.path}${wfile.filename}`, 'utf8');         
+            if(logstr.length === wfile.size) {
+                if(!logmute) log(`- logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
+
                 // body string to array of lines
-                var logstr = buff.toString();
                 var logarr = logstr.split("\n");
+
                 // interate through array of lines - 
                 //      parse each line into object
                 //      write object to db
                 //      next line
+                if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
                 logarr.forEach((entry, idx) => {
                     var newrow = parseEntry(entry, idx);
                     // for debugging defective logs
@@ -113,13 +122,13 @@ module.exports = (function(pevts, _log)  {
                     var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
                     dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
                         if(result === true) {
-                            if(!logmute) log(` - logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                            if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
                             // are "bad" records to be handled?
                             if(wfile.movebad === true) {
                                 // if the time stamp is BEFORE the "minimum" time 
                                 // stamp then it's a bad record and won't be usable.
                                 if(wfile.mintstamp > data.tstamp) {
-                                    log(` - logToDB(): BAD timestamp - ${target} ${insertId} ${data.tstamp}`);
+                                    if(!logmute) log(` - logToDB(): BAD timestamp - ${target} ${insertId} ${data.tstamp}`);
                                     // the table we're using has an auto increment primary
                                     // ID. And we call it 'entrynumb' in the table. After
                                     // the row is written we will merge it with the row
@@ -130,13 +139,16 @@ module.exports = (function(pevts, _log)  {
                                 }
                             }
                         } else {
-                            log(` - logToDB(): FAIL - ${target} ${JSON.stringify(data)}`);
+                            log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                         }
+                        delete data;
                     });
                 });
+            } else {
+                log(`- logToDB(): ERROR: read ${logstr.length} of ${wfile.size} - ${wfile.path}${wfile.filename}`);
             }
         } else {
-            log(`logToDB(): undefined - wfile`);
+            log(`- logToDB(): undefined - wfile`);
         }
     };
 
@@ -145,21 +157,23 @@ module.exports = (function(pevts, _log)  {
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
         dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
             if(result === true) {
-                log(`saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
+                badcount += 1;
+                if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
                     var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
                     dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (result, target, affected) => {
                         if(result === true) {
-                            log(`saveBadEntry(): deleted bad entry in ${badplace}`);
+                            if(!logmute) log(`- saveBadEntry(): deleted bad entry in ${badplace}`);
                         } else {
-                            log(`saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
+                            log(`- saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
                         }
                     });
                 }
             } else {
-                log(`saveBadEntry(): FAILED to save bad entry in ${dest}`);
+                log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
+            delete wfile;
         });
     };
 
@@ -180,7 +194,7 @@ module.exports = (function(pevts, _log)  {
         // 
         entObj = Object.assign(entObj, parms);
         // return the entry object
-        if(!logmute) log(` - parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+        if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         return entObj;
     };
 
@@ -197,7 +211,7 @@ module.exports = (function(pevts, _log)  {
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        if(!logmute) log(` - getTimestamp(): ${todstr} ${tstamp}`);
+        if(!logmute) log(`- getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
@@ -215,7 +229,7 @@ module.exports = (function(pevts, _log)  {
                 }
             }
         }
-        if(!logmute) log(` - getAction(): ${JSON.stringify(actID)}`);
+        if(!logmute) log(`- getAction(): ${JSON.stringify(actID)}`);
         return actID;
     };
 
@@ -226,14 +240,28 @@ module.exports = (function(pevts, _log)  {
         switch(action.code) {
             case constants.NA:
 // [LAN access from remote] from 73.176.4.88:55216 to 192.168.0.100:59018, Friday, Jan 22,2021 01:24:50
-                var tmp = entry.split('] ');
-                tmp = tmp[1].split(' ');
-                var ipfrom = tmp[1].split(':');
-                var ipto   = tmp[3].split(':');
-                actparms.ip     = ipfrom[0];
-                actparms.port   = ipfrom[1];
-                actparms.toip   = ipto[0];
-                actparms.toport = ipto[1].replace(',','');
+                if(action.id === constants.LAN_ACC) {
+                    let tmp = entry.split('] ');
+                    tmp = tmp[1].split(' ');
+                    let ipfrom = tmp[1].split(':');
+                    let ipto   = tmp[3].split(':');
+                    actparms.ip     = ipfrom[0];
+                    actparms.port   = ipfrom[1];
+                    actparms.toip   = ipto[0];
+                    actparms.toport = ipto[1].replace(',','');
+                } else {
+// [UPnP set event: Public_UPNP_C3] from source 192.168.0.7, Monday, Jun 04,2018 02:59:36
+                    if(action.id === constants.UPNP_EVENT) {
+                        // extract the UPnP message
+                        let tmp = entry.split('] ');
+                        tmp = tmp[0].split(': ');
+                        actparms.message = tmp[1];
+                        // extract the IP
+                        tmp = entry.split(', ');
+                        tmp = tmp[0].split('source ');
+                        actparms.ip = tmp[1];
+                    }
+                }
                 break;
             case constants.RA:
                 actparms = parseRA(action, entry);
@@ -241,25 +269,26 @@ module.exports = (function(pevts, _log)  {
             case constants.RI:
                 actparms = parseRI(action, entry);
                 break;
-            case constants.RL:
+            case constants.RL: {
 // [DHCP IP: (192.168.0.211)] to MAC address B0:BE:76:CA:E2:F4, Friday, Jan 22,2021 02:00:57
-                var tmp = entry.split('address ');
+                let tmp = entry.split('address ');
                 tmp = tmp[1].split(', ');
                 actparms.mac = tmp[0];
-                var tmp = entry.split('IP: (');
+                tmp = entry.split('IP: (');
                 tmp = tmp[1].split(')] ');
                 actparms.ip = tmp[0];
                 // TODO: look up IP in the known table, if found 
                 // check the watch flag. if true then update 
                 // the ip stats table
                 break;
-            case constants.RU:
+            }
+            case constants.RU: {
 // [Initialized, firmware version: V1.0.1.52_1.0.36] Friday, Oct 30,2020 15:27:37
-                var tmp = entry.split('] ');
+                let tmp = entry.split('] ');
                 tmp = tmp[0].split('version: ');
                 actparms.message = tmp[1];
                 break;
-
+            }
             default:
                 break;
         };
@@ -331,15 +360,16 @@ module.exports = (function(pevts, _log)  {
     var actions = [];
 
     function readActions() {
-        dbobj.readAllRows('rlmonitor.actions', (table, result) => {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONS_IDX]}`;
+        dbobj.readAllRows(dbtable, (table, result) => {
             actions = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actions.push(JSON.parse(JSON.stringify(row)));
-                    //log(`readActions(): a action - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`- readActions(): action - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`readActions(): ERROR result is null`);
+                log(`- readActions(): ERROR result is null`);
             }
         });
     };
@@ -349,15 +379,16 @@ module.exports = (function(pevts, _log)  {
     var actioncats = [];
 
     function readActionCats() {
-        dbobj.readAllRows('rlmonitor.actioncats', (table, result) => {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONCATS_IDX]}`;
+        dbobj.readAllRows(dbtable, (table, result) => {
             actioncats = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     actioncats.push(JSON.parse(JSON.stringify(row)));
-                    //log(`readActionCats(): a actioncat - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`- readActionCats(): actioncat - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`readActionCats(): ERROR result is null`);
+                log(`- readActionCats(): ERROR result is null`);
             }
         });
     };
@@ -367,15 +398,16 @@ module.exports = (function(pevts, _log)  {
     var known = [];
 
     function readKnown() {
-        dbobj.readAllRows('rlmonitor.known', (table, result) => {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_KNOWN_IDX]}`;
+        dbobj.readAllRows(dbtable, (table, result) => {
             known = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
                     known.push(JSON.parse(JSON.stringify(row)));
-                    //log(`readKnown(): a known - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`- readKnown(): known - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`readKnown(): ERROR result is null`);
+                log(`- readKnown(): ERROR result is null`);
             }
         });
     };
