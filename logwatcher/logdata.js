@@ -115,6 +115,8 @@ module.exports = (function(pevts, _log)  {
                 //      write object to db
                 //      next line
                 if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
+                const lineqty = logarr.length;
+                var linecount = 0;
                 logarr.forEach((entry, idx) => {
                     var newrow = parseEntry(entry, idx);
                     // for debugging defective logs
@@ -143,6 +145,10 @@ module.exports = (function(pevts, _log)  {
                                     var badrec = Object.assign(data, {entrynumb:insertId});
                                     saveBadEntry(badrec, wfile);
                                 }
+                            }
+                            if((linecount += 1) === lineqty) {
+                                wfile.linecount = linecount;
+                                pevts.emit('LOG_DBSAVED', wfile);
                             }
                         } else {
                             log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
