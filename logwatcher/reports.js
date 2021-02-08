@@ -30,8 +30,11 @@ module.exports = (function(pevts, _log) {
 
     log(`- init`);
 
-    // https://nodejs.org/docs/latest-v12.x/api/events.html#events_asynchronous_vs_synchronous
     pevts.on('LOG_PROCESSED', (wfile) => {
-        log(`- creating report, last processed file: ${wfile.path}${wfile.filename}`);
+        log(`- last processed file: ${wfile.path}${wfile.filename}`);
+    });
+
+    pevts.on('LOG_DBSAVED', (wfile) => {
+        log(`- log saved to database, saved ${wfile.linecount} log entries from ${wfile.path}${wfile.filename}`);
     });
 });
