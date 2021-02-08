@@ -62,10 +62,10 @@ module.exports = (function(pevts, _log)  {
             // parse the log data and write to database...
             log(`- process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
+            log(`- process(): done ${wfile.path}${wfile.filename}`);
             // announce completion...
             //console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
-            log(`- process(): done ${wfile.path}${wfile.filename}`);
             badcount = 0;
         }
         return dbopen;
