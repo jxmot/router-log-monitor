@@ -47,7 +47,7 @@ module.exports = (function(wevts, _log) {
     var dirwatch = fs.watch(opt.path, (evtype, filename) => {
         // could be either 'rename' or 'change'. new file event and delete
         // also generally emit 'rename'
-        if(!logmute) log(`dirwatch event: ${evtype} file: ${filename}`);
+        if(!logmute) log(`- dirwatch event: ${evtype} file: ${filename}`);
 
         // only used for debugging
         watchit.now = Date.now();
@@ -60,7 +60,7 @@ module.exports = (function(wevts, _log) {
             // an error occurred...
             case 'error':
                 // anounce it...
-                log(`dirwatch event: error ${filename}  ${wqueue.length}`);
+                log(`- dirwatch event: error ${filename}  ${wqueue.length}`);
                 // cancel all timeouts
                 wqueue.forEach((item, index) => {
                     clearTimeout(item.toid);
@@ -89,13 +89,13 @@ module.exports = (function(wevts, _log) {
                     // timeout.
                     clearTimeout(wqueue[filename].toid);
                     wqueue[filename].toid = null;
-                    if(!logmute) log(`dirwatch event: stats on - ${wqueue[filename].path}${filename}`);
+                    if(!logmute) log(`- dirwatch event: stats on - ${wqueue[filename].path}${filename}`);
 // TODO: try/catch ?
                     // let's verify this is a file creation event
                     // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_class_fs_stats
                     var stats = fs.statSync(`${wqueue[filename].path}${filename}`);
                     if(stats.isFile() === true) {
-                        log(`dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
+                        log(`- dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
 
 // clear previous timeout, if any
 // add to file obj queue
@@ -111,12 +111,12 @@ module.exports = (function(wevts, _log) {
                                         delbad:wqueue[filename].delbad
                                    });
                     } else {
-                        if(!logmute) log(`dirwatch event: ${filename} is not a file`);
+                        if(!logmute) log(`- dirwatch event: ${filename} is not a file`);
                     }
                     // remove this entry from the queue 
                     delete wqueue[filename];
                 } else {
-                    if(!logmute) log(`dirwatch event: secondary ${evtype} ${filename}`);
+                    if(!logmute) log(`- dirwatch event: secondary ${evtype} ${filename}`);
                 }
                 break;
         };

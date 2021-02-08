@@ -73,7 +73,7 @@ const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
 const reports = require('./reports.js')(procs_evts, _log);
 
 function onDatabaseError(err) {
-    log(`onDatabaseError() err = ${err}`);
+    log(`- onDatabaseError() err = ${err}`);
     if(err.message.includes('The server closed the connection') === true) {
         procs_evts.emit('DB_CLOSED', {state:false,db:null});
         log(`- onDatabaseError() sent DB_CLOSED, reopening database...`);
