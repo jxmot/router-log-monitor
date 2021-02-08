@@ -5,6 +5,10 @@
 module.exports = (function(pevts, _log)  {
     
     logdata = {
+        actions: [],
+        actioncats: [],
+        known: [],
+        ipcats: []
     };
 
     // needed for fs.watch(), fs.statSync(), and
@@ -28,9 +32,12 @@ module.exports = (function(pevts, _log)  {
             dbobj = _dbobj.db;
             log(`- DB_OPEN: success`);
             dbcfg = dbobj.getDBCcfg();
+
             readActions();
             readActionCats();
             readKnown();
+            readIPCats();
+
         } else {
             log(`- DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
@@ -55,13 +62,12 @@ module.exports = (function(pevts, _log)  {
             // parse the log data and write to database...
             log(`- process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
+            log(`- process(): done ${wfile.path}${wfile.filename}`);
             // announce completion...
             //console.log("LOG_PROCESSED DONE DONE DONE\n");
             pevts.emit('LOG_PROCESSED', wfile);
-            log(`- process(): done ${wfile.path}${wfile.filename}`);
             badcount = 0;
         }
-        
         return dbopen;
     };
 
@@ -109,6 +115,8 @@ module.exports = (function(pevts, _log)  {
                 //      write object to db
                 //      next line
                 if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
+                const lineqty = logarr.length;
+                var linecount = 0;
                 logarr.forEach((entry, idx) => {
                     var newrow = parseEntry(entry, idx);
                     // for debugging defective logs
@@ -137,6 +145,10 @@ module.exports = (function(pevts, _log)  {
                                     var badrec = Object.assign(data, {entrynumb:insertId});
                                     saveBadEntry(badrec, wfile);
                                 }
+                            }
+                            if((linecount += 1) === lineqty) {
+                                wfile.linecount = linecount;
+                                pevts.emit('LOG_DBSAVED', wfile);
                             }
                         } else {
                             log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
@@ -220,8 +232,8 @@ module.exports = (function(pevts, _log)  {
             id: -1,
             code: ''
         };
-        if(actions.length > 0){
-            for(let act of actions) {
+        if(logdata.actions.length > 0){
+            for(let act of logdata.actions) {
                 if(entry.includes(act.description) === true) {
                     actID.id   = act.actionid;
                     actID.code = act.catcode;
@@ -290,6 +302,7 @@ module.exports = (function(pevts, _log)  {
                 break;
             }
             default:
+                actparms = Object.assign(actparms,{err:{act:action,ent:entry}});
                 break;
         };
         return actparms;
@@ -299,31 +312,42 @@ module.exports = (function(pevts, _log)  {
         var raparms = {};
         // 
         switch(action.id) {
-            case constants.ADM_LOG:
+            case constants.ADM_LOG: {
 // [Admin login] from source 192.168.0.7, Wednesday, Jan 13,2021 10:10:14
-                var tmp = entry.split(', ');
+                let tmp = entry.split(', ');
                 tmp = tmp[0].split('source ');
                 raparms.ip = tmp[1];
                 break;
-            case constants.DYN_DNS:
+            }
+            case constants.DYN_DNS: {
 // [Dynamic DNS] host name its.worse-than.tv registration successful, Friday, Jan 22,2021 15:20:46
-                var tmp = entry.split(' ');
+                let tmp = entry.split(' ');
                 raparms.host = tmp[4];
                 break;
-            case constants.INET_CONN:
+            }
+            case constants.INET_CONN: {
 // [Internet connected] IP address: 73.176.4.88, Friday, Jan 22,2021 17:51:54
-                var tmp = entry.split(', ');
+                let tmp = entry.split(', ');
                 tmp = tmp[0].split(': ');
                 raparms.ip = tmp[1];
                 break;
-            case constants.INET_DCONN:
-// [Internet disconnected] Thursday, Nov 07,2019 20:20:00
-                break;
+            }
             case constants.TIME_SYNC:
 // [Time synchronized with NTP server] Friday, Jan 22,2021 17:51:56
+            case constants.INET_DCONN: {
+// [Internet disconnected] Thursday, Nov 07,2019 20:20:00
+                let tmp = entry.split('] ');
+                tmp = tmp[0].split('[');
+                raparms.message = tmp[1];
                 break;
+            }
+//            case constants.TIME_SYNC:
+//// [Time synchronized with NTP server] Friday, Jan 22,2021 17:51:56
+//                raparms.message = 
+//                break;
 
             default:
+                raparms = Object.assign(raparms,{err:{act:action,ent:entry}});
                 break;
         };
         return raparms;
@@ -334,88 +358,85 @@ module.exports = (function(pevts, _log)  {
         // 
         switch(action.id) {
             case constants.DOS_FIN:
-            case constants.DOS_ACK:
+            case constants.DOS_ACK: {
 // [DoS attack: FIN Scan] (3) attack packets in last 20 sec from ip [162.214.100.81], Wednesday, Jan 20,2021 08:51:46
 // [DoS attack: ACK Scan] (1) attack packets in last 20 sec from ip [106.70.232.86], Sunday, Jan 03,2021 04:48:17
-                var tmp = entry.split('],');
+                let tmp = entry.split('],');
                 tmp = tmp[0].split('ip [');
                 riparms.ip = tmp[1];
                 break;
-            case constants.WLAN_REJ:
+            }
+            case constants.WLAN_REJ: {
 // [WLAN access rejected: incorrect security] from MAC 18:B4:30:06:D4:7E, Wednesday, Jan 13,2021 18:08:36
-                var tmp = entry.split('MAC ');
+                let tmp = entry.split('MAC ');
                 tmp = tmp[1].split(', ');
                 riparms.mac = tmp[0].replace(',','');;
                 break;
-
+            }
             default:
+                riparms = Object.assign(riparms,{err:{act:action,ent:entry}});
                 break;
         };
         return riparms;
     };
 
     //////////////////////////////////////////////////////////////////////////
-    // read the actions table from the database and populate
-    // an array of action objects
-    var actions = [];
-
-    function readActions() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONS_IDX]}`;
+    // 
+    function readTable(dbtable, destarr) {
+        if(!logmute) log(`- readTable(): dbtable = ${dbtable}`);
         dbobj.readAllRows(dbtable, (table, result) => {
-            actions = [];
             if(result !== null) {
                 result.forEach((row, idx) => {
-                    actions.push(JSON.parse(JSON.stringify(row)));
-                    if(!logmute) log(`- readActions(): action - ${JSON.stringify(row)}`);
+                    destarr.push(JSON.parse(JSON.stringify(row)));
+                    if(!logmute) log(`- readTable(): destarr - ${JSON.stringify(row)}`);
                 });
             } else {
-                log(`- readActions(): ERROR result is null`);
+                log(`- readTable(): ERROR result is null for ${table}`);
             }
         });
+    };
+
+    // read the actions table from the database and populate
+    // an array of action objects
+    function readActions() {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONS_IDX]}`;
+        // clear the array, could set the length to zero 
+        // but this is explcit
+        logdata.actions = [];
+        // read the database and save the data
+        readTable(dbtable, logdata.actions);
     };
 
     // read the action category table from the database and populate
     // an array of action category objects
-    var actioncats = [];
-
     function readActionCats() {
         var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONCATS_IDX]}`;
-        dbobj.readAllRows(dbtable, (table, result) => {
-            actioncats = [];
-            if(result !== null) {
-                result.forEach((row, idx) => {
-                    actioncats.push(JSON.parse(JSON.stringify(row)));
-                    if(!logmute) log(`- readActionCats(): actioncat - ${JSON.stringify(row)}`);
-                });
-            } else {
-                log(`- readActionCats(): ERROR result is null`);
-            }
-        });
+        logdata.actioncats = [];
+        readTable(dbtable, logdata.actioncats);
     };
 
     // read the known table from the database and populate
     // an array of known objects
-    var known = [];
-
     function readKnown() {
         var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_KNOWN_IDX]}`;
-        dbobj.readAllRows(dbtable, (table, result) => {
-            known = [];
-            if(result !== null) {
-                result.forEach((row, idx) => {
-                    known.push(JSON.parse(JSON.stringify(row)));
-                    if(!logmute) log(`- readKnown(): known - ${JSON.stringify(row)}`);
-                });
-            } else {
-                log(`- readKnown(): ERROR result is null`);
-            }
-        });
+        logdata.known = [];
+        readTable(dbtable, logdata.known);
     };
 
+    // read the IP category table from the database and populate
+    // an array of IP category objects
+    function readIPCats() {
+        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_IPCATS_IDX]}`;
+        logdata.ipcats = [];
+        readTable(dbtable, logdata.ipcats);
+    };
+
+    // clear the local copies of the data tables
     function clearTables() {
-        actions = [];
-        actioncats = [];
-        known = [];
+        logdata.actions = [];
+        logdata.actioncats = [];
+        logdata.known = [];
+        logdata.ipcats = [];
     }
 
     return logdata;
