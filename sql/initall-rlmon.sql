@@ -10,7 +10,18 @@ create table rlmonitor.known (
     device varchar(64) default null,
     devstate varchar(2) default null,
     watch boolean default false,
-    catcode integer(4) default 0
+    ipcat integer(4) default 0
+);
+
+/*
+*/
+create table rlmonitor.ipcats (
+    id integer(5) auto_increment not null,
+    primary key(id),
+    description varchar(64) not null,
+    inuse boolean default false,
+    iplow varchar(40) default null,
+    iphigh varchar(40) default null
 );
 
 /*
