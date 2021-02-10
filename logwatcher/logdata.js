@@ -200,13 +200,25 @@ module.exports = (function(pevts, _log)  {
         entObj.tstamp = getTimestamp(entry);
         // get the action identifiers
         var actn = getAction(entry);
-        entObj.actionid = actn.id
-        // 
-        var parms = getActionParms(actn, entry);
-        // 
-        entObj = Object.assign(entObj, parms);
+        if(actn.id === -1) {
+            entObj.actionid = -1;
+            log(`- parseEntry(): ${actn.code}`);
+        } else {
+            entObj.actionid = actn.id;
+            // 
+            var parms = getActionParms(actn, entry);
+            if(parms.err !== undefined) {
+                log(`- parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
+                log(`- parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
+                log(`- parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);
+                // the err object cannot be written to the database
+                delete parms.err;
+            }
+            // 
+            entObj = Object.assign(entObj, parms);
+            if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+        }
         // return the entry object
-        if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         return entObj;
     };
 
@@ -240,6 +252,11 @@ module.exports = (function(pevts, _log)  {
                     break;
                 }
             }
+            if(actID.id === -1) {
+                actID.code = `ERROR: action not found, entry = [${entry}]`;
+            }
+        } else {
+            actID.code = 'ERROR: no action data';
         }
         if(!logmute) log(`- getAction(): ${JSON.stringify(actID)}`);
         return actID;
@@ -272,6 +289,8 @@ module.exports = (function(pevts, _log)  {
                         tmp = entry.split(', ');
                         tmp = tmp[0].split('source ');
                         actparms.ip = tmp[1];
+                    } else {
+                        actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() unknown action.id'}});
                     }
                 }
                 break;
@@ -302,7 +321,7 @@ module.exports = (function(pevts, _log)  {
                 break;
             }
             default:
-                actparms = Object.assign(actparms,{err:{act:action,ent:entry}});
+                actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() unknown action.code'}});
                 break;
         };
         return actparms;
@@ -347,7 +366,7 @@ module.exports = (function(pevts, _log)  {
 //                break;
 
             default:
-                raparms = Object.assign(raparms,{err:{act:action,ent:entry}});
+                raparms = Object.assign(raparms,{err:{act:action,ent:entry,msg:'parseRA() unknown action.code'}});
                 break;
         };
         return raparms;
