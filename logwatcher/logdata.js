@@ -357,13 +357,19 @@ module.exports = (function(pevts, _log)  {
         var riparms = {};
         // 
         switch(action.id) {
-            case constants.DOS_FIN:
-            case constants.DOS_ACK: {
+            case constants.DOS_ATT: {
 // [DoS attack: FIN Scan] (3) attack packets in last 20 sec from ip [162.214.100.81], Wednesday, Jan 20,2021 08:51:46
 // [DoS attack: ACK Scan] (1) attack packets in last 20 sec from ip [106.70.232.86], Sunday, Jan 03,2021 04:48:17
                 let tmp = entry.split('],');
                 tmp = tmp[0].split('ip [');
                 riparms.ip = tmp[1];
+                tmp = entry.split('] ');
+                tmp = tmp[0].split(': ');
+                riparms.message = tmp[1]; 
+                tmp = entry.split('] ');
+                tmp = tmp[1].split(', ');
+                riparms.message += ': '; 
+                riparms.message += tmp[0]; 
                 break;
             }
             case constants.WLAN_REJ: {
@@ -371,10 +377,13 @@ module.exports = (function(pevts, _log)  {
                 let tmp = entry.split('MAC ');
                 tmp = tmp[1].split(', ');
                 riparms.mac = tmp[0].replace(',','');;
+                tmp = entry.split('] ');
+                tmp = tmp[0].split(': ');
+                riparms.message = tmp[1]; 
                 break;
             }
             default:
-                riparms = Object.assign(riparms,{err:{act:action,ent:entry}});
+                riparms = Object.assign(riparms,{err:{act:action,ent:entry,msg:'parseRI() unknown action.code'}});
                 break;
         };
         return riparms;
