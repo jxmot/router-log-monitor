@@ -154,6 +154,7 @@ module.exports = (function(pevts, _log)  {
                             log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                         }
                         delete data;
+                        delete newrow;
                     });
                 });
             } else {
