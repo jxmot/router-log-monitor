@@ -31,8 +31,9 @@ The primary components are:
 
 * Configurable:
   * IMAP server settings
-  * Run by a cron job, processes the new log messages automatically.
   * "Bad" log entry filtering
+  * Verbosity of the run-time log (*configured in-module*)
+  * Maximum size of a run-time log, location, and file extension
   * **TBD**
 
 This utility consists of 2 primary pieces:
@@ -53,7 +54,7 @@ I did a lot of research on IMAP and the availability of libraries in NPMs or PHP
 
 * Some were unmaintained, it has been years since an issue was closed or code was updated.
 * Some were just impractical. Like the self-hosted API and a library to interact with it.
-* Some had a large code footprint, and were over complicated for simple use.
+* Some had a large code footprint, and were over complicated for basic use.
 
 Please note that I am a *fan* of Node.js. I like it, I like coding for Node.js. And there are a lot of *good* NPM packages for it. But... sometimes a Node.js application is just too "fat" when compared to what it *actually does*. For example, one of the "proof of concept" applications I put together ended up using around 4 meg of space and it was only about a dozen lines of active code. Where? in the `node_modules` folder of course!
 
@@ -162,21 +163,42 @@ For processing log entries, these tables are read in before processing begins:
 
 * actions - used for looking up the log entry description, an "action ID" is associated with each description 
 
+The remaining tables are:
+
+* ipstats - for containing statistics for a specific IP address, one row per IP
+* actioncats - provides a textual description for a category code
+* known - all known IP address on the network, this will be used for filtering log entries
+* ipcats - contains IP category descriptions, and IP ranges for the category. It also contains a flag that indicates if the category and range are in use
+
+**NOTE**: The tables above are not currently used.
+
 ## Installation and Set Up
 
 ### File Locations
 
 ```
-/
-├─── logcollector
-├─── logoutput
-├─── logwatcher
-│    ├─── logs
-│    ├─── mysql
-│    └─── utils
-├─── mdimg
-└─── sql
+\router-log-monitor 
+    |
+    +---logcollector
+    |
+    +---logoutput
+    |
+    +---logwatcher
+    |   +---mysql
+    |   +---utils
+    |   |
+    |   +---logs
+    |
+    +---sql
 ```
+
+* **`router-log-monitor/logcollector`** : all of the PHP source and associated JSON configuration files
+* **`router-log-monitor/logoutput`** : all files converted from log email messages go here
+* **`router-log-monitor/logwatcher`** : all of the JavaScript source and associated configuration files
+  * **`1logwatcher/mysql`** : MySQL functions and configuration files
+  * **`1logwatcher/utils`** : utility functions for this applciation, currently contains only the Log.js file
+  * **`1logwatcher/logs`** : all run-time logs will be written here, Log.js manages the files and rolls over to the next when the current file reaches capacity(*configurable*)
+* **`router-log-monitor/sql`** : SQL files containing various statements for creating tables and seeding data
 
 ### Configuration Files
 
