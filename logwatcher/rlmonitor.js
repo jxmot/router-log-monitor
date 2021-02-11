@@ -65,13 +65,25 @@ function openDone(dbopen, errObj) {
     procs_evts.emit('DB_OPEN', {state:dbopen,db:(dbopen === true ? database : errObj)});
 };
 
-// Watch for new log files
-const watcher = require('./logwatch.js')(watch_evts, _log);
+var fopt = process.argv[2];
+
+// can optionally read files instead of waiting for them to 
+// be created. NOTE: this works best when processing a large 
+// quantity of logs.
+if((fopt !== undefined) && (fopt === 'readfiles')) {
+    // read all new log files
+    const reader = require('./logread.js')(watch_evts, procs_evts, _log);
+} else {
+    // Watch for new log files
+    const watcher = require('./logwatch.js')(watch_evts, _log);
+}
 // Process the log files into the database
 const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
 // Generate static reports
 const reports = require('./reports.js')(procs_evts, _log);
 
+// handle database errors here, including when the server closes 
+// the connection after a period of being "idle".
 function onDatabaseError(err) {
     log(`- onDatabaseError() err = ${err}`);
     if(err.message.includes('The server closed the connection') === true) {
