@@ -142,7 +142,7 @@ module.exports = (function(wevts, _log) {
     };
 
     /*
-        When "20210123-214242-net.log" is created with imaptest.php:
+        When "20210123-214242-net.log" is created:
         
         rename
         20210123-214242-net.log
