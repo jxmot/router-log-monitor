@@ -267,25 +267,35 @@ module.exports = (function(pevts, _log)  {
             case constants.NA:
 // [LAN access from remote] from 73.176.4.88:55216 to 192.168.0.100:59018, Friday, Jan 22,2021 01:24:50
                 if(action.id === constants.LAN_ACC) {
-                    let tmp = entry.split('] ');
-                    tmp = tmp[1].split(' ');
-                    let ipfrom = tmp[1].split(':');
-                    let ipto   = tmp[3].split(':');
-                    actparms.ip     = ipfrom[0];
-                    actparms.port   = ipfrom[1];
-                    actparms.toip   = ipto[0];
-                    actparms.toport = ipto[1].replace(',','');
+                    try {
+                        let tmp = entry.split('] ');
+                        tmp = tmp[1].split(' ');
+                        let ipfrom = tmp[1].split(':');
+                        let ipto   = tmp[3].split(':');
+                        actparms.ip     = ipfrom[0];
+                        actparms.port   = ipfrom[1];
+                        actparms.toip   = ipto[0];
+                        actparms.toport = ipto[1].replace(',','');
+                    }
+                    catch(err) {
+                        actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() failed try, err = ${JSON.stringify(err)}'}});
+                    }
                 } else {
 // [UPnP set event: Public_UPNP_C3] from source 192.168.0.7, Monday, Jun 04,2018 02:59:36
                     if(action.id === constants.UPNP_EVENT) {
-                        // extract the UPnP message
-                        let tmp = entry.split('] ');
-                        tmp = tmp[0].split(': ');
-                        actparms.message = tmp[1];
-                        // extract the IP
-                        tmp = entry.split(', ');
-                        tmp = tmp[0].split('source ');
-                        actparms.ip = tmp[1];
+                        try {
+                            // extract the UPnP message
+                            let tmp = entry.split('] ');
+                            tmp = tmp[0].split(': ');
+                            actparms.message = tmp[1];
+                            // extract the IP
+                            tmp = entry.split(', ');
+                            tmp = tmp[0].split('source ');
+                            actparms.ip = tmp[1];
+                        }
+                        catch(err) {
+                            actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() failed try, err = ${JSON.stringify(err)}'}});
+                        }
                     } else {
                         actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() unknown action.id'}});
                     }
@@ -299,15 +309,20 @@ module.exports = (function(pevts, _log)  {
                 break;
             case constants.RL: {
 // [DHCP IP: (192.168.0.211)] to MAC address B0:BE:76:CA:E2:F4, Friday, Jan 22,2021 02:00:57
-                let tmp = entry.split('address ');
-                tmp = tmp[1].split(', ');
-                actparms.mac = tmp[0];
-                tmp = entry.split('IP: (');
-                tmp = tmp[1].split(')] ');
-                actparms.ip = tmp[0];
-                // TODO: look up IP in the known table, if found 
-                // check the watch flag. if true then update 
-                // the ip stats table
+                try {
+                    let tmp = entry.split('address ');
+                    tmp = tmp[1].split(', ');
+                    actparms.mac = tmp[0];
+                    tmp = entry.split('IP: (');
+                    tmp = tmp[1].split(')] ');
+                    actparms.ip = tmp[0];
+                    // TODO: look up IP in the known table, if found 
+                    // check the watch flag. if true then update 
+                    // the ip stats table
+                }
+                catch(err) {
+                    actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() failed try, err = ${JSON.stringify(err)}'}});
+                }
                 break;
             }
             case constants.RU: {
