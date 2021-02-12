@@ -419,6 +419,7 @@ module.exports = (function(pevts, _log)  {
                     destarr.push(JSON.parse(JSON.stringify(row)));
                     if(!logmute) log(`- readTable(): destarr - ${JSON.stringify(row)}`);
                 });
+                pevts.emit('DATA_READY', dbtable);
             } else {
                 log(`- readTable(): ERROR result is null for ${table}`);
             }
