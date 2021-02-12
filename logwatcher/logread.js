@@ -49,7 +49,8 @@ module.exports = (function(wevts, pevts, _log) {
     var flist = [];
     // filter the list, only contains log files
     flist = tmp.filter((file, idx) => {
-        var match = file.match(/\d{8}-\d{6}-net\.log/g);
+        // log file names are: YYYYMMDD-HHMMSS-net.log
+        var match = file.match(/^\d{8}-\d{6}-net\.log/g);
         var isLog = (match === null ? false : true);
         return ((isLog) && (!fs.lstatSync(path.resolve(opt.path, file)).isDirectory()));
     });
@@ -102,6 +103,23 @@ module.exports = (function(wevts, pevts, _log) {
                 fready.shift();
             } else {
                 log(`- log ${wfile.filename} saved to database, no more files.`);
+                if(opt.readdel === true) {
+                    fsort.forEach((file, idx) ==> {
+                        fs.unlinkSync(opt.path+file);
+                    });
+                    log(`- DELETED all log files.`);
+                } else {
+                    if(opt.readren === true) {
+                        fsort.forEach((file, idx) ==> {
+                            fs.renameSync(opt.path+file, opt.path+'_'+file);
+                        });
+                        log(`- renamed all log files.`);
+                    }
+                }
+                if(opt.readexit === true) {
+                    log(`- exiting now...`);
+                    process.exit(0);
+                }
             }
         });
     };
