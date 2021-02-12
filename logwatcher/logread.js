@@ -1,7 +1,15 @@
 /*
-    logread.js - find all log files found in the specified
-    path and notify the log processor that a file is ready 
-    for parsing and writing into the database.
+    logread.js - Find all log files found in the specified
+    path and create a sorted list. Then notify the log 
+    processor that a file is ready for parsing and writing 
+    into the database.
+
+    Unlike the log watcher this will run once and stop.
+
+    The following behavior is configurable:
+        * on completion delete or rename all log files, or not
+        * on completion exit the app, or not
+
 */
 module.exports = (function(wevts, pevts, _log) {
 
