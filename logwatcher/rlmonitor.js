@@ -75,7 +75,7 @@ if((fopt !== undefined) && (fopt === 'readfiles')) {
     const reader = require('./logread.js')(watch_evts, procs_evts, _log);
 } else {
     // Watch for new log files
-    const watcher = require('./logwatch.js')(watch_evts, _log);
+    const watcher = require('./logwatch.js')(watch_evts, procs_evts, _log);
 }
 // Process the log files into the database
 const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
