@@ -33,6 +33,8 @@ module.exports = (function(pevts, _log)  {
             log(`- DB_OPEN: success`);
             dbcfg = dbobj.getDBCcfg();
 
+            // NOTE: it is important that readActions() 
+            // is first, logread.js:DATA_READY requires it.
             readActions();
             readActionCats();
             readKnown();

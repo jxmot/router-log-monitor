@@ -156,7 +156,7 @@ module.exports = (function(wevts, pevts, _log) {
     // do NOT start processing files until the necessary data 
     // table(s) are read from the database. only handle this
     // event one time, it's only needed to start things going.
-    pevts.once('DATA_READY',  (dbtable) => {
+    pevts.once('DATA_READY', (dbtable) => {
         // this event will tell us which table has been read
         if(dbtable.includes('actions') === true) {
             if(fready.length > 0) {
