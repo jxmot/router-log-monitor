@@ -146,6 +146,8 @@ module.exports = (function(wevts, pevts, _log) {
                 fready.shift();
             } else {
                 log(`- LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
+                // decouple the bulk handling of files 
+                // from this event handller
                 setTimeout(readEnd, 100);
             }
         });
