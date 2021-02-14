@@ -5,7 +5,7 @@
     trigger the FILE_DELETED event when a file is 
     deleted.
 */
-module.exports = (function(wevts, _log) {
+module.exports = (function(wevts, pevts, _log) {
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
@@ -72,11 +72,16 @@ module.exports = (function(wevts, _log) {
             // this is the first event type received when a 
             // file is created or deleted
             case 'rename':
-                // save some info in the queue...
-                watchit.filename = filename;
-                wqueue[filename] = JSON.parse(JSON.stringify(watchit));
-                // if the timer expires then the file was deleted.
-                wqueue[filename].toid = setTimeout(renTO, 500, filename);
+                // log file names are: YYYYMMDD-HHMMSS-net.log
+                if(filename.match(opt.nameregexp) !== null) {
+                    // save some info in the queue...
+                    watchit.filename = filename;
+                    wqueue[filename] = JSON.parse(JSON.stringify(watchit));
+                    // if the timer expires then the file was deleted.
+                    wqueue[filename].toid = setTimeout(renTO, 500, filename);
+                } else {
+                    log(`- dirwatch event: did not recognize: ${filename}`);
+                }
                 break;
 
             // this is the second event type received when a 
@@ -96,11 +101,6 @@ module.exports = (function(wevts, _log) {
                     var stats = fs.statSync(`${wqueue[filename].path}${filename}`);
                     if(stats.isFile() === true) {
                         log(`- dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
-
-// clear previous timeout, if any
-// add to file obj queue
-// add a timeout(5sec), on expiration emit FILEZ_CREATED with deref'd queue
-//      alternative to:
                         wevts.emit('FILE_CREATED', 
                                    {
                                         path:wqueue[filename].path,
@@ -131,7 +131,7 @@ module.exports = (function(wevts, _log) {
                 fs.accessSync(`${wqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    if(!logmute) log(`renTO(): ${wqueue[fname].path}${fname} was deleted`);
+                    if(!logmute) log(`renTO(): info - ${wqueue[fname].path}${fname} was deleted or moved`);
                     wevts.emit('FILE_DELETED', {path:wqueue[fname].path,filename:fname});
                 }
             }
@@ -142,18 +142,26 @@ module.exports = (function(wevts, _log) {
     };
 
     /*
-        When "20210123-214242-net.log" is created with imaptest.php:
-        
-        rename
-        20210123-214242-net.log
-        change
-        20210123-214242-net.log
-        
-        
-        When that file is deleted:
-        
-        rename
-        20210123-214242-net.log
-    
+        Wait for the LOG_DBSAVED saved event. And check the
+        options for what to do with the file that was just
+        processed and saved.
     */
+    pevts.on('LOG_DBSAVED', (wfile) => {
+        log(`- LOG_DBSAVED ${wfile.filename} saved to database.`);
+        if(opt.readdel === true) {
+            fs.unlinkSync(opt.path+wfile.filename);
+            log(`- LOG_DBSAVED DELETED [${opt.path+wfile.filename}]`);
+        } else {
+            if(opt.readren === true) {
+                fs.renameSync(opt.path+wfile.filename, opt.path+opt.renchar+wfile.filename);
+                log(`- LOG_DBSAVED RENAMED to [${opt.path+opt.renchar+wfile.filename}]`);
+            } else {
+                if(opt.readmov === true) {
+                    var moveto = makePath(opt.path+opt.movpath)+path.sep;
+                    fs.renameSync(opt.path+file, moveto+file);
+                    log(`- LOG_DBSAVED MOVED from [${opt.path+file}] to [${moveto+file}]`);
+                }
+            }
+        }
+    });
 });

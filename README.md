@@ -29,10 +29,18 @@ The primary components are:
 
 ### Features
 
-* Configurable
+* Configurable:
   * IMAP server settings
-  * Run by a cron job, processes the new log messages automatically.
+  * "Bad" log entry filtering
+  * Verbosity of the run-time log (*configured in-module*)
+  * Maximum size of a run-time log, location, and file extension
   * **TBD**
+
+This utility consists of 2 primary pieces:
+
+* Log Collector - a PHP program that opens the IMAP connection to a specified folder, it finds all messages marked as "unread". It reads the messages and writes the contents to a text file. It also marks the read messages as "seen".
+* Log Watcher - it "watches" a folder for new files. As Log Collector creates a file this will then open, read, and parse the entries for writing to a database.
+  * This part also has the ability to just read files without waiting for them to be created. This is useful when there are a large quantity of files to process. 
 
 ## PHP vs. Node.js
 
@@ -46,7 +54,7 @@ I did a lot of research on IMAP and the availability of libraries in NPMs or PHP
 
 * Some were unmaintained, it has been years since an issue was closed or code was updated.
 * Some were just impractical. Like the self-hosted API and a library to interact with it.
-* Some had a large code footprint, and were over complicated for simple use.
+* Some had a large code footprint, and were over complicated for basic use.
 
 Please note that I am a *fan* of Node.js. I like it, I like coding for Node.js. And there are a lot of *good* NPM packages for it. But... sometimes a Node.js application is just too "fat" when compared to what it *actually does*. For example, one of the "proof of concept" applications I put together ended up using around 4 meg of space and it was only about a dozen lines of active code. Where? in the `node_modules` folder of course!
 
@@ -85,14 +93,13 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 * Internet connected
 * Internet disconnected
 * Time synchronized with NTP server
-* DoS attack: FIN Scan
-* DoS attack: ACK Scan
+* DoS attack
 * WLAN access rejected
 * Initialized, firmware version
 * Admin login
+* UPnP Event
 
 ### Data Relationships
-
 
 * Router Actions - 
   * Dynamic DNS
@@ -102,8 +109,7 @@ So for this particular application PHP makes more sense than JavaScript on Node.
   * Admin login
 
 * Router Invasion - 
-  * DoS attack: FIN Scan
-  * DoS attack: ACK Scan
+  * DoS attack
   * WLAN access rejected
 
 * Router LAN Activity - 
@@ -114,6 +120,7 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 
 * Network Activity - 
   * LAN access from remote
+  * UPnP Event
 
 * ***TBD***
 
@@ -131,13 +138,13 @@ The following table illustrates the relationships of the message types to the da
 | --------------------------------- | -------- | ---- | ---- | ---------- | ---- | --------- | ----------- | --- | ---- | ------- |
 | Admin login                       | RA       | X    | X    | X          |      |           |             |     |      |         |
 | DHCP IP                           | RL       | X    | X    | X          |      |           |             | X   |      |         |
-| DoS attack: FIN Scan              | RI       | X    | X    | X          |      |           |             |     |      | X       |
-| DoS attack: ACK Scan              | RI       | X    | X    | X          |      |           |             |     |      |         |
+| DoS attack                        | RI       | X    | X    | X          |      |           |             |     |      | X       |
 | Dynamic DNS                       | RA       | X    | X    |            |      |           |             |     | X    | X       |
 | Initialized, firmware version     | RU       | X    | X    |            |      |           |             |     |      | X       |
 | Internet connected                | RA       | X    | X    | X          |      |           |             |     |      |         |
 | Internet disconnected             | RA       | X    | X    |            |      |           |             |     |      |         |
 | LAN access from remote            | NA       | X    | X    | X          | X    | X         | X           |     |      |         |
+| UPnP set event                    | NA       | X    | X    | X          |      |           |             |     |      | X       |
 | Time synchronized with NTP server | RA       | X    | X    |            |      |           |             |     |      |         |
 | WLAN access rejected              | RI       | X    | X    |            |      |           |             | X   |      | X       |
 
@@ -145,6 +152,67 @@ The following table illustrates the relationships of the message types to the da
 
 ### Database Tables
 
+At this time there are 3 tables used:
+
+Log data is written to these tables:
+
+* logentry - contains all of the log entries except "bad" ones
+* logentry_bad - contains all "bad" entries
+
+For processing log entries, these tables are read in before processing begins:
+
+* actions - used for looking up the log entry description, an "action ID" is associated with each description 
+
+The remaining tables are:
+
+* ipstats - for containing statistics for a specific IP address, one row per IP
+* actioncats - provides a textual description for a category code
+* known - all known IP address on the network, this will be used for filtering log entries
+* ipcats - contains IP category descriptions, and IP ranges for the category. It also contains a flag that indicates if the category and range are in use
+
+**NOTE**: The tables above are not currently used.
+
+## Installation and Set Up
+
+### File Locations
+
+```
+\router-log-monitor 
+    |
+    +---logcollector
+    |
+    +---logoutput
+    |
+    +---logwatcher
+    |   +---mysql
+    |   +---utils
+    |   |
+    |   +---logs
+    |
+    +---sql
+```
+
+* **`router-log-monitor/logcollector`** : all of the PHP source and associated JSON configuration files
+* **`router-log-monitor/logoutput`** : all files converted from log email messages go here
+* **`router-log-monitor/logwatcher`** : all of the JavaScript source and associated configuration files
+  * **`1logwatcher/mysql`** : MySQL functions and configuration files
+  * **`1logwatcher/utils`** : utility functions for this applciation, currently contains only the Log.js file
+  * **`1logwatcher/logs`** : all run-time logs will be written here, Log.js manages the files and rolls over to the next when the current file reaches capacity(*configurable*)
+* **`router-log-monitor/sql`** : SQL files containing various statements for creating tables and seeding data
+
+### Configuration Files
+
+### Email Accounts
+
+### Database Schemas and Tables
+
+#### MySQL Configuration
+
+### CRON
+
+### Testing
+
+### Mailbox Utility
 
 
 

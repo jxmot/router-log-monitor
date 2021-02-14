@@ -52,8 +52,6 @@ module.exports = (function(pevts, _log)  {
     var logmute = true;
     log(`- init`);
 
-    var badcount = 0;
-
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`- process(): database not open`);
@@ -64,9 +62,11 @@ module.exports = (function(pevts, _log)  {
             logToDB(wfile);
             log(`- process(): done ${wfile.path}${wfile.filename}`);
             // announce completion...
-            //console.log("LOG_PROCESSED DONE DONE DONE\n");
+            // NOTE: This is only the point where we've finished 
+            // writing the entries to the database. It is NOT an
+            // indication that all of the entries have been written 
+            // to the database.
             pevts.emit('LOG_PROCESSED', wfile);
-            badcount = 0;
         }
         return dbopen;
     };
@@ -104,61 +104,61 @@ module.exports = (function(pevts, _log)  {
             // Was using fs.readSync() but there was a bug. For info can be found
             // at - https://github.com/jxmot/nodejs-readSync-bug
             var logstr = fs.readFileSync(`${wfile.path}${wfile.filename}`, 'utf8');         
-            if(logstr.length === wfile.size) {
-                if(!logmute) log(`- logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`- logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
 
-                // body string to array of lines
-                var logarr = logstr.split("\n");
+            // body string to array of lines
+            var logarr = logstr.split("\n");
 
-                // interate through array of lines - 
-                //      parse each line into object
-                //      write object to db
-                //      next line
-                if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
-                const lineqty = logarr.length;
-                var linecount = 0;
-                logarr.forEach((entry, idx) => {
-                    var newrow = parseEntry(entry, idx);
-                    // for debugging defective logs
-                    newrow.logfile = wfile.filename;
-                    // write the data...
-                    // the log entry table has an auto increment primary key, 
-                    // it is called "entrynumb". After the record is written
-                    // its value is in "insertId".
-                    //
-                    // 
-                    var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
-                    dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
-                        if(result === true) {
-                            if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
-                            // are "bad" records to be handled?
-                            if(wfile.movebad === true) {
-                                // if the time stamp is BEFORE the "minimum" time 
-                                // stamp then it's a bad record and won't be usable.
-                                if(wfile.mintstamp > data.tstamp) {
-                                    if(!logmute) log(` - logToDB(): BAD timestamp - ${target} ${insertId} ${data.tstamp}`);
-                                    // the table we're using has an auto increment primary
-                                    // ID. And we call it 'entrynumb' in the table. After
-                                    // the row is written we will merge it with the row
-                                    // data and write that to the table used for storing
-                                    // "bad" entries.
-                                    var badrec = Object.assign(data, {entrynumb:insertId});
-                                    saveBadEntry(badrec, wfile);
-                                }
+            // interate through array of lines - 
+            //      parse each line into object
+            //      write object to db
+            //      next line
+            if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
+            const lineqty = logarr.length;
+            var linecount = 0;
+            var badcount = 0;
+            logarr.forEach((entry, idx) => {
+                var newrow = parseEntry(entry, idx);
+                // for debugging defective logs
+                newrow.logfile = wfile.filename;
+                // write the data...
+                // the log entry table has an auto increment primary key, 
+                // it is called "entrynumb". After the record is written
+                // its value is in "insertId".
+                //
+                // 
+                var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
+                dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
+                    if(result === true) {
+                        if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                        // are "bad" records to be handled?
+                        if(wfile.movebad === true) {
+                            // if the time stamp is BEFORE the "minimum" time 
+                            // stamp then it's a bad record and won't be usable.
+                            if(wfile.mintstamp > data.tstamp) {
+                                if(!logmute) log(` - logToDB(): BAD timestamp - ${target} ${insertId} ${data.tstamp}`);
+                                // the table we're using has an auto increment primary
+                                // ID. And we call it 'entrynumb' in the table. After
+                                // the row is written we will merge it with the row
+                                // data and write that to the table used for storing
+                                // "bad" entries.
+                                var badrec = Object.assign(data, {entrynumb:insertId});
+                                saveBadEntry(badrec, wfile);
+                                badcount += 1;
                             }
-                            if((linecount += 1) === lineqty) {
-                                wfile.linecount = linecount;
-                                pevts.emit('LOG_DBSAVED', wfile);
-                            }
-                        } else {
-                            log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                         }
-                        delete data;
-                    });
+                        if((linecount += 1) === lineqty) {
+                            wfile.linecount = linecount;
+                            wfile.badcount  = badcount;
+                            pevts.emit('LOG_DBSAVED', wfile);
+                        }
+                    } else {
+                        log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
+                    }
+                    delete data;
+                    delete newrow;
                 });
-            } else {
-                log(`- logToDB(): ERROR: read ${logstr.length} of ${wfile.size} - ${wfile.path}${wfile.filename}`);
-            }
+            });
         } else {
             log(`- logToDB(): undefined - wfile`);
         }
@@ -169,7 +169,6 @@ module.exports = (function(pevts, _log)  {
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
         dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
             if(result === true) {
-                badcount += 1;
                 if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
@@ -185,7 +184,6 @@ module.exports = (function(pevts, _log)  {
             } else {
                 log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
-            delete wfile;
         });
     };
 
@@ -200,13 +198,25 @@ module.exports = (function(pevts, _log)  {
         entObj.tstamp = getTimestamp(entry);
         // get the action identifiers
         var actn = getAction(entry);
-        entObj.actionid = actn.id
-        // 
-        var parms = getActionParms(actn, entry);
-        // 
-        entObj = Object.assign(entObj, parms);
+        if(actn.id === -1) {
+            entObj.actionid = -1;
+            log(`- parseEntry(): ${actn.code}`);
+        } else {
+            entObj.actionid = actn.id;
+            // 
+            var parms = getActionParms(actn, entry);
+            if(parms.err !== undefined) {
+                log(`- parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
+                log(`- parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
+                log(`- parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);
+                // the err object cannot be written to the database
+                delete parms.err;
+            }
+            // 
+            entObj = Object.assign(entObj, parms);
+            if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+        }
         // return the entry object
-        if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         return entObj;
     };
 
@@ -240,6 +250,11 @@ module.exports = (function(pevts, _log)  {
                     break;
                 }
             }
+            if(actID.id === -1) {
+                actID.code = `ERROR: action not found, entry = [${entry}]`;
+            }
+        } else {
+            actID.code = 'ERROR: no action data';
         }
         if(!logmute) log(`- getAction(): ${JSON.stringify(actID)}`);
         return actID;
@@ -253,25 +268,37 @@ module.exports = (function(pevts, _log)  {
             case constants.NA:
 // [LAN access from remote] from 73.176.4.88:55216 to 192.168.0.100:59018, Friday, Jan 22,2021 01:24:50
                 if(action.id === constants.LAN_ACC) {
-                    let tmp = entry.split('] ');
-                    tmp = tmp[1].split(' ');
-                    let ipfrom = tmp[1].split(':');
-                    let ipto   = tmp[3].split(':');
-                    actparms.ip     = ipfrom[0];
-                    actparms.port   = ipfrom[1];
-                    actparms.toip   = ipto[0];
-                    actparms.toport = ipto[1].replace(',','');
+                    try {
+                        let tmp = entry.split('] ');
+                        tmp = tmp[1].split(' ');
+                        let ipfrom = tmp[1].split(':');
+                        let ipto   = tmp[3].split(':');
+                        actparms.ip     = ipfrom[0];
+                        actparms.port   = ipfrom[1];
+                        actparms.toip   = ipto[0];
+                        actparms.toport = ipto[1].replace(',','');
+                    }
+                    catch(err) {
+                        actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() failed try, err = ${JSON.stringify(err)}'}});
+                    }
                 } else {
 // [UPnP set event: Public_UPNP_C3] from source 192.168.0.7, Monday, Jun 04,2018 02:59:36
                     if(action.id === constants.UPNP_EVENT) {
-                        // extract the UPnP message
-                        let tmp = entry.split('] ');
-                        tmp = tmp[0].split(': ');
-                        actparms.message = tmp[1];
-                        // extract the IP
-                        tmp = entry.split(', ');
-                        tmp = tmp[0].split('source ');
-                        actparms.ip = tmp[1];
+                        try {
+                            // extract the UPnP message
+                            let tmp = entry.split('] ');
+                            tmp = tmp[0].split(': ');
+                            actparms.message = tmp[1];
+                            // extract the IP
+                            tmp = entry.split(', ');
+                            tmp = tmp[0].split('source ');
+                            actparms.ip = tmp[1];
+                        }
+                        catch(err) {
+                            actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() failed try, err = ${JSON.stringify(err)}'}});
+                        }
+                    } else {
+                        actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() unknown action.id'}});
                     }
                 }
                 break;
@@ -283,15 +310,20 @@ module.exports = (function(pevts, _log)  {
                 break;
             case constants.RL: {
 // [DHCP IP: (192.168.0.211)] to MAC address B0:BE:76:CA:E2:F4, Friday, Jan 22,2021 02:00:57
-                let tmp = entry.split('address ');
-                tmp = tmp[1].split(', ');
-                actparms.mac = tmp[0];
-                tmp = entry.split('IP: (');
-                tmp = tmp[1].split(')] ');
-                actparms.ip = tmp[0];
-                // TODO: look up IP in the known table, if found 
-                // check the watch flag. if true then update 
-                // the ip stats table
+                try {
+                    let tmp = entry.split('address ');
+                    tmp = tmp[1].split(', ');
+                    actparms.mac = tmp[0];
+                    tmp = entry.split('IP: (');
+                    tmp = tmp[1].split(')] ');
+                    actparms.ip = tmp[0];
+                    // TODO: look up IP in the known table, if found 
+                    // check the watch flag. if true then update 
+                    // the ip stats table
+                }
+                catch(err) {
+                    actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() failed try, err = ${JSON.stringify(err)}'}});
+                }
                 break;
             }
             case constants.RU: {
@@ -302,7 +334,7 @@ module.exports = (function(pevts, _log)  {
                 break;
             }
             default:
-                actparms = Object.assign(actparms,{err:{act:action,ent:entry}});
+                actparms = Object.assign(actparms,{err:{act:action,ent:entry,msg:'getActionParms() unknown action.code'}});
                 break;
         };
         return actparms;
@@ -347,7 +379,7 @@ module.exports = (function(pevts, _log)  {
 //                break;
 
             default:
-                raparms = Object.assign(raparms,{err:{act:action,ent:entry}});
+                raparms = Object.assign(raparms,{err:{act:action,ent:entry,msg:'parseRA() unknown action.code'}});
                 break;
         };
         return raparms;
@@ -357,13 +389,19 @@ module.exports = (function(pevts, _log)  {
         var riparms = {};
         // 
         switch(action.id) {
-            case constants.DOS_FIN:
-            case constants.DOS_ACK: {
+            case constants.DOS_ATT: {
 // [DoS attack: FIN Scan] (3) attack packets in last 20 sec from ip [162.214.100.81], Wednesday, Jan 20,2021 08:51:46
 // [DoS attack: ACK Scan] (1) attack packets in last 20 sec from ip [106.70.232.86], Sunday, Jan 03,2021 04:48:17
                 let tmp = entry.split('],');
                 tmp = tmp[0].split('ip [');
                 riparms.ip = tmp[1];
+                tmp = entry.split('] ');
+                tmp = tmp[0].split(': ');
+                riparms.message = tmp[1]; 
+                tmp = entry.split('] ');
+                tmp = tmp[1].split(', ');
+                riparms.message += ': '; 
+                riparms.message += tmp[0]; 
                 break;
             }
             case constants.WLAN_REJ: {
@@ -371,10 +409,13 @@ module.exports = (function(pevts, _log)  {
                 let tmp = entry.split('MAC ');
                 tmp = tmp[1].split(', ');
                 riparms.mac = tmp[0].replace(',','');;
+                tmp = entry.split('] ');
+                tmp = tmp[0].split(': ');
+                riparms.message = tmp[1]; 
                 break;
             }
             default:
-                riparms = Object.assign(riparms,{err:{act:action,ent:entry}});
+                riparms = Object.assign(riparms,{err:{act:action,ent:entry,msg:'parseRI() unknown action.code'}});
                 break;
         };
         return riparms;
@@ -390,6 +431,7 @@ module.exports = (function(pevts, _log)  {
                     destarr.push(JSON.parse(JSON.stringify(row)));
                     if(!logmute) log(`- readTable(): destarr - ${JSON.stringify(row)}`);
                 });
+                pevts.emit('DATA_READY', dbtable);
             } else {
                 log(`- readTable(): ERROR result is null for ${table}`);
             }
