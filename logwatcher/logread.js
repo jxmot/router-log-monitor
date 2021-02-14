@@ -20,13 +20,22 @@ module.exports = (function(wevts, pevts, _log) {
         _log(`${scriptName} ${payload}`);
     };
 
-    // some run-time log entries can be muted
+    // some run-time log messages can be muted
     var logmute = true;
     log(`- init`);
 
     // configure the path to the watched folder
     const opt = require('./watchopt.js');
     log(`- reading all log files in ${opt.path}`);
+
+    function makePath(pathname) {
+        const __dirname = path.resolve();
+        // Remove leading directory markers, and remove ending /file-name.extension
+        pathname = pathname.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, ''); 
+        var mkpath = path.resolve(__dirname, pathname);
+        fs.mkdirSync(mkpath, {recursive:true});
+        return mkpath;
+    };
 
     // for creating an object that describes the file 
     // to the processor.
@@ -50,12 +59,12 @@ module.exports = (function(wevts, pevts, _log) {
     // filter the list, only contains log files
     flist = tmp.filter((file, idx) => {
         // log file names are: YYYYMMDD-HHMMSS-net.log
-        var match = file.match(/^\d{8}-\d{6}-net\.log/g);
+        var match = file.match(opt.nameregexp);
         var isLog = (match === null ? false : true);
         return ((isLog) && (!fs.lstatSync(path.resolve(opt.path, file)).isDirectory()));
     });
 
-    // sort the list, oldest - newest(by file name)
+    // sort the list, oldest -> newest(by file name)
     var fsort = [];
     if(flist.length > 1 ) {
         fsort = flist.sort((a, b) => {
@@ -103,19 +112,33 @@ module.exports = (function(wevts, pevts, _log) {
                 fready.shift();
             } else {
                 log(`- log ${wfile.filename} saved to database, no more files.`);
+                // check the options to see what we'll do with
+                // the file now that we're done with it...
                 if(opt.readdel === true) {
-                    fsort.forEach((file, idx) ==> {
+                    // delete all files
+                    fsort.forEach((file, idx) => {
                         fs.unlinkSync(opt.path+file);
                     });
                     log(`- DELETED all log files.`);
                 } else {
                     if(opt.readren === true) {
-                        fsort.forEach((file, idx) ==> {
-                            fs.renameSync(opt.path+file, opt.path+'_'+file);
+                        // rename all files
+                        fsort.forEach((file, idx) => {
+                            fs.renameSync(opt.path+file, opt.path+opt.renchar+file);
                         });
                         log(`- renamed all log files.`);
+                    } else {
+                        if(opt.readmov === true) {
+                            // move all files
+                            fsort.forEach((file, idx) => {
+                                var moveto = makePath(opt.path+opt.movpath)+path.sep;
+                                fs.renameSync(opt.path+file, moveto+file);
+                            });
+                            log(`- moved all log files to ${moveto}.`);
+                        }
                     }
                 }
+
                 if(opt.readexit === true) {
                     log(`- exiting now...`);
                     process.exit(0);
@@ -125,11 +148,13 @@ module.exports = (function(wevts, pevts, _log) {
     };
 
     // do NOT start processing files until the necessary data 
-    // table(s) are read from the database.
+    // table(s) are read from the database. only handle this
+    // event one time, it's only needed to start things going.
     pevts.once('DATA_READY',  (dbtable) => {
         // this event will tell us which table has been read
         if(dbtable.includes('actions') === true) {
             if(fready.length > 0) {
+                log(`- DATA_READY start log processing, ${fready.length} files to go`);
                 // start with the first file in the list
                 sendFC(Object.assign({}, fready[0]));
                 // remove it from the queue
