@@ -72,11 +72,16 @@ module.exports = (function(wevts, pevts, _log) {
             // this is the first event type received when a 
             // file is created or deleted
             case 'rename':
-                // save some info in the queue...
-                watchit.filename = filename;
-                wqueue[filename] = JSON.parse(JSON.stringify(watchit));
-                // if the timer expires then the file was deleted.
-                wqueue[filename].toid = setTimeout(renTO, 500, filename);
+                // log file names are: YYYYMMDD-HHMMSS-net.log
+                if(filename.match(opt.nameregexp) !== null) {
+                    // save some info in the queue...
+                    watchit.filename = filename;
+                    wqueue[filename] = JSON.parse(JSON.stringify(watchit));
+                    // if the timer expires then the file was deleted.
+                    wqueue[filename].toid = setTimeout(renTO, 500, filename);
+                } else {
+                    log(`- dirwatch event: did not recognize: ${filename}`);
+                }
                 break;
 
             // this is the second event type received when a 
