@@ -107,7 +107,7 @@ module.exports = (function(wevts, pevts, _log) {
                 fsort.forEach((file, idx) => {
                     fs.renameSync(opt.path+file, opt.path+opt.renchar+file);
                 });
-                log(`- readEnd(): renamed all log files.`);
+                log(`- readEnd(): renamed all log files, prepended with [${opt.renchar}].`);
             } else {
                 if(opt.readmov === true) {
                     // move all files
