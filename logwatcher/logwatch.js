@@ -5,7 +5,7 @@
     trigger the FILE_DELETED event when a file is 
     deleted.
 */
-module.exports = (function(wevts, _log) {
+module.exports = (function(wevts, pevts, _log) {
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
