@@ -74,7 +74,9 @@ $accnt = json_decode(file_get_contents('./_imapaccnt.json'));
 $imapsrv = "{$accnt->host}:{$accnt->port}/imap/ssl";
 $mbox = "{{$imapsrv}}INBOX{$accnt->folder}";
 
-($extraout ? echoit(rightnow('log')." - {$accnt->login}\n"):true);
+echoit(rightnow('log')." - {$accnt->login}\n");
+echoit(rightnow('log')." - {$imapsrv}\n");
+echoit(rightnow('log')." - {$mbox}\n\n");
 
 // open it up...
 $mailbox = imap_open($mbox, $accnt->login, $accnt->pword);
