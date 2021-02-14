@@ -101,11 +101,6 @@ module.exports = (function(wevts, pevts, _log) {
                     var stats = fs.statSync(`${wqueue[filename].path}${filename}`);
                     if(stats.isFile() === true) {
                         log(`- dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
-
-// clear previous timeout, if any
-// add to file obj queue
-// add a timeout(5sec), on expiration emit FILEZ_CREATED with deref'd queue
-//      alternative to:
                         wevts.emit('FILE_CREATED', 
                                    {
                                         path:wqueue[filename].path,
@@ -136,7 +131,7 @@ module.exports = (function(wevts, pevts, _log) {
                 fs.accessSync(`${wqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    if(!logmute) log(`renTO(): ${wqueue[fname].path}${fname} was deleted`);
+                    if(!logmute) log(`renTO(): info - ${wqueue[fname].path}${fname} was deleted or moved`);
                     wevts.emit('FILE_DELETED', {path:wqueue[fname].path,filename:fname});
                 }
             }
