@@ -107,11 +107,11 @@ module.exports = (function(wevts, pevts, _log) {
         wevts.emit('FILE_CREATED', frobj);
         pevts.once('LOG_DBSAVED', (wfile) => {
             if(fready.length > 0) {
-                log(`- log ${wfile.filename} saved to database, reading the next log...`);
+                log(`- LOG_DBSAVED ${wfile.filename} saved to database, reading the next log...`);
                 sendFC(Object.assign({}, fready[0]));
                 fready.shift();
             } else {
-                log(`- log ${wfile.filename} saved to database, no more files.`);
+                log(`- LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
                 // check the options to see what we'll do with
                 // the file now that we're done with it...
                 if(opt.readdel === true) {
@@ -119,28 +119,28 @@ module.exports = (function(wevts, pevts, _log) {
                     fsort.forEach((file, idx) => {
                         fs.unlinkSync(opt.path+file);
                     });
-                    log(`- DELETED all log files.`);
+                    log(`- LOG_DBSAVED DELETED all log files.`);
                 } else {
                     if(opt.readren === true) {
                         // rename all files
                         fsort.forEach((file, idx) => {
                             fs.renameSync(opt.path+file, opt.path+opt.renchar+file);
                         });
-                        log(`- renamed all log files.`);
+                        log(`- LOG_DBSAVED renamed all log files.`);
                     } else {
                         if(opt.readmov === true) {
                             // move all files
+                            var moveto = makePath(opt.path+opt.movpath)+path.sep;
                             fsort.forEach((file, idx) => {
-                                var moveto = makePath(opt.path+opt.movpath)+path.sep;
                                 fs.renameSync(opt.path+file, moveto+file);
                             });
-                            log(`- moved all log files to ${moveto}.`);
+                            log(`- LOG_DBSAVED moved all log files to ${moveto}.`);
                         }
                     }
                 }
 
                 if(opt.readexit === true) {
-                    log(`- exiting now...`);
+                    log(`- LOG_DBSAVED exiting now...`);
                     process.exit(0);
                 }
             }
