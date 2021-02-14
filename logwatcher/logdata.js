@@ -52,8 +52,6 @@ module.exports = (function(pevts, _log)  {
     var logmute = true;
     log(`- init`);
 
-    var badcount = 0;
-
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`- process(): database not open`);
@@ -64,8 +62,11 @@ module.exports = (function(pevts, _log)  {
             logToDB(wfile);
             log(`- process(): done ${wfile.path}${wfile.filename}`);
             // announce completion...
+            // NOTE: This is only the point where we've finished 
+            // writing the entries to the database. It is NOT an
+            // indication that all of the entries have been written 
+            // to the database.
             pevts.emit('LOG_PROCESSED', wfile);
-            badcount = 0;
         }
         return dbopen;
     };
@@ -115,6 +116,7 @@ module.exports = (function(pevts, _log)  {
             if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
             const lineqty = logarr.length;
             var linecount = 0;
+            var badcount = 0;
             logarr.forEach((entry, idx) => {
                 var newrow = parseEntry(entry, idx);
                 // for debugging defective logs
@@ -142,10 +144,12 @@ module.exports = (function(pevts, _log)  {
                                 // "bad" entries.
                                 var badrec = Object.assign(data, {entrynumb:insertId});
                                 saveBadEntry(badrec, wfile);
+                                badcount += 1;
                             }
                         }
                         if((linecount += 1) === lineqty) {
                             wfile.linecount = linecount;
+                            wfile.badcount  = badcount;
                             pevts.emit('LOG_DBSAVED', wfile);
                         }
                     } else {
@@ -165,7 +169,6 @@ module.exports = (function(pevts, _log)  {
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
         dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
             if(result === true) {
-                badcount += 1;
                 if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
@@ -181,7 +184,6 @@ module.exports = (function(pevts, _log)  {
             } else {
                 log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
-            delete wfile;
         });
     };
 
