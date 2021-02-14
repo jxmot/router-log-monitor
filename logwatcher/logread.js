@@ -92,6 +92,40 @@ module.exports = (function(wevts, pevts, _log) {
         }
     });
 
+    function readEnd() {
+        // check the options to see what we'll do with
+        // the file now that we're done with it...
+        if(opt.readdel === true) {
+            // delete all files
+            fsort.forEach((file, idx) => {
+                fs.unlinkSync(opt.path+file);
+            });
+            log(`- readEnd(): DELETED all log files.`);
+        } else {
+            if(opt.readren === true) {
+                // rename all files
+                fsort.forEach((file, idx) => {
+                    fs.renameSync(opt.path+file, opt.path+opt.renchar+file);
+                });
+                log(`- readEnd(): renamed all log files.`);
+            } else {
+                if(opt.readmov === true) {
+                    // move all files
+                    var moveto = makePath(opt.path+opt.movpath)+path.sep;
+                    fsort.forEach((file, idx) => {
+                        fs.renameSync(opt.path+file, moveto+file);
+                    });
+                    log(`- readEnd(): moved all log files to ${moveto}.`);
+                }
+            }
+        }
+
+        if(opt.readexit === true) {
+            log(`- readEnd(): exiting now...`);
+            process.exit(0);
+        }
+    };
+
     // send the file object to the processor
     // via a timeout.
     function sendFC(frobj) {
@@ -112,37 +146,7 @@ module.exports = (function(wevts, pevts, _log) {
                 fready.shift();
             } else {
                 log(`- LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
-                // check the options to see what we'll do with
-                // the file now that we're done with it...
-                if(opt.readdel === true) {
-                    // delete all files
-                    fsort.forEach((file, idx) => {
-                        fs.unlinkSync(opt.path+file);
-                    });
-                    log(`- LOG_DBSAVED DELETED all log files.`);
-                } else {
-                    if(opt.readren === true) {
-                        // rename all files
-                        fsort.forEach((file, idx) => {
-                            fs.renameSync(opt.path+file, opt.path+opt.renchar+file);
-                        });
-                        log(`- LOG_DBSAVED renamed all log files.`);
-                    } else {
-                        if(opt.readmov === true) {
-                            // move all files
-                            var moveto = makePath(opt.path+opt.movpath)+path.sep;
-                            fsort.forEach((file, idx) => {
-                                fs.renameSync(opt.path+file, moveto+file);
-                            });
-                            log(`- LOG_DBSAVED moved all log files to ${moveto}.`);
-                        }
-                    }
-                }
-
-                if(opt.readexit === true) {
-                    log(`- LOG_DBSAVED exiting now...`);
-                    process.exit(0);
-                }
+                setTimeout(readEnd, 100);
             }
         });
     };
