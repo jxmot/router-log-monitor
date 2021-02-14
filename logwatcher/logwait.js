@@ -31,7 +31,9 @@ module.exports = (function(wevts, pevts, _log) {
         ldata.process(JSON.parse(JSON.stringify(watchit)));
     });
 
+    // 
     wevts.on('FILE_DELETED', (watchit) => {
         if(!logmute) log(`- FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
     });
+
 });
