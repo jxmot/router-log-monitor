@@ -1,6 +1,5 @@
 /* ************************************************************************ */
 // https://nodejs.org/docs/latest-v12.x/api/documentation.html
-
 var path = require('path');
 var scriptName = path.basename(__filename);
 
@@ -21,7 +20,7 @@ function _log(payload) {
 
 function log(payload) {
     _log(`${scriptName} ${payload}`);
-}
+};
 
 // start logging
 log('*******************************************');
