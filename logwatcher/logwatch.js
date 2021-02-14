@@ -142,18 +142,26 @@ module.exports = (function(wevts, pevts, _log) {
     };
 
     /*
-        When "20210123-214242-net.log" is created:
-        
-        rename
-        20210123-214242-net.log
-        change
-        20210123-214242-net.log
-        
-        
-        When that file is deleted:
-        
-        rename
-        20210123-214242-net.log
-    
+        Wait for the LOG_DBSAVED saved event. And check the
+        options for what to do with the file that was just
+        processed and saved.
     */
+    pevts.on('LOG_DBSAVED', (wfile) => {
+        log(`- LOG_DBSAVED ${wfile.filename} saved to database.`);
+        if(opt.readdel === true) {
+            fs.unlinkSync(opt.path+wfile.filename);
+            log(`- LOG_DBSAVED DELETED [${opt.path+wfile.filename}]`);
+        } else {
+            if(opt.readren === true) {
+                fs.renameSync(opt.path+wfile.filename, opt.path+opt.renchar+wfile.filename);
+                log(`- LOG_DBSAVED RENAMED to [${opt.path+opt.renchar+wfile.filename}]`);
+            } else {
+                if(opt.readmov === true) {
+                    var moveto = makePath(opt.path+opt.movpath)+path.sep;
+                    fs.renameSync(opt.path+file, moveto+file);
+                    log(`- LOG_DBSAVED MOVED from [${opt.path+file}] to [${moveto+file}]`);
+                }
+            }
+        }
+    });
 });
