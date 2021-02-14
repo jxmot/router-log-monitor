@@ -78,8 +78,11 @@ if((fopt !== undefined) && (fopt === 'readfiles')) {
 }
 // Process the log files into the database
 const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
-// Generate static reports
-const reports = require('./reports.js')(procs_evts, _log);
+// do not generate reports if reading files in bulk
+if((fopt === undefined) || (fopt !== 'readfiles')) {
+    // Generate static reports
+    const reports = require('./reports.js')(procs_evts, _log);
+}
 
 // handle database errors here, including when the server closes 
 // the connection after a period of being "idle".
