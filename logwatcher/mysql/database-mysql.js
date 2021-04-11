@@ -237,7 +237,7 @@ module.exports = (function(_log) {
                     log(`database.readRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _readCallBack(table, null, {err:true, msg:'ERROR query: [${error.message}  ${error.code}  ${error.errno}]'});
                 } else {
-                    if((result[0] !== null) && (result[0] !== undefined)) _readCallBack(table, JSON.parse(JSON.stringify(result)));
+                    if((result[0] !== null) && (result[0] !== undefined)) _readCallBack(table, JSON.parse(JSON.stringify(result)), null);
                     else _readCallBack(table, null, {err:true, msg:'not found', key:keyfield});
                 }
             });
