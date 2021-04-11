@@ -12,11 +12,13 @@ module.exports = (function(pevts, _log) {
 
     var dbopen = false;
     var dbobj = {};
+    var dbcfg = {};
 
     pevts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
             dbopen = true;
-            dbobj = _dbobj.db;
+            dbobj  = _dbobj.db;
+            dbcfg  = dbobj.getDBCcfg();
             log(`- DB_OPEN: success`);
         } else {
             log(`- DB_OPEN: ERROR ${dbobj.db.err.message}`);
