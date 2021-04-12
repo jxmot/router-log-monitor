@@ -34,22 +34,6 @@ module.exports = (function(_log) {
         return dbcfg;
     };
 
-    /*
-        Open the Connection to the Database
-
-        Usage: Where "db-parms.js" contains the the required module described
-        above.
-
-            var database = require('./database-mysql.js').database;
-            database.openDB('./db-parms.js', dbOpened);
-
-            function dbOpened(isOpen, errorObject) {
-                // success if true
-                if(isOpen) doSomething();
-                // else the errorObject will be present and contain
-                // details
-            };
-    */
     database.openDB = function(callme, callonerror = undefined) {
         // for reporting errors to the client
         var errObj;
