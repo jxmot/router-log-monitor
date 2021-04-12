@@ -82,7 +82,7 @@ module.exports = (function(wevts, pevts, _log) {
         } else {
             var readit = new ReadIt;
             readit.path = opt.path;
-            readit.filename =  fname,
+            readit.filename = fname,
             readit.now = Date.now();
             readit.size = stats.size;
             readit.movebad = opt.movebad;
@@ -141,11 +141,11 @@ module.exports = (function(wevts, pevts, _log) {
         wevts.emit('FILE_CREATED', frobj);
         pevts.once('LOG_DBSAVED', (wfile) => {
             if(fready.length > 0) {
-                log(`- LOG_DBSAVED ${wfile.filename} saved to database, reading the next log...`);
+                log(`- fcemit(): LOG_DBSAVED ${wfile.filename} saved to database, reading the next log...`);
                 sendFC(Object.assign({}, fready[0]));
                 fready.shift();
             } else {
-                log(`- LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
+                log(`- fcemit(): LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
                 // decouple the bulk handling of files 
                 // from this event handller
                 setTimeout(readEnd, 100);
