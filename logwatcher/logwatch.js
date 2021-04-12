@@ -89,7 +89,7 @@ module.exports = (function(wevts, pevts, _log) {
             case 'change':
                 // there can be a 'change' event with out a 
                 // preceding 'rename'
-                if(wqueue[filename] !== undefined) {
+                if(typeof wqueue[filename] !== 'undefined') {
                     // the file is in the queue, cancel the
                     // timeout.
                     clearTimeout(wqueue[filename].toid);
@@ -116,7 +116,7 @@ module.exports = (function(wevts, pevts, _log) {
                     // remove this entry from the queue 
                     delete wqueue[filename];
                 } else {
-                    if(!logmute) log(`- dirwatch event: secondary ${evtype} ${filename}`);
+                    if(!logmute) log(`- dirwatch event: undefined - wqueue[${filename}] evtype = ${evtype}`);
                 }
                 break;
         };
@@ -126,7 +126,7 @@ module.exports = (function(wevts, pevts, _log) {
         renTO() - rename time out handler
     */
     function renTO(fname) {
-        if(wqueue[fname] !== undefined) {
+        if(typeof wqueue[fname] !== 'undefined') {
             try {
                 fs.accessSync(`${wqueue[fname].path}${fname}`, fs.constants.F_OK);
             } catch(err) {

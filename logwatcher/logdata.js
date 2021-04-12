@@ -89,7 +89,7 @@ module.exports = (function(pevts, _log)  {
 
     function logToDB(wfile) {
         // make sure the file is valid
-        if(wfile !== undefined) {
+        if(typeof wfile !== 'undefined') {
             if(!logmute) log(`- logToDB(): checking ${wfile.path}${wfile.filename}`);
             try {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
@@ -207,7 +207,7 @@ module.exports = (function(pevts, _log)  {
             entObj.actionid = actn.id;
             // 
             var parms = getActionParms(actn, entry);
-            if(parms.err !== undefined) {
+            if(typeof parms.err !== 'undefined') {
                 log(`- parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
                 log(`- parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
                 log(`- parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);

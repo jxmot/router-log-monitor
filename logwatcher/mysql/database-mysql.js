@@ -51,7 +51,7 @@ module.exports = (function(_log) {
         // handle errors like when the server closes the
         // connection, MySQL will keep an inactive connection 
         // open for only 8 hours. Then it will close it.
-        if(callonerror !== undefined) {
+        if(typeof callonerror !== 'undefined') {
             connection.on('error', (callonerror));
         } else {
             connection.on('error', (dbRunTimeError));
@@ -183,7 +183,7 @@ module.exports = (function(_log) {
             database.readAllRows(table, dataReady);
 
             function dataReady(dataRows) {
-                if(dataRows === undefined) {
+                if(typeof dataRows === 'undefined') {
                     console.log('dataReady() - no data available');
                 } else {
                     console.log('dataReady() - data found: ');
@@ -221,7 +221,7 @@ module.exports = (function(_log) {
                     log(`database.readRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _readCallBack(table, null, {err:true, msg:'ERROR query: [${error.message}  ${error.code}  ${error.errno}]'});
                 } else {
-                    if((result[0] !== null) && (result[0] !== undefined)) _readCallBack(table, JSON.parse(JSON.stringify(result)), null);
+                    if((result[0] !== null) && (typeof result[0] !== 'undefined')) _readCallBack(table, JSON.parse(JSON.stringify(result)), null);
                     else _readCallBack(table, null, {err:true, msg:'not found', key:keyfield});
                 }
             });
