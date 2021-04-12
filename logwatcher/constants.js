@@ -56,6 +56,7 @@ Full List(?):
 
 */
 module.exports = {
+    // netlog category codes and action IDs
     NA         : 'NA',  // Network Activity
     RA         : 'RA',  // Router Actions     
     RI         : 'RI',  // Router Invasion    
@@ -71,5 +72,14 @@ module.exports = {
     DOS_ATT    : 3,     // RI
     WLAN_REJ   : 10,    // RI
     DHCP_IP    : 2,     // RL
-    FIRMW_UP   : 5      // RU
+    FIRMW_UP   : 5,     // RU
+    // epoch calculation contstants
+    HOUR_1_MS  :    3600000,
+    HOURS_4_MS :   14400000,
+    DAY_1_MS   :   86400000,
+    DAYS_5_MS  :  432000000,
+    DAYS_10_MS :  864000000,
+    DAYS_14_MS : 1209600000,
+    DAYS_21_MS : 1814400000,
+    DAYS_30_MS : 2592000000
 };
