@@ -126,7 +126,7 @@ module.exports = (function(_log) {
             connection.query('insert into '+table+' set ?', record, function(error, result) {
                 if(error) {
                     log(`database.writeRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _writeCallBack(false, table, record, null);
+                    _writeCallBack(false, table, record, error);
                 } else {
                     // If you are inserting a row into a table with an auto 
                     // increment primary key, you can retrieve the insert id
@@ -136,7 +136,7 @@ module.exports = (function(_log) {
             });
         } else {
             log('database.writeRow() - ERROR database not open');
-            _writeCallBack(false, table, record, null);
+            _writeCallBack(false, table, record, {message:'ERROR database not open',code:-1,errno:-1});
         }
     };
 
