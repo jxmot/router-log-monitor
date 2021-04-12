@@ -12,6 +12,8 @@ module.exports = (function(pevts, _log) {
 
     var constants = require('./constants.js');
 
+    var staticdata = require('./staticdata.js')(pevts, _log);
+
     var dbopen = false;
     var dbobj = {};
     var dbcfg = {};
@@ -44,6 +46,10 @@ module.exports = (function(pevts, _log) {
 //            reportActions(constants.LAN_ACC);
         }
     });
+
+    function isKnownIP(row) {
+        return staticdata.isKnownIP(row.ip);
+    };
 
     /*
         Static Reports:
@@ -86,9 +92,52 @@ module.exports = (function(pevts, _log) {
 
         dbobj.readRows(dbtable, criteria, (table, data, err) => {
             if(err !== null) {
-                log(`- ERR in reportActions() err = ${JSON.stringify(err)}`);
+                log(`- reportActions(): ERROR err = ${JSON.stringify(err)}`);
+                exit(0);
             } else {
-                log(`- reportActions() got data`);
+                log(`- reportActions(): got data, ${data.length} rows returned`);
+
+                if(action === constants.LAN_ACC) {
+                    class Row {
+                        tstamp    = 0;
+                        entrynumb = 0;
+                        ip        = '';
+                        port      = '';
+                        toip      = '';
+                        toport    = '';
+                        // temporary
+                        logfile   = '';
+                        logentry  = '';
+                    };
+
+                    for(var ix = 0; ix < data.length; ix++) {
+                        if(isKnownIP(data[ix]) === null) {
+                            // not known...
+                            var itable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_INVASIONS_IDX]}`;
+    
+                            var newrow = new Row();
+                            newrow.tstamp    = data[ix].tstamp;
+                            newrow.entrynumb = data[ix].entrynumb;
+                            newrow.ip        = data[ix].ip;
+                            newrow.port      = data[ix].port;
+                            newrow.toip      = data[ix].toip;
+                            newrow.toport    = data[ix].toport;
+    
+                            newrow.logfile   = data[ix].logfile;
+                            newrow.logentry  = data[ix].logentry;
+    
+                            dbobj.writeRow(itable, newrow, (result, target, data, insertId) => {
+                                if(result === true) {
+                                    log(`- reportActions(${action}): saved in ${target}`);
+                                } else {
+                                    log(`- reportActions(${action}): ERROR err = ${JSON.stringify(insertId)}`);
+                                }
+                            });
+                        } else {
+                            log(`- reportActions(${action}): IP is known ${data[ix].ip}`)
+                        }
+                    }
+                }
             }
         });
     };
