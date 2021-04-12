@@ -76,6 +76,25 @@ create table rlmonitor.logentry (
     logentry varchar(512) default null
 );
 
+create table rlmonitor.invasions (
+    tstamp bigint(16) not null, 
+--    primary key (tstamp),
+
+    -- NOTE: 'unique' should prevent duplication,
+    -- since this field is copied from logentry
+    entrynumb bigint(16) unique not null,
+
+    ip varchar(40) not null,
+    port varchar(6) not null,
+    toip varchar(40) not null,
+    toport varchar(6) not null,
+
+-- temporary
+    logfile varchar(64) default null,
+    logentry varchar(512) default null
+);
+
+
 
 --------------------------------------------------------
 
