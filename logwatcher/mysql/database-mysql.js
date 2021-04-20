@@ -11,16 +11,8 @@ module.exports = (function(_log) {
     const mysql  = require('mysql');
     // Connection Settings, Table Names, SQL Column Definitions reference objects
     const dbcfg = require('./_dbcfg.js');
-    // Initial Table Data
-    var dbdata;
-    // SQL Statement Parts
-    var sql;
     // The Connection
     var connection;
-    // A connection for Initialization
-    var initconn;
-    // A row counter used during initialization
-    var initRowCount;
 
     // set up run-time logging
     var path = require('path');
@@ -67,7 +59,7 @@ module.exports = (function(_log) {
                         errno: error.errno
                     }
                 };
-                log(`database.openDB() - ERROR connect: [${error.message}  ${error.code}  ${error.errno}]`);
+                log(`- database.openDB() - ERROR connect: [${error.message}  ${error.code}  ${error.errno}]`);
                 _openCallBack(database.dbopen, errObj);
             } else {
                 database.dbopen   = true;
@@ -78,7 +70,7 @@ module.exports = (function(_log) {
     };
 
     function dbRunTimeError(err) {
-        log(`dbRunTimeError() err = ${err}`);
+        log(`- dbRunTimeError() err = ${err}`);
     };
 
     /*
@@ -87,7 +79,7 @@ module.exports = (function(_log) {
     database.closeDB = function(callme) {
         let _closeCallBack = callme;
         connection.end(function(error) {
-            if(error) log(`database.closeDB() - ERROR end: [${error.message}  ${error.code}  ${error.errno}]`);
+            if(error) log(`- database.closeDB() - ERROR end: [${error.message}  ${error.code}  ${error.errno}]`);
             // The connection is terminated now 
             database.dbopen   = false;
             database.threadid = 0;
@@ -125,18 +117,19 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('insert into '+table+' set ?', record, function(error, result) {
                 if(error) {
-                    log(`database.writeRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _writeCallBack(false, table, record, error);
+                    log(`- database.writeRow() - ERROR query: [${error.message} -- ${error.code} -- ${error.errno}]`);
+//                    _writeCallBack(false, table, record, error);
+                    _writeCallBack(table, record, null, error);
                 } else {
                     // If you are inserting a row into a table with an auto 
                     // increment primary key, you can retrieve the insert id
                     // with - result.insertId
-                    _writeCallBack(true, table, record, result.insertId);
+                    _writeCallBack(table, record, result.insertId, null);
                 }
             });
         } else {
             log('database.writeRow() - ERROR database not open');
-            _writeCallBack(false, table, record, {message:'ERROR database not open',code:-1,errno:-1});
+            _writeCallBack(table, record, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
@@ -156,22 +149,21 @@ module.exports = (function(_log) {
             > 0 success, and value is the quantity of changed rows
 
     */
-    database.updateRows = function(table, record, keyfield, callme, callmeData) {
+    database.updateRows = function(table, record, keyfield, callme) {
         let _updateCallBack = callme;
-        let _updateCallBackData = callmeData;
         if(this.dbopen === true) {
             connection.query('update '+table+' set ? where '+keyfield, record, function(error, result) {
                 if(error) {
-                    log(`database.updateRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _updateCallBack(table, -1, _updateCallBackData);
+                    log(`- database.updateRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    _updateCallBack(table, null, error);
                 } else {
-                    log(`database.updateRows() - SUCCESS - message = ${result.message}`);
-                    _updateCallBack(table, result.changedRows, _updateCallBackData);
+                    log(`- database.updateRows() - SUCCESS - message = ${result.message}`);
+                    _updateCallBack(table, result.changedRows, null);
                 }
             });
         } else {
             log('database.updateRows() - ERROR database not open');
-            _updateCallBack(table, -1, _updateCallBackData);
+            _updateCallBack(table, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
@@ -196,14 +188,14 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('select * from '+table, function(error, result) {
                 if(error) {
-                    log(`database.readAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`- database.readAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     this.dbopen = false;
-                    _readCallBack(table, null);
-                } else _readCallBack(table, result);
+                    _readCallBack(table, null, error);
+                } else _readCallBack(table, result, null);
             });
         } else {
             log('database.readAllRows() - ERROR database not open');
-            _readCallBack(table, null);
+            _readCallBack(table, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
@@ -218,16 +210,17 @@ module.exports = (function(_log) {
 
             connection.query('select * from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
-                    log(`database.readRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _readCallBack(table, null, {err:true, msg:'ERROR query: [${error.message}  ${error.code}  ${error.errno}]'});
+                    log(`- database.readRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    _readCallBack(table, keyfield, null, {err:true, msg:'ERROR query: [${error.message}  ${error.code}  ${error.errno}]'});
                 } else {
-                    if((result[0] !== null) && (typeof result[0] !== 'undefined')) _readCallBack(table, JSON.parse(JSON.stringify(result)), null);
-                    else _readCallBack(table, null, {err:true, msg:'not found', key:keyfield});
+                    if((result[0] !== null) && (typeof result[0] !== 'undefined')) 
+                        _readCallBack(table, keyfield, JSON.parse(JSON.stringify(result)), null);
+                    else _readCallBack(table, keyfield, null, {errno:true, code:-1, message:'not found'});
                 }
             });
         } else {
             log('database.readRows() - ERROR database not open');
-            _readCallBack(table, null, {err:true, msg:'database not open', key:keyfield});
+            _readCallBack(table, keyfield, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
@@ -239,13 +232,13 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('delete from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
-                    log(`database.deleteRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _deleteCallBack(false, table, error);
-                } else _deleteCallBack(true, table, result);
+                    log(`- database.deleteRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    _deleteCallBack(table, keyfield, null, error);
+                } else _deleteCallBack(table, keyfield, result, null);
             });
         } else {
             log('database.deleteRow() - ERROR - database not open');
-            _deleteCallBack(false, table, {error:{message:"database not open"}});
+            _deleteCallBack(table, keyfield, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
@@ -257,15 +250,15 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('select count('+col+') as total from '+table, function(error, result) {
                 if(error) {
-                    log(`database.countAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _countCallBack(table, col, -1);
+                    log(`- database.countAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    _countCallBack(table, col, null, error);
                 } else {
-                    _countCallBack(table, col, result);
+                    _countCallBack(table, col, result, null);
                 }
             });
         } else {
             log('database.countAllRows() - ERROR - database not open');
-            _countCallBack(table, col, -1);
+            _countCallBack(table, col, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
@@ -274,15 +267,15 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query(`select count(${col}) as total from ${table} where ${keyfield};`, function(error, result) {
                 if(error) {
-                    log(`database.countRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
-                    _countCallBack(table, col, -1);
+                    log(`- database.countRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    _countCallBack(table, col, null, error);
                 } else {
-                    _countCallBack(table, col, {k:keyfield, r:result[0].total});
+                    _countCallBack(table, col, {k:keyfield, r:result[0].total}, null);
                 }
             });
         } else {
             log('database.countRows() - ERROR - database not open');
-            _countCallBack(table, col, -1);
+            _countCallBack(table, col, null, {errno:true, code:0, message:'database not open'});
         }
     };
 
