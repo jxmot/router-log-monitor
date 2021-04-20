@@ -18,7 +18,7 @@ module.exports = (function(_log) {
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
+        _log(`${scriptName} - ${payload}`);
     };
 
     // gives module user access to config
@@ -59,7 +59,7 @@ module.exports = (function(_log) {
                         errno: error.errno
                     }
                 };
-                log(`- database.openDB() - ERROR connect: [${error.message}  ${error.code}  ${error.errno}]`);
+                log(`database.openDB() - ERROR connect: [${error.message}  ${error.code}  ${error.errno}]`);
                 _openCallBack(database.dbopen, errObj);
             } else {
                 database.dbopen   = true;
@@ -70,7 +70,7 @@ module.exports = (function(_log) {
     };
 
     function dbRunTimeError(err) {
-        log(`- dbRunTimeError() err = ${err}`);
+        log(`dbRunTimeError() err = ${err}`);
     };
 
     /*
@@ -79,7 +79,7 @@ module.exports = (function(_log) {
     database.closeDB = function(callme) {
         let _closeCallBack = callme;
         connection.end(function(error) {
-            if(error) log(`- database.closeDB() - ERROR end: [${error.message}  ${error.code}  ${error.errno}]`);
+            if(error) log(`database.closeDB() - ERROR end: [${error.message}  ${error.code}  ${error.errno}]`);
             // The connection is terminated now 
             database.dbopen   = false;
             database.threadid = 0;
@@ -117,7 +117,7 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('insert into '+table+' set ?', record, function(error, result) {
                 if(error) {
-                    log(`- database.writeRow() - ERROR query: [${error.message} -- ${error.code} -- ${error.errno}]`);
+                    log(`database.writeRow() - ERROR query: [${error.message} -- ${error.code} -- ${error.errno}]`);
 //                    _writeCallBack(false, table, record, error);
                     _writeCallBack(table, record, null, error);
                 } else {
@@ -154,10 +154,10 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('update '+table+' set ? where '+keyfield, record, function(error, result) {
                 if(error) {
-                    log(`- database.updateRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`database.updateRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _updateCallBack(table, null, error);
                 } else {
-                    log(`- database.updateRows() - SUCCESS - message = ${result.message}`);
+                    log(`database.updateRows() - SUCCESS - message = ${result.message}`);
                     _updateCallBack(table, result.changedRows, null);
                 }
             });
@@ -188,7 +188,7 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('select * from '+table, function(error, result) {
                 if(error) {
-                    log(`- database.readAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`database.readAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     this.dbopen = false;
                     _readCallBack(table, null, error);
                 } else _readCallBack(table, result, null);
@@ -210,7 +210,7 @@ module.exports = (function(_log) {
 
             connection.query('select * from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
-                    log(`- database.readRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`database.readRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _readCallBack(table, keyfield, null, {err:true, msg:'ERROR query: [${error.message}  ${error.code}  ${error.errno}]'});
                 } else {
                     if((result[0] !== null) && (typeof result[0] !== 'undefined')) 
@@ -232,7 +232,7 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('delete from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
-                    log(`- database.deleteRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`database.deleteRow() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _deleteCallBack(table, keyfield, null, error);
                 } else _deleteCallBack(table, keyfield, result, null);
             });
@@ -250,7 +250,7 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query('select count('+col+') as total from '+table, function(error, result) {
                 if(error) {
-                    log(`- database.countAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`database.countAllRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _countCallBack(table, col, null, error);
                 } else {
                     _countCallBack(table, col, result, null);
@@ -267,7 +267,7 @@ module.exports = (function(_log) {
         if(this.dbopen === true) {
             connection.query(`select count(${col}) as total from ${table} where ${keyfield};`, function(error, result) {
                 if(error) {
-                    log(`- database.countRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                    log(`database.countRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _countCallBack(table, col, null, error);
                 } else {
                     _countCallBack(table, col, {k:keyfield, r:result[0].total}, null);
@@ -279,6 +279,6 @@ module.exports = (function(_log) {
         }
     };
 
-    log(`- init`);
+    log(`init`);
     return database;
 });
