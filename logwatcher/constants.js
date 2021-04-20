@@ -61,18 +61,20 @@ module.exports = {
     RA         : 'RA',  // Router Actions     
     RI         : 'RI',  // Router Invasion    
     RL         : 'RL',  // Router LAN Activity
-    RU         : 'RU',  // Router Updates     
-    UPNP_EVENT : 11,    // NA
-    LAN_ACC    : 8,     // NA
+    RU         : 'RU',  // Router Updates   
+    MIN_ACTN   : 1,     // 
     ADM_LOG    : 1,     // RA
+    DHCP_IP    : 2,     // RL
+    DOS_ATT    : 3,     // RI
     DYN_DNS    : 4,     // RA
+    FIRMW_UP   : 5,     // RU
     INET_CONN  : 6,     // RA
     INET_DCONN : 7,     // RA
+    LAN_ACC    : 8,     // NA
     TIME_SYNC  : 9,     // RA
-    DOS_ATT    : 3,     // RI
     WLAN_REJ   : 10,    // RI
-    DHCP_IP    : 2,     // RL
-    FIRMW_UP   : 5,     // RU
+    UPNP_EVENT : 11,    // NA
+    MAX_ACTN   : 11,    // 
     // epoch calculation contstants
     HOUR_1_MS  :    3600000,
     HOURS_4_MS :   14400000,
