@@ -130,11 +130,17 @@ module.exports = (function(pevts, _log)  {
                 //
                 // 
                 var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
-                dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
-                    if(result === true) {
+                // NOTE: The conditions that determine a "bad" record could be checked 
+                // before writing it to the database. However, we want 'entrynumb' to be 
+                // contiguous. And the gaps in count that end up in the logentry table are
+                // intentional and can be used later.
+                dbobj.writeRow(dest, newrow, (target, data, insertId, err) => {
+                    if(err === null) {
                         if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         // are "bad" records to be handled?
                         if(wfile.movebad === true) {
+                            // currently, only one indicator to use to determine 
+                            // if the log entry is bad...
                             // if the time stamp is BEFORE the "minimum" time 
                             // stamp then it's a bad record and won't be usable.
                             if(wfile.mintstamp > data.tstamp) {
@@ -169,14 +175,14 @@ module.exports = (function(pevts, _log)  {
     function saveBadEntry(badrec, wfile) {
         // write the data...
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
-        dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
-            if(result === true) {
+        dbobj.writeRow(dest, badrec, (target, data, insertId, err) => {
+            if(err === null) {
                 if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
                     var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
-                    dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (result, target, affected) => {
-                        if(result === true) {
+                    dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (table, keyfield, affected, err) => {
+                        if(err === null) {
                             if(!logmute) log(`- saveBadEntry(): deleted bad entry in ${badplace}`);
                         } else {
                             log(`- saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
