@@ -1,18 +1,23 @@
 /*
     reports.js - waits for the LOG_PROCESSED event and 
     reads the database to generate static reports
+
+    WIP: Initiall this module will post-process logentry 
+    data and copy rows to other tables. The static HTML 
+    reports will be created from those tables.
 */
 module.exports = (function(pevts, _log) {
+
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
-    }
+        _log(`${scriptName} - ${payload}`);
+    };
 
     var constants = require('./constants.js');
 
-    var staticdata = require('./staticdata.js')(pevts, _log);
+    var staticdata = require('./staticdata.js')(pevts, _log, constants);
 
     var dbopen = false;
     var dbobj = {};
@@ -23,9 +28,14 @@ module.exports = (function(pevts, _log) {
             dbopen = true;
             dbobj  = _dbobj.db;
             dbcfg  = dbobj.getDBCcfg();
-            log(`- DB_OPEN: success`);
+            log(`DB_OPEN: success`);
+
+            // for TESTING only, will be removed.
+            log(`initiate TEST_REPORT`);
+            pevts.emit('TEST_REPORT');
+
         } else {
-            log(`- DB_OPEN: ERROR ${dbobj.db.err.message}`);
+            log(`DB_OPEN: ERROR ${dbobj.db.err.message}`);
         }
     });
 
@@ -34,14 +44,15 @@ module.exports = (function(pevts, _log) {
         dbobj = {};
     });
 
-    log(`- init`);
+    var logmute = true;
+    log(`init`);
 
     pevts.on('LOG_PROCESSED', (wfile) => {
-        log(`- last processed file: ${wfile.path}${wfile.filename}`);
+        log(`last processed file: ${wfile.path}${wfile.filename}`);
     });
 
     pevts.on('LOG_DBSAVED', (wfile) => {
-        log(`- log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
+        log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
 //            reportActions(constants.LAN_ACC);
         }
@@ -50,6 +61,43 @@ module.exports = (function(pevts, _log) {
     function isKnownIP(row) {
         return staticdata.isKnownIP(row.ip);
     };
+
+    const dns = require('dns');
+    function updateInvasionHosts(table, datarow) {
+        // isolate from the arg, so that we don't interfere with clean up
+        let updrow = JSON.parse(JSON.stringify(datarow));
+
+        // host lookup & update the row
+        dns.reverse(updrow.ip, (err, hosts) => {
+            if(err) {
+                log(`updateHosts(): dns.reverse() ${err.toString()}`);
+                hosts = [];
+                hosts.push('ENOTFOUND');
+            }
+    
+            if(hosts.length > 1) {
+                updrow.hostname = hosts.join(',');
+            } else {
+                if(hosts.length > 0) {
+                    updrow.hostname = hosts[0];
+                } else {
+                    updrow.hostname = null;
+                }
+            }
+            if(updrow.hostname !== null) {
+                // update the row...
+                dbobj.updateRows(table, {hostname:updrow.hostname}, `entrynumb = ${updrow.entrynumb}`, (target, result, err) => {
+                    if(err !== null) {
+                        log(`updateInvasionHosts(): ERROR err = ${err.message}`);
+                        exit(0);
+                    } else {
+                        if(!logmute) log(`updateInvasionHosts(): SUCCESS = ${result}`);
+                    }
+                });
+            }
+        });
+    };
+
 
     /*
         Static Reports:
@@ -76,70 +124,97 @@ module.exports = (function(pevts, _log) {
 
     */
     function reportActions(action, depth = constants.DAYS_30_MS, range = null) {
-        var dbtable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
-        var start    = 0;
-        var criteria = '';
-        if(depth > 0) {
-            start    = (Date.now() - depth);
-            criteria = `actionid = ${action} and tstamp >= ${start} order by tstamp asc`;
-        } else {
-            if(range === null) {
-                criteria = `actionid = ${action} order by tstamp asc`;
+        const dbtable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
+        let criteria   = '';
+
+        // check for valid 'action' values...
+        if((action >= constants.MIN_ACTN) && (action <= constants.MAX_ACTN)) {
+            // was a 'depth' passed in?
+            if(depth > 0) {
+                // get all newer than now minus the 'depth'
+                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by tstamp asc`;
             } else {
-                criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by tstamp asc`;
-            }
-        }
-
-        dbobj.readRows(dbtable, criteria, (table, data, err) => {
-            if(err !== null) {
-                log(`- reportActions(): ERROR err = ${JSON.stringify(err)}`);
-                exit(0);
-            } else {
-                log(`- reportActions(): got data, ${data.length} rows returned`);
-
-                if(action === constants.LAN_ACC) {
-                    class Row {
-                        tstamp    = 0;
-                        entrynumb = 0;
-                        ip        = '';
-                        port      = '';
-                        toip      = '';
-                        toport    = '';
-                        // temporary
-                        logfile   = '';
-                        logentry  = '';
-                    };
-
-                    for(var ix = 0; ix < data.length; ix++) {
-                        if(isKnownIP(data[ix]) === null) {
-                            // not known...
-                            var itable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_INVASIONS_IDX]}`;
-    
-                            var newrow = new Row();
-                            newrow.tstamp    = data[ix].tstamp;
-                            newrow.entrynumb = data[ix].entrynumb;
-                            newrow.ip        = data[ix].ip;
-                            newrow.port      = data[ix].port;
-                            newrow.toip      = data[ix].toip;
-                            newrow.toport    = data[ix].toport;
-    
-                            newrow.logfile   = data[ix].logfile;
-                            newrow.logentry  = data[ix].logentry;
-    
-                            dbobj.writeRow(itable, newrow, (result, target, data, insertId) => {
-                                if(result === true) {
-                                    log(`- reportActions(${action}): saved in ${target}`);
-                                } else {
-                                    log(`- reportActions(${action}): ERROR err = ${JSON.stringify(insertId)}`);
-                                }
-                            });
-                        } else {
-                            log(`- reportActions(${action}): IP is known ${data[ix].ip}`)
-                        }
-                    }
+                // no depth, range?
+                if(range === null) {
+                    // get all with matching 'action'
+                    criteria = `actionid = ${action} order by tstamp asc`;
+                } else {
+                    // get all within the specified date/time range
+                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by tstamp asc`;
                 }
             }
-        });
+
+            // read rows as specified...
+            dbobj.readRows(dbtable, criteria, (table, _criteria, data, err) => {
+                if(err !== null) {
+                    log(`reportActions(): ERROR err = ${JSON.stringify(err)}`);
+                    exit(0);
+                } else {
+                    if(!logmute) log(`reportActions(): got data, ${data.length} rows returned`);
+                    // action-specific....
+                    //
+ 
+                    // LAN Access from External IPs
+                    if(action === constants.LAN_ACC) {
+                        class Row {
+                            tstamp    = 0;
+                            entrynumb = 0;
+                            ip        = '';
+                            port      = '';
+                            toip      = '';
+                            toport    = '';
+                            hostname  = '';
+                            // temporary
+                            logfile   = '';
+                            logentry  = '';
+                        };
+                        // iterate through all rows returned to us...
+                        for(var ix = 0; ix < data.length; ix++) {
+                            // only record an invasion if the IP is not known
+                            if(isKnownIP(data[ix]) === null) {
+                                // not known...
+                                const itable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_INVASIONS_IDX]}`;
+        
+                                // copy columns from the row into the new row...
+                                let newrow = new Row();
+                                const keys = Object.keys(data[ix]);
+                                keys.forEach((key) => {
+                                    // only copy what we need, that is determined by
+                                    // existing fields in the Row class.
+                                    if(typeof newrow[key] !== 'undefined') {
+                                        newrow[key] = data[ix][key];
+                                    }
+                                });
+
+                                dbobj.writeRow(itable, newrow, (target, datawr, insertId, err) => {
+                                    if(err === null) {
+                                        if(!logmute) log(`reportActions(${action}): saved in ${target}`);
+                                        // post processing....
+                                        updateInvasionHosts(itable, datawr);
+                                    } else {
+                                        // duplicates are not an error, announce them but take no action
+                                        if(err.code === 'ER_DUP_ENTRY') {
+                                            if(!logmute) log(`reportActions(${action}): Duplicate = ${err.sqlMessage}`);
+                                        } else {
+                                            log(`reportActions(${action}): ERROR err = ${err.message}`);
+                                            // test for and handle recoverable errors...
+                                        }
+                                    }
+                                });
+                                // clean-up, the MySQL functions will "copy" the values to 
+                                // an internal SQL string. That occurs during the call to 
+                                // writeRow() and the subsequent calls to the MySQL functions.
+                                // This was verified by single-stepping into - 
+                                // node_modules/sqlstring/lib/SqlString.js:98(v2.3.1)
+                                delete newrow;
+                            } else {
+                                if(!logmute) log(`reportActions(${action}): IP is known ${data[ix].ip}`)
+                            }
+                        }
+                    } // ^LAN Access from External IPs
+                }
+            });
+        }
     };
 
     pevts.on('TEST_REPORT', () => {
