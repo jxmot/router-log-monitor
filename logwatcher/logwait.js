@@ -23,7 +23,7 @@ module.exports = (function(wevts, pevts, _log) {
         Using: 
         https://nodejs.org/docs/latest-v12.x/api/events.html#events_asynchronous_vs_synchronous
 
-        More info(start here:
+        More info(start here):
         https://nodejs.dev/learn/the-nodejs-event-loop
     */
     wevts.on('FILE_CREATED', (watchit) => {
