@@ -91,12 +91,6 @@ const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
 // Generate static reports
 const reports = require('./reports.js')(procs_evts, _log);
 
-procs_evts.on('DB_OPEN', (_dbobj) => {
-    log(`- initiate TEST_REPORT`);
-    procs_evts.emit('TEST_REPORT');
-});
-
-
 // handle database errors here, including when the server closes 
 // the connection after a period of being "idle".
 function onDatabaseError(err) {
