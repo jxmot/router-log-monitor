@@ -1,4 +1,4 @@
-module.exports = (function(pevts, _log)  {
+module.exports = (function(pevts, _log, constants)  {
 
     // NOTE: property names are identical matches to 
     // the table names in our database 
@@ -23,7 +23,7 @@ module.exports = (function(pevts, _log)  {
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
+        _log(`${scriptName} - ${payload}`);
     };
 
     var dbopen = false;
@@ -34,13 +34,14 @@ module.exports = (function(pevts, _log)  {
         if(_dbobj.state === true) {
             dbopen = true;
             dbobj = _dbobj.db;
-            log(`- DB_OPEN: success`);
+            log(`DB_OPEN: success`);
             dbcfg = dbobj.getDBCcfg();
 
             staticdata.readAll();
+            //setTimeout(staticdata.readAll, 100);
 
         } else {
-            log(`- DB_OPEN: ERROR ${_dbobj.db.err.message}`);
+            log(`DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
     });
 
@@ -51,7 +52,7 @@ module.exports = (function(pevts, _log)  {
     });
 
     var logmute = true;
-    log(`- init`);
+    log(`init`);
 
     //////////////////////////////////////////////////////////////////////////
     // 
@@ -59,23 +60,23 @@ module.exports = (function(pevts, _log)  {
         let dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbidx]}`;
         let cb = callback;
 
-        if(!logmute) log(`- readTable(): dbtable = ${dbtable}`);
+        if(!logmute) log(`readTable(): dbtable = ${dbtable}`);
 
         staticdata[dbcfg.tables[dbidx]] = [];
         staticdata.dbstates[dbcfg.tables[dbidx]] = false;
 
-        dbobj.readAllRows(dbtable, (table, result) => {
+        dbobj.readAllRows(dbtable, (table, result, err) => {
             tbl = table.split('.');
             if(result !== null) {
                 result.forEach((row, idx) => {
                     staticdata[tbl[1]].push(JSON.parse(JSON.stringify(row)));
-                    if(!logmute) log(`- readTable(${tbl[1]}): read & saved - ${JSON.stringify(row)}`);
+                    if(!logmute) log(`readTable(${tbl[1]}): read & saved - ${JSON.stringify(row)}`);
                 });
                 staticdata.dbstates[tbl[1]] = true;
                 if(cb === null) pevts.emit('STATICDATA_READY', tbl[1], staticdata);
                 else cb(tbl[1], staticdata[tbl[1]].length);
             } else {
-                log(`- readTable(): ERROR result is null for ${tbl[1]}`);
+                log(`readTable(): ERROR result is null for ${tbl[1]} - ${JSON.stringify(err)}`);
             }
         });
     };
@@ -115,17 +116,39 @@ module.exports = (function(pevts, _log)  {
     };
 
     staticdata.isKnownIP = function(ipaddr) {
-        if(staticdata.dbstates.known === false) {
-            return false;
-        } else {
+        if(staticdata.dbstates.known === true) {
             for(var ix = 0; ix < staticdata.known.length; ix++) {
                 if(ipaddr === staticdata.known[ix].ip) {
                     return staticdata.known[ix];
                 }
             }
-            return null;
         }
+        return null;
     };
+
+    function getIPInfo(get, ipaddr) {
+        let info = staticdata.isKnownIP(ipaddr);
+        if(info !== null) {
+            return info[get];
+        } else return null;
+    };
+
+    staticdata.getIPMAC = function(ipaddr) {
+        return getIPInfo('mac', ipaddr);
+    };
+
+    staticdata.getIPCat = function(ipaddr) {
+        return getIPInfo('ipcat', ipaddr);
+    };
+
+    staticdata.getIPDevice = function(ipaddr) {
+        return getIPInfo('device', ipaddr);
+    };
+
+    staticdata.getIPWatch = function(ipaddr) {
+        return getIPInfo('watch', ipaddr);
+    };
+
 
     return staticdata;
 });
