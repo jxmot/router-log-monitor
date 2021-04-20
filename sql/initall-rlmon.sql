@@ -78,6 +78,9 @@ create table rlmonitor.logentry (
 
 create table rlmonitor.invasions (
     tstamp bigint(16) not null, 
+-- there can be duplicate time stamps for individual log 
+-- entries. The event TODs in the logs are measured in 
+-- seconds but can be separated in time by milliseconds.
 --    primary key (tstamp),
 
     -- NOTE: 'unique' should prevent duplication,
@@ -88,6 +91,8 @@ create table rlmonitor.invasions (
     port varchar(6) not null,
     toip varchar(40) not null,
     toport varchar(6) not null,
+    -- filled in with a 2nd pass, read & update
+    hostname varchar(128) default null,
 
 -- temporary
     logfile varchar(64) default null,
@@ -104,28 +109,27 @@ create table rlmonitor.invasions (
 
 -- 
 create table actions (
-    tstamp bigint(16) not null, primary key (tstamp) 
-    actiontype integer(3) not null,                    -- enumerated actions
+    tstamp bigint(16) not null, 
+    -- primary key (tstamp),
+
+    -- NOTE: 'unique' should prevent duplication,
+    -- since this field is copied from logentry
+    entrynumb bigint(16) unique not null,
+
+    actionid integer(3) not null,
 
     ip varchar(40) default null,
+    -- result of lookup
     host varchar(128) default null,
     message varchar(128) default null
 );
 
 -- A
-create table invasions (
-    tstamp bigint(16) not null, primary key (tstamp) 
-    actiontype integer(3) not null,                    -- enumerated actions
-
-    ip varchar(40) default null,
-    mac varchar(20) default null,
-    message varchar(128) default null
-);
-
--- A
 create table lanactivity (
-    tstamp bigint(16) not null, primary key (tstamp) 
-    actiontype integer(3) not null,                    -- enumerated actions
+    tstamp bigint(16) not null, 
+    -- primary key (tstamp),
+
+    actionid integer(3) not null,
 
     ip varchar(40) default null,
     mac varchar(20) default null--,
@@ -133,8 +137,10 @@ create table lanactivity (
 );
 
 create table netactivity (
-    tstamp bigint(16) not null, primary key (tstamp) 
-    actiontype integer(3) not null,                    -- enumerated actions
+    tstamp bigint(16) not null, 
+    -- primary key (tstamp),
+
+    actionid integer(3) not null,
 
     ip varchar(40) default null,
     port varchar(6) default null,
@@ -143,8 +149,10 @@ create table netactivity (
 );
 
 create table updates (
-    tstamp bigint(16) not null, primary key (tstamp) 
-    actiontype integer(3) not null,                    -- enumerated actions
+    tstamp bigint(16) not null, 
+    -- primary key (tstamp),
+
+    actionid integer(3) not null,
 
     message varchar(128) default null
 );
