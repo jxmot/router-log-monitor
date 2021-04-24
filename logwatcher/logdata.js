@@ -194,21 +194,21 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         var actn = getAction(entry);
         if(actn.id === -1) {
             entObj.actionid = -1;
-            log(`- parseEntry(): ${actn.code}`);
+            log(`parseEntry(): ${actn.code}`);
         } else {
             entObj.actionid = actn.id;
             // 
             var parms = getActionParms(actn, entry);
             if(typeof parms.err !== 'undefined') {
-                log(`- parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
-                log(`- parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
-                log(`- parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);
+                log(`parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
+                log(`parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
+                log(`parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);
                 // the err object cannot be written to the database
                 delete parms.err;
             }
             // 
             entObj = Object.assign(entObj, parms);
-            if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+            if(!logmute) log(`parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         }
         // return the entry object
         return entObj;
