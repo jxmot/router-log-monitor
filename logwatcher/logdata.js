@@ -236,8 +236,8 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
             id: -1,
             code: ''
         };
-        if(logdata.actions.length > 0){
-            for(let act of logdata.actions) {
+        if(staticdata.actions.length > 0){
+            for(let act of staticdata.actions) {
                 if(entry.includes(act.description) === true) {
                     actID.id   = act.actionid;
                     actID.code = act.catcode;
@@ -250,11 +250,9 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         } else {
             actID.code = 'ERROR: no action data';
         }
-        if(!logmute) log(`- getAction(): ${JSON.stringify(actID)}`);
+        if(!logmute) log(`getAction(): ${JSON.stringify(actID)}`);
         return actID;
     };
-
-    var constants = require('./constants.js');
 
     function getActionParms(action, entry) {
         var actparms = {};
@@ -414,67 +412,6 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         };
         return riparms;
     };
-
-    //////////////////////////////////////////////////////////////////////////
-    // 
-    function readTable(dbtable, destarr) {
-        if(!logmute) log(`- readTable(): dbtable = ${dbtable}`);
-        dbobj.readAllRows(dbtable, (table, result) => {
-            if(result !== null) {
-                result.forEach((row, idx) => {
-                    destarr.push(JSON.parse(JSON.stringify(row)));
-                    if(!logmute) log(`- readTable(): destarr - ${JSON.stringify(row)}`);
-                });
-                pevts.emit('DATA_READY', dbtable);
-            } else {
-                log(`- readTable(): ERROR result is null for ${table}`);
-            }
-        });
-    };
-
-    // read the actions table from the database and populate
-    // an array of action objects
-    function readActions() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONS_IDX]}`;
-        // clear the array, could set the length to zero 
-        // but this is explcit
-        logdata.actions = [];
-        // read the database and save the data
-        readTable(dbtable, logdata.actions);
-    };
-
-    // read the action category table from the database and populate
-    // an array of action category objects
-    function readActionCats() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONCATS_IDX]}`;
-        logdata.actioncats = [];
-        readTable(dbtable, logdata.actioncats);
-    };
-
-    // read the known table from the database and populate
-    // an array of known objects
-    function readKnown() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_KNOWN_IDX]}`;
-        logdata.known = [];
-        readTable(dbtable, logdata.known);
-    };
-
-    // read the IP category table from the database and populate
-    // an array of IP category objects
-    function readIPCats() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_IPCATS_IDX]}`;
-        logdata.ipcats = [];
-        readTable(dbtable, logdata.ipcats);
-    };
-
-    // clear the local copies of the data tables
-    function clearTables() {
-        logdata.actions = [];
-        logdata.actioncats = [];
-        logdata.known = [];
-        logdata.ipcats = [];
-    }
-
     return logdata;
 });
 
