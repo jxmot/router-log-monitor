@@ -11,15 +11,15 @@ module.exports = (function(wevts, pevts, _log) {
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
+        _log(`${scriptName} - ${payload}`);
     };
 
     var logmute = true;
-    log(`- init`);
+    log(`init`);
 
     // configure the path to the watched folder
     const opt = require('./watchopt.js');
-    log(`- watching in ${opt.path}`);
+    log(`watching in ${opt.path}`);
 
     // needed for fs.watch(), fs.statSync(), and
     // fs.accessSync()
@@ -48,7 +48,7 @@ module.exports = (function(wevts, pevts, _log) {
     var dirwatch = fs.watch(opt.path, (evtype, filename) => {
         // could be either 'rename' or 'change'. new file event and delete
         // also generally emit 'rename'
-        if(!logmute) log(`- dirwatch event: ${evtype} file: ${filename}`);
+        if(!logmute) log(`dirwatch event: ${evtype} file: ${filename}`);
 
         // only used for debugging
         watchit.now = Date.now();
@@ -61,7 +61,7 @@ module.exports = (function(wevts, pevts, _log) {
             // an error occurred...
             case 'error':
                 // anounce it...
-                log(`- dirwatch event: error ${filename}  ${wqueue.length}`);
+                log(`dirwatch event: error ${filename}  ${wqueue.length}`);
                 // cancel all timeouts
                 wqueue.forEach((item, index) => {
                     clearTimeout(item.toid);
@@ -81,7 +81,7 @@ module.exports = (function(wevts, pevts, _log) {
                     // if the timer expires then the file was deleted.
                     wqueue[filename].toid = setTimeout(renTO, 500, filename);
                 } else {
-                    log(`- dirwatch event: did not recognize: ${filename}`);
+                    log(`dirwatch event: did not recognize: ${filename}`);
                 }
                 break;
 
@@ -95,13 +95,13 @@ module.exports = (function(wevts, pevts, _log) {
                     // timeout.
                     clearTimeout(wqueue[filename].toid);
                     wqueue[filename].toid = null;
-                    if(!logmute) log(`- dirwatch event: stats on - ${wqueue[filename].path}${filename}`);
+                    if(!logmute) log(`dirwatch event: stats on - ${wqueue[filename].path}${filename}`);
 // TODO: try/catch ?
                     // let's verify this is a file creation event
                     // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_class_fs_stats
                     var stats = fs.statSync(`${wqueue[filename].path}${filename}`);
                     if(stats.isFile() === true) {
-                        log(`- dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
+                        log(`dirwatch event: ${wqueue[filename].path}${filename} @ ${stats.size}b was created`);
                         wevts.emit('FILE_CREATED', 
                                    {
                                         path:wqueue[filename].path,
@@ -112,12 +112,12 @@ module.exports = (function(wevts, pevts, _log) {
                                         delbad:wqueue[filename].delbad
                                    });
                     } else {
-                        if(!logmute) log(`- dirwatch event: ${filename} is not a file`);
+                        if(!logmute) log(`dirwatch event: ${filename} is not a file`);
                     }
                     // remove this entry from the queue 
                     delete wqueue[filename];
                 } else {
-                    if(!logmute) log(`- dirwatch event: undefined - wqueue[${filename}] evtype = ${evtype}`);
+                    if(!logmute) log(`dirwatch event: undefined - wqueue[${filename}] evtype = ${evtype}`);
                 }
                 break;
         };
@@ -148,19 +148,19 @@ module.exports = (function(wevts, pevts, _log) {
         processed and saved.
     */
     pevts.on('LOG_DBSAVED', (wfile) => {
-        log(`- LOG_DBSAVED ${wfile.filename} saved to database.`);
+        log(`LOG_DBSAVED ${wfile.filename} saved to database.`);
         if(opt.readdel === true) {
             fs.unlinkSync(opt.path+wfile.filename);
-            log(`- LOG_DBSAVED DELETED [${opt.path+wfile.filename}]`);
+            log(`LOG_DBSAVED DELETED [${opt.path+wfile.filename}]`);
         } else {
             if(opt.readren === true) {
                 fs.renameSync(opt.path+wfile.filename, opt.path+opt.renchar+wfile.filename);
-                log(`- LOG_DBSAVED RENAMED to [${opt.path+opt.renchar+wfile.filename}]`);
+                log(`LOG_DBSAVED RENAMED to [${opt.path+opt.renchar+wfile.filename}]`);
             } else {
                 if(opt.readmov === true) {
                     var moveto = makePath(opt.path+opt.movpath)+path.sep;
                     fs.renameSync(opt.path+file, moveto+file);
-                    log(`- LOG_DBSAVED MOVED from [${opt.path+file}] to [${moveto+file}]`);
+                    log(`LOG_DBSAVED MOVED from [${opt.path+file}] to [${moveto+file}]`);
                 }
             }
         }
