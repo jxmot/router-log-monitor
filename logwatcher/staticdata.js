@@ -96,10 +96,6 @@ module.exports = (function(pevts, _log)  {
     staticdata.readAll = function() {
         if(dbopen === true) {
             clearTables();
-            // NOTE: it is important that readActions() 
-            // is first, logread.js:DATA_READY requires it.
-
-
             // read the actions table from the database and populate
             // an array of action objects
             readTable(dbcfg.TABLE_ACTIONS_IDX);
