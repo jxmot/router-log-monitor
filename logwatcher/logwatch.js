@@ -1,3 +1,4 @@
+'use strict';
 /*
     logwatch.js - This is where a folder is watched,
     it looks for new files and when one is created it

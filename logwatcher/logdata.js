@@ -1,3 +1,4 @@
+'use strict';
 /*
     logdata.js - this is where the log file will be parsed
     and written to the detabase

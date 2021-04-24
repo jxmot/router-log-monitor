@@ -1,3 +1,4 @@
+'use strict';
 /*
     reports.js - waits for the LOG_PROCESSED event and 
     reads the database to generate static reports
