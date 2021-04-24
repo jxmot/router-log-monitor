@@ -154,14 +154,14 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
                             pevts.emit('LOG_DBSAVED', wfile);
                         }
                     } else {
-                        log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
+                        log(`logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                     }
-                    delete data;
-                    delete newrow;
+                    newrow = null;
+                    data = null;
                 });
             });
         } else {
-            log(`- logToDB(): undefined - wfile`);
+            log(`logToDB(): undefined - wfile`);
         }
     };
 
