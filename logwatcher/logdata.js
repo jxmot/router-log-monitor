@@ -101,12 +101,19 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
             //      parse each line into object
             //      write object to db
             //      next line
-            if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
             const lineqty = logarr.length;
             var linecount = 0;
             var badcount = 0;
             logarr.forEach((entry, idx) => {
                 var newrow = parseEntry(entry, idx);
+                // create a range for this log, it will be used 
+                // later when reports are processed
+                if(idx === 0) {
+                    wfile.start = newrow.tstamp;
+                } else {
+                    wfile.stop  = newrow.tstamp;
+                }
                 // for debugging defective logs
                 newrow.logfile = wfile.filename;
                 // write the data...
