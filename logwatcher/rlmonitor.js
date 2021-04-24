@@ -22,21 +22,21 @@ function _log(payload) {
 };
 
 function log(payload) {
-    _log(`${scriptName} ${payload}`);
+    _log(`${scriptName} - ${payload}`);
 };
 
 // start logging
 log('*******************************************');
-log(`- begin app init`);
+log(`begin app init`);
 
 // event error handlers, if handled here then they 
 // won't crash the app
 watch_evts.on('error', (err) => {
-    log(`- watch_evts ERROR ${err}`);
+    log(`watch_evts ERROR ${err}`);
 });
 
 procs_evts.on('error', (err) => {
-    log(`- procs_evts ERROR ${err}`);
+    log(`procs_evts ERROR ${err}`);
 });
 
 /*
