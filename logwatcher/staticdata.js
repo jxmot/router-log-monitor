@@ -96,6 +96,25 @@ module.exports = (function(pevts, _log)  {
     staticdata.readAll = function() {
         if(dbopen === true) {
             clearTables();
+
+            // used primarily by logread.js, it's waiting
+            // after it has gathered a list of log files 
+            // for the STATICDATA_READY event. The watcher
+            // doesn't use it because when it's running no 
+            // log files exist.
+            var tableidx = dbcfg.TABLE_STATIC_BEGIN;
+            var tid = setInterval(() => {
+                readTable(tableidx, (tbl, len) => {
+                    if(tableidx >= dbcfg.TABLE_STATIC_END) {
+                        pevts.emit('STATICDATA_READY');
+                        clearInterval(tid);
+                    } else {
+                        tableidx += 1;
+                    }
+                });
+            }, 25);
+
+/*
             // read the actions table from the database and populate
             // an array of action objects
             readTable(dbcfg.TABLE_ACTIONS_IDX);
@@ -108,6 +127,7 @@ module.exports = (function(pevts, _log)  {
             // read the known table from the database and populate
             // an array of known objects
             readTable(dbcfg.TABLE_KNOWN_IDX);
+*/
         }
     };
 
