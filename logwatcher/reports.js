@@ -1,13 +1,14 @@
 'use strict';
 /*
-    reports.js - waits for the LOG_PROCESSED event and 
-    reads the database to generate static reports
+    reports.js - waits for the LOG_DBSAVED event to indicate that 
+    a log file has been read, parsed, and  saved to the database.
 
-    WIP: Initiall this module will post-process logentry 
-    data and copy rows to other tables. The static HTML 
-    reports will be created from those tables.
+    Then it will read the recently saved records and filter, search,
+    and/or copy data to table(s) that can be read and processed later.
+
+    The static HTML reports will be created from those tables.
 */
-module.exports = (function(pevts, _log) {
+module.exports = (function({constants, staticdata, pevts, _log}) {
 
     // set up run-time logging
     var path = require('path');
@@ -15,10 +16,6 @@ module.exports = (function(pevts, _log) {
     function log(payload) {
         _log(`${scriptName} - ${payload}`);
     };
-
-    var constants = require('./constants.js');
-
-    var staticdata = require('./staticdata.js')(pevts, _log, constants);
 
     var dbopen = false;
     var dbobj = {};
@@ -32,8 +29,8 @@ module.exports = (function(pevts, _log) {
             log(`DB_OPEN: success`);
 
             // for TESTING only, will be removed.
-            log(`initiate TEST_REPORT`);
-            pevts.emit('TEST_REPORT');
+            //log(`initiate TEST_REPORT`);
+            //pevts.emit('TEST_REPORT');
 
         } else {
             log(`DB_OPEN: ERROR ${dbobj.db.err.message}`);
@@ -55,7 +52,7 @@ module.exports = (function(pevts, _log) {
     pevts.on('LOG_DBSAVED', (wfile) => {
         log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
-//            reportActions(constants.LAN_ACC);
+            reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
         }
     });
 
@@ -73,7 +70,7 @@ module.exports = (function(pevts, _log) {
             if(err) {
                 log(`updateHosts(): dns.reverse() ${err.toString()}`);
                 hosts = [];
-                hosts.push('ENOTFOUND');
+                hosts.push(`${err.code} - ${err.hostname}`);
             }
     
             if(hosts.length > 1) {
@@ -85,6 +82,7 @@ module.exports = (function(pevts, _log) {
                     updrow.hostname = null;
                 }
             }
+
             if(updrow.hostname !== null) {
                 // update the row...
                 dbobj.updateRows(table, {hostname:updrow.hostname}, `entrynumb = ${updrow.entrynumb}`, (target, result, err) => {
@@ -98,7 +96,6 @@ module.exports = (function(pevts, _log) {
             }
         });
     };
-
 
     /*
         Static Reports:
@@ -124,7 +121,7 @@ module.exports = (function(pevts, _log) {
         
 
     */
-    function reportActions(action, depth = constants.DAYS_30_MS, range = null) {
+    function reportActions(action, depth = constants.MONTHS_1_MS, range = null) {
         const dbtable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
         let criteria   = '';
 
@@ -177,7 +174,7 @@ module.exports = (function(pevts, _log) {
                                 const itable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_INVASIONS_IDX]}`;
         
                                 // copy columns from the row into the new row...
-                                let newrow = new Row();
+                                var newrow = new Row();
                                 const keys = Object.keys(data[ix]);
                                 keys.forEach((key) => {
                                     // only copy what we need, that is determined by
@@ -207,7 +204,7 @@ module.exports = (function(pevts, _log) {
                                 // writeRow() and the subsequent calls to the MySQL functions.
                                 // This was verified by single-stepping into - 
                                 // node_modules/sqlstring/lib/SqlString.js:98(v2.3.1)
-                                delete newrow;
+                                newrow = null;
                             } else {
                                 if(!logmute) log(`reportActions(${action}): IP is known ${data[ix].ip}`)
                             }
@@ -217,12 +214,16 @@ module.exports = (function(pevts, _log) {
             });
         }
     };
-
+/*
     pevts.on('TEST_REPORT', () => {
         if(dbopen === true) {
-            reportActions(constants.LAN_ACC);
+            // get all occurrences of LAN_ACC
+            //reportActions(constants.LAN_ACC, 0);
+            // get all occurrences in the past month of LAN_ACC
+            //reportActions(constants.LAN_ACC);
         }
     });
+*/
 });
 
 
