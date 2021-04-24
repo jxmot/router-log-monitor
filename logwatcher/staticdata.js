@@ -1,4 +1,4 @@
-module.exports = (function(pevts, _log, constants)  {
+module.exports = (function(pevts, _log)  {
 
     // NOTE: property names are identical matches to 
     // the table names in our database 
