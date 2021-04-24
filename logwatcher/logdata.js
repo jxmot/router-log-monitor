@@ -76,23 +76,23 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
     function logToDB(wfile) {
         // make sure the file is valid
         if(typeof wfile !== 'undefined') {
-            if(!logmute) log(`- logToDB(): checking ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): checking ${wfile.path}${wfile.filename}`);
             try {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`- logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
+                    log(`logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
                     // emit error?
                 }
                 return;
             }
             // valid, open and read it 
             // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_opensync_path_flags_mode
-            if(!logmute) log(`- logToDB(): opening ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): opening ${wfile.path}${wfile.filename}`);
             // Was using fs.readSync() but there was a bug. For info can be found
             // at - https://github.com/jxmot/nodejs-readSync-bug
             var logstr = fs.readFileSync(`${wfile.path}${wfile.filename}`, 'utf8');         
-            if(!logmute) log(`- logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
 
             // body string to array of lines
             var logarr = logstr.split("\n");
@@ -122,7 +122,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
                 // intentional and can be used later.
                 dbobj.writeRow(dest, newrow, (target, data, insertId, err) => {
                     if(err === null) {
-                        if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                        if(!logmute) log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         // are "bad" records to be handled?
                         if(wfile.movebad === true) {
                             // currently, only one indicator to use to determine 
@@ -163,20 +163,20 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
         dbobj.writeRow(dest, badrec, (target, data, insertId, err) => {
             if(err === null) {
-                if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
+                if(!logmute) log(`saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
                     var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
                     dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (table, keyfield, affected, err) => {
                         if(err === null) {
-                            if(!logmute) log(`- saveBadEntry(): deleted bad entry in ${badplace}`);
+                            if(!logmute) log(`saveBadEntry(): deleted bad entry in ${badplace}`);
                         } else {
-                            log(`- saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
+                            log(`saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
                         }
                     });
                 }
             } else {
-                log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
+                log(`saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
         });
     };
@@ -227,7 +227,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        if(!logmute) log(`- getTimestamp(): ${todstr} ${tstamp}`);
+        if(!logmute) log(`getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
