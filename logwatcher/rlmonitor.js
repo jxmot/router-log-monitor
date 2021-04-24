@@ -1,3 +1,4 @@
+'use strict';
 /* ************************************************************************ */
 // https://nodejs.org/docs/latest-v12.x/api/documentation.html
 var path = require('path');
@@ -5,7 +6,9 @@ var scriptName = path.basename(__filename);
 
 // Events
 const EventEmitter = require('events');
+// log "watcher" events
 const watch_evts = new EventEmitter();
+// app "process" events
 const procs_evts = new EventEmitter();
 
 // Run-Time Logging
