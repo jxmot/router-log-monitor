@@ -12,6 +12,8 @@ module.exports = {
     parms: {
         host     : 'localhost',
         database : 'rlmonitor',
+        // add your info and save this file as 
+        // "_dbcfg.js"
         user     : 'db_user_name',
         password : 'db_user_password'
     },
@@ -27,13 +29,19 @@ module.exports = {
         'logentry',
         'logentry_bad',
         'ipstats',
+        'invasions'
     ],
+    // static data table indices
+    TABLE_STATIC_BEGIN: 0,
     TABLE_ACTIONS_IDX: 0,
     TABLE_ACTIONCATS_IDX: 1,
     TABLE_IPCATS_IDX: 2,
     TABLE_KNOWN_IDX: 3,
+    TABLE_STATIC_END: 3,
+    // dynamic data table indices
     TABLE_LOGENTRY_IDX: 4,
     TABLE_LOGENTRYBAD_IDX: 5,
-    TABLE_IPSTATS_IDX: 6
+    TABLE_IPSTATS_IDX: 6,
+    TABLE_INVASIONS_IDX: 7
 };
 
