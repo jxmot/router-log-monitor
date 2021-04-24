@@ -1,3 +1,4 @@
+'use strict';
 /*
     logread.js - Find all log files found in the specified
     path and create a sorted list. Then notify the log 
@@ -17,16 +18,16 @@ module.exports = (function(wevts, pevts, _log) {
     const path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
+        _log(`${scriptName} - ${payload}`);
     };
 
     // some run-time log messages can be muted
     var logmute = true;
-    log(`- init`);
+    log(`init`);
 
     // configure the path to the watched folder
     const opt = require('./watchopt.js');
-    log(`- reading all log files in ${opt.path}`);
+    log(`reading all log files in ${opt.path}`);
 
     function makePath(pathname) {
         const __dirname = path.resolve();
@@ -78,7 +79,7 @@ module.exports = (function(wevts, pevts, _log) {
     fsort.forEach((fname, idx) => {
         let stats = fs.statSync(opt.path+fname);
         if(stats.size === 0) {
-            log(`- log file ${fname} size is 0(zero), skipping file.`);
+            log(`log file ${fname} size is 0(zero), skipping file.`);
         } else {
             var readit = new ReadIt;
             readit.path = opt.path;
@@ -100,14 +101,14 @@ module.exports = (function(wevts, pevts, _log) {
             fsort.forEach((file, idx) => {
                 fs.unlinkSync(opt.path+file);
             });
-            log(`- readEnd(): DELETED all log files.`);
+            log(`readEnd(): DELETED all log files.`);
         } else {
             if(opt.readren === true) {
                 // rename all files
                 fsort.forEach((file, idx) => {
                     fs.renameSync(opt.path+file, opt.path+opt.renchar+file);
                 });
-                log(`- readEnd(): renamed all log files, prepended with [${opt.renchar}].`);
+                log(`readEnd(): renamed all log files, prepended with [${opt.renchar}].`);
             } else {
                 if(opt.readmov === true) {
                     // move all files
@@ -115,13 +116,13 @@ module.exports = (function(wevts, pevts, _log) {
                     fsort.forEach((file, idx) => {
                         fs.renameSync(opt.path+file, moveto+file);
                     });
-                    log(`- readEnd(): moved all log files to ${moveto}.`);
+                    log(`readEnd(): moved all log files to ${moveto}.`);
                 }
             }
         }
 
         if(opt.readexit === true) {
-            log(`- readEnd(): exiting now...`);
+            log(`readEnd(): exiting now...`);
             process.exit(0);
         }
     };
@@ -141,11 +142,11 @@ module.exports = (function(wevts, pevts, _log) {
         wevts.emit('FILE_CREATED', frobj);
         pevts.once('LOG_DBSAVED', (wfile) => {
             if(fready.length > 0) {
-                log(`- fcemit(): LOG_DBSAVED ${wfile.filename} saved to database, reading the next log...`);
+                log(`fcemit(): LOG_DBSAVED ${wfile.filename} saved to database, reading the next log...`);
                 sendFC(Object.assign({}, fready[0]));
                 fready.shift();
             } else {
-                log(`- fcemit(): LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
+                log(`fcemit(): LOG_DBSAVED ${wfile.filename} saved to database, no more files.`);
                 // decouple the bulk handling of files 
                 // from this event handller
                 setTimeout(readEnd, 100);
@@ -160,7 +161,7 @@ module.exports = (function(wevts, pevts, _log) {
         // this event will tell us which table has been read
         if(dbtable.includes('actions') === true) {
             if(fready.length > 0) {
-                log(`- DATA_READY start log processing, ${fready.length} files to go`);
+                log(`DATA_READY start log processing, ${fready.length} files to go`);
                 // start with the first file in the list
                 sendFC(Object.assign({}, fready[0]));
                 // remove it from the queue

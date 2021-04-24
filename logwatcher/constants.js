@@ -1,3 +1,4 @@
+'use strict';
 /*
 
 |catcode|description         |
@@ -76,12 +77,14 @@ module.exports = {
     UPNP_EVENT : 11,    // NA
     MAX_ACTN   : 11,    // 
     // epoch calculation contstants
-    HOUR_1_MS  :    3600000,
+    HOURS_1_MS :    3600000,
     HOURS_4_MS :   14400000,
-    DAY_1_MS   :   86400000,
+    DAYS_1_MS  :   86400000,
     DAYS_5_MS  :  432000000,
     DAYS_10_MS :  864000000,
     DAYS_14_MS : 1209600000,
     DAYS_21_MS : 1814400000,
-    DAYS_30_MS : 2592000000
+    DAYS_30_MS : 2592000000,
+    // 30.41 days = (365 days / 12 months)
+    MONTHS_1_MS: (2592000000 + 36288000)
 };
