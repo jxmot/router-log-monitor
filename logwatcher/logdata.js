@@ -3,24 +3,18 @@
     logdata.js - this is where the log file will be parsed
     and written to the detabase
 */
-module.exports = (function(pevts, _log)  {
+module.exports = (function({constants, staticdata, pevts, _log})  {
     
-    logdata = {
-        actions: [],
-        actioncats: [],
-        known: [],
-        ipcats: []
-    };
+    var logdata = {};
 
-    // needed for fs.watch(), fs.statSync(), and
-    // fs.accessSync()
+    // needed for fs.watch(), fs.statSync(), and fs.accessSync()
     var fs = require('fs');
 
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
+        _log(`${scriptName} - ${payload}`);
     };
 
     var dbopen = false;
@@ -31,39 +25,30 @@ module.exports = (function(pevts, _log)  {
         if(_dbobj.state === true) {
             dbopen = true;
             dbobj = _dbobj.db;
-            log(`- DB_OPEN: success`);
+            log(`DB_OPEN: success`);
             dbcfg = dbobj.getDBCcfg();
-
-            // NOTE: it is important that readActions() 
-            // is first, logread.js:DATA_READY requires it.
-            readActions();
-            readActionCats();
-            readKnown();
-            readIPCats();
-
         } else {
-            log(`- DB_OPEN: ERROR ${_dbobj.db.err.message}`);
+            log(`DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
     });
 
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;
         dbobj = {};
-        clearTables();
     });
 
     var logmute = true;
-    log(`- init`);
+    log(`init`);
 
     logdata.process = function(wfile) {
         if(dbopen === false) {
-            log(`- process(): database not open`);
+            log(`process(): database not open`);
             dbobj = {};
         } else {
             // parse the log data and write to database...
-            log(`- process(): ${wfile.path}${wfile.filename}`);
+            log(`process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
-            log(`- process(): done ${wfile.path}${wfile.filename}`);
+            log(`process(): done ${wfile.path}${wfile.filename}`);
             // announce completion...
             // NOTE: This is only the point where we've finished 
             // writing the entries to the database. It is NOT an
