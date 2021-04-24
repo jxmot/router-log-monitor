@@ -1,7 +1,8 @@
+'use strict';
 /* ************************************************************************ */
 module.exports = (function(_log) {
     // Public Data
-    database = {
+    var database = {
         // database open/closed status
         dbopen: false,
         // Initially for debugging, other purposes?
@@ -13,6 +14,8 @@ module.exports = (function(_log) {
     const dbcfg = require('./_dbcfg.js');
     // The Connection
     var connection;
+
+    var logmute = true;
 
     // set up run-time logging
     var path = require('path');
@@ -206,7 +209,7 @@ module.exports = (function(_log) {
         let _readCallBack = callme;
         if(this.dbopen === true) {
 
-            log('database.readRows() - sql = select * from '+table+' where '+keyfield);
+            if(!logmute) log('database.readRows() - sql = select * from '+table+' where '+keyfield);
 
             connection.query('select * from '+table+' where '+keyfield, function(error, result) {
                 if(error) {
