@@ -168,8 +168,8 @@ module.exports = (function(wevts, pevts, _log) {
             } else {
                 if(opt.readmov === true) {
                     var moveto = makePath(opt.path+opt.movpath)+path.sep;
-                    fs.renameSync(opt.path+file, moveto+file);
-                    log(`LOG_DBSAVED MOVED from [${opt.path+file}] to [${moveto+file}]`);
+                    fs.renameSync(opt.path+wfile.filename, moveto+wfile.filename);
+                    log(`LOG_DBSAVED MOVED from [${opt.path+wfile.filename}] to [${moveto+wfile.filename}]`);
                 }
             }
         }
