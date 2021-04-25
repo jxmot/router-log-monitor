@@ -76,6 +76,13 @@ module.exports = {
     WLAN_REJ   : 10,    // RI
     UPNP_EVENT : 11,    // NA
     MAX_ACTN   : 11,    // 
+    // DOS Attack IDs
+    DOS_ATT_UNK: 1,     // Unknown  
+    DOS_ATT_FIN: 2,     // FIN Scan 
+    DOS_ATT_ACK: 3,     // ACK Scan 
+    DOS_ATT_STM: 4,     // STORM    
+    DOS_ATT_SMF: 5,     // Smurf    
+
     // epoch calculation contstants
     HOURS_1_MS :    3600000,
     HOURS_4_MS :   14400000,
