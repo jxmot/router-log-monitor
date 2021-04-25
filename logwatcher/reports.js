@@ -146,8 +146,12 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // read rows as specified...
             dbobj.readRows(dbtable, criteria, (table, _criteria, data, err) => {
                 if(err !== null) {
-                    log(`reportActions(): ERROR err = ${JSON.stringify(err)}`);
-                    exit(0);
+                    if((err.errno === true) && (err.code === -1) && (err.message === 'not found')) {
+                        log(`reportActions(): could not find in ${table} where [${_criteria}]`);
+                    } else {
+                        log(`reportActions(): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
+                        process.exit(0);
+                    }
                 } else {
                     if(!logmute) log(`reportActions(): got data, ${data.length} rows returned`);
                     // action-specific....
