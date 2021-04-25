@@ -151,7 +151,10 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
                         if((linecount += 1) === lineqty) {
                             wfile.linecount = linecount;
                             wfile.badcount  = badcount;
-                            pevts.emit('LOG_DBSAVED', wfile);
+                            // throttling to allow the database host to catch up
+                            setTimeout(() => {
+                                pevts.emit('LOG_DBSAVED', wfile);
+                            }, 1000);
                         }
                     } else {
                         log(`logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
