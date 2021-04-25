@@ -160,7 +160,7 @@ module.exports = (function(_log) {
                     log(`database.updateRows() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                     _updateCallBack(table, null, error);
                 } else {
-                    log(`database.updateRows() - SUCCESS - message = ${result.message}`);
+                    if(!logmute) log(`database.updateRows() - SUCCESS - message = ${result.message}`);
                     _updateCallBack(table, result.changedRows, null);
                 }
             });
