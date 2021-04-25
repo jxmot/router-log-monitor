@@ -27,11 +27,6 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             dbobj  = _dbobj.db;
             dbcfg  = dbobj.getDBCcfg();
             log(`DB_OPEN: success`);
-
-            // for TESTING only, will be removed.
-            //log(`initiate TEST_REPORT`);
-            //pevts.emit('TEST_REPORT');
-
         } else {
             log(`DB_OPEN: ERROR ${dbobj.db.err.message}`);
         }
@@ -53,12 +48,17 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
             log(`reporting on data from -  ${wfile.path}${wfile.filename} during ${wfile.start} to ${wfile.stop}`);
-            reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
+            //reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
+//            reportActions(constants.DOS_ATT, 0, {start:wfile.start,stop:wfile.stop});
         }
     });
 
     function isKnownIP(row) {
-        return staticdata.isKnownIP(row.ip);
+        return staticdata.isKnown(row.ip, 'ip');
+    };
+
+    function isKnownMAC(row) {
+        return staticdata.isKnown(row.mac, 'mac');
     };
 
     const dns = require('dns');
@@ -147,16 +147,90 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             dbobj.readRows(dbtable, criteria, (table, _criteria, data, err) => {
                 if(err !== null) {
                     if((err.errno === true) && (err.code === -1) && (err.message === 'not found')) {
-                        log(`reportActions(): could not find in ${table} where [${_criteria}]`);
+                        log(`reportActions(${action}): could not find in ${table} where [${_criteria}]`);
                     } else {
-                        log(`reportActions(): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
+                        log(`reportActions(${action}): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
                         process.exit(0);
                     }
                 } else {
-                    if(!logmute) log(`reportActions(): got data, ${data.length} rows returned`);
+                    if(!logmute) log(`reportActions(${action}): got data, ${data.length} rows returned`);
                     // action-specific....
                     //
- 
+
+                    // various external attacks DOS, FIN, STORM, etc...
+                    if(action === constants.DOS_ATT) {
+                        class Row {
+                            tstamp    = 0;
+                            entrynumb = 0;
+                            ip        = '';
+                            attackcode= '';
+                            attackid  = 0;
+                            qty       = 0;
+                            sec       = 0;
+                            known     = false;
+                            hostname  = '';
+                            message   = '';
+                            logfile   = '';
+                            logentry  = '';
+                        };
+                        // iterate through all rows returned to us...
+                        for(var ix = 0; ix < data.length; ix++) {
+                            // only record an invasion if the MAC is not known
+                            if(isKnownIP(data[ix]) === null) {
+                                // not known...
+                                const atable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ATTACKS_IDX]}`;
+
+                                // copy columns from the row into the new row...
+                                var newrow = new Row();
+                                const keys = Object.keys(data[ix]);
+                                keys.forEach((key) => {
+                                    // only copy what we need, that is determined by
+                                    // existing fields in the Row class.
+                                    if(typeof newrow[key] !== 'undefined') {
+                                        newrow[key] = data[ix][key];
+                                    }
+                                });
+
+                                // parse the attackcode, attackid, qty, and sec...
+                                /*
+
+                                  attackcode  qty                       sec
+
+                                    FIN Scan: (1) attack packets in last 20 sec from ip [151.101.65.69]
+                                    ACK Scan: (1) attack packets in last 20 sec from ip [151.101.65.69]
+                                    STORM: (1) attack packets in last 20 sec from ip [151.101.65.69]
+                                    Smurf: (1) attack packets in last 20 sec from ip [151.101.65.69]
+                                */
+                                let tmp = data[ix]['message'].split(':');
+                                newrow.attackcode = tmp[0];
+                                if((newrow.attackid = staticdata.getAttackID(newrow.attackcode)) === 0) {
+                                    newrow.attackid = constants.DOS_ATT_UNK;
+                                } else {
+                                    if(newrow.attackid === null) {
+                                        log(`reportActions(${action}): ERROR staticdata is not ready`);
+                                        process.exit(0);
+                                    }
+                                }
+
+                                // parse qty
+                                let qtmp = tmp[1].split('(');
+                                let q    = qtmp[1].split(')');
+                                newrow.qty = parseInt(q[0]);
+
+                                // parse sec
+                                let s = q[1].split(' ');
+                                newrow.sec = parseInt(s[5]);
+
+                                // write to TABLE_ATTACKS_IDX....
+                                log(`reportActions(${action}): ${JSON.stringify(newrow)}`);
+
+                            } else {
+                                // a known device is having trouble
+                            }
+                        }
+                    }
+
+/* **
                     // LAN Access from External IPs
                     if(action === constants.LAN_ACC) {
                         class Row {
@@ -215,20 +289,27 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                             }
                         }
                     } // ^LAN Access from External IPs
+** */
                 }
             });
         }
     };
-/*
+
+    pevts.on('STATICDATA_READY', () => {
+        // for TESTING only, will be removed.
+        log(`initiate TEST_REPORT`);
+        pevts.emit('TEST_REPORT');
+    });
+
     pevts.on('TEST_REPORT', () => {
         if(dbopen === true) {
-            // get all occurrences of LAN_ACC
-            //reportActions(constants.LAN_ACC, 0);
+            // get all occurrences of DOS_ATT
+            reportActions(constants.DOS_ATT, 0);
             // get all occurrences in the past month of LAN_ACC
             //reportActions(constants.LAN_ACC);
         }
     });
-*/
+
 });
 
 
