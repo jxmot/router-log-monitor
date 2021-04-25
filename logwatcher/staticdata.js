@@ -60,7 +60,7 @@ module.exports = (function(pevts, _log)  {
 
     //////////////////////////////////////////////////////////////////////////
     // 
-    function readTable(dbidx, callback = null) {
+    function readTable(dbidx, callback) {
         let dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbidx]}`;
         let cb = callback;
 
@@ -70,15 +70,14 @@ module.exports = (function(pevts, _log)  {
         staticdata.dbstates[dbcfg.tables[dbidx]] = false;
 
         dbobj.readAllRows(dbtable, (table, result, err) => {
-            tbl = table.split('.');
+            let tbl = table.split('.');
             if(result !== null) {
                 result.forEach((row, idx) => {
                     staticdata[tbl[1]].push(JSON.parse(JSON.stringify(row)));
                     if(!logmute) log(`readTable(${tbl[1]}): read & saved - ${JSON.stringify(row)}`);
                 });
                 staticdata.dbstates[tbl[1]] = true;
-                if(cb === null) pevts.emit('STATICDATA_READY', tbl[1], staticdata);
-                else cb(tbl[1], staticdata[tbl[1]].length);
+                cb(tbl[1], staticdata[tbl[1]].length);
             } else {
                 log(`readTable(): ERROR result is null for ${tbl[1]} - ${JSON.stringify(err)}`);
             }
