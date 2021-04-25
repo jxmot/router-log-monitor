@@ -1,17 +1,21 @@
+'use strict';
+
 module.exports = (function(pevts, _log)  {
 
     // NOTE: property names are identical matches to 
     // the table names in our database 
-    staticdata = {
+    var staticdata = {
         actions: [],
         actioncats: [],
         ipcats: [],
         known: [],
+        attacktypes: [],
         dbstates: {
             actions: false,
             actioncats: false,
             ipcats: false,
-            known: false
+            known: false,
+            attacktypes: false
         }
     };
 
