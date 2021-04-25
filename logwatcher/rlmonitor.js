@@ -21,6 +21,7 @@ function _log(payload) {
     if(logenable === true) logOut.writeTS(payload);
 };
 
+var logmute = true;
 function log(payload) {
     _log(`${scriptName} - ${payload}`);
 };
@@ -107,7 +108,7 @@ if(typeof fopt !== 'undefined') {
 
         default:
             log(`ERROR unknown operation ${fopt}`);
-            exit(0);
+            process.exit(0);
             break;
     };
 } else {
