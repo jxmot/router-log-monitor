@@ -142,6 +142,15 @@ module.exports = (function(wevts, pevts, _log) {
         }
     };
 
+    function makePath(pathname) {
+        const __dirname = path.resolve();
+        // Remove leading directory markers, and remove ending /file-name.extension
+        pathname = pathname.replace(/^\.*\/|\/?[^\/]+\.[a-z]+|\/$/g, ''); 
+        var mkpath = path.resolve(__dirname, pathname);
+        fs.mkdirSync(mkpath, {recursive:true});
+        return mkpath;
+    };
+
     /*
         Wait for the LOG_DBSAVED saved event. And check the
         options for what to do with the file that was just
