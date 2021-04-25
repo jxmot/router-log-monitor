@@ -88,7 +88,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                 dbobj.updateRows(table, {hostname:updrow.hostname}, `entrynumb = ${updrow.entrynumb}`, (target, result, err) => {
                     if(err !== null) {
                         log(`updateInvasionHosts(): ERROR err = ${err.message}`);
-                        exit(0);
+                        process.exit(0);
                     } else {
                         if(!logmute) log(`updateInvasionHosts(): SUCCESS = ${result}`);
                     }
