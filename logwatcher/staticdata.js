@@ -90,16 +90,17 @@ module.exports = (function(pevts, _log)  {
         staticdata.actioncats = [];
         staticdata.ipcats = [];
         staticdata.known = [];
+        staticdata.attacktypes = [];
         staticdata.dbstates.actions = false;
         staticdata.dbstates.actioncats = false;
         staticdata.dbstates.ipcats = false;
         staticdata.dbstates.known = false;
+        staticdata.dbstates.attacktypes = false;
     };
 
     staticdata.readAll = function() {
         if(dbopen === true) {
             clearTables();
-
             // used primarily by logread.js, it's waiting
             // after it has gathered a list of log files 
             // for the STATICDATA_READY event. The watcher
