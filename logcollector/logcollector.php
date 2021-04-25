@@ -87,6 +87,8 @@ if($msgqty === false) {
         exit(0);
     }
 }
+echo rightnow('log') . " - logcollector.php: msgqty = " . $msgqty . "\n";
+
 // create defines that are used globally
 define('_IMAPSRV',$imapsrv);
 define('_MAILBOX',$mailbox);
