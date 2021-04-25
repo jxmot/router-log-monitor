@@ -42,8 +42,6 @@ module.exports = (function(pevts, _log)  {
             dbcfg = dbobj.getDBCcfg();
 
             staticdata.readAll();
-            //setTimeout(staticdata.readAll, 100);
-
         } else {
             log(`DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
@@ -117,28 +115,18 @@ module.exports = (function(pevts, _log)  {
                     }
                 });
             }, 25);
-
-/*
-            // read the actions table from the database and populate
-            // an array of action objects
-            readTable(dbcfg.TABLE_ACTIONS_IDX);
-            // read the action category table from the database and populate
-            // an array of action category objects
-            readTable(dbcfg.TABLE_ACTIONCATS_IDX);
-            // read the IP category table from the database and populate
-            // an array of IP category objects
-            readTable(dbcfg.TABLE_IPCATS_IDX);
-            // read the known table from the database and populate
-            // an array of known objects
-            readTable(dbcfg.TABLE_KNOWN_IDX);
-*/
         }
     };
 
-    staticdata.isKnownIP = function(ipaddr) {
-        if(staticdata.dbstates.known === true) {
+//    staticdata.isKnownIP = function(ipaddr) {
+    staticdata.isKnown = function(unkn, col) {
+        if((staticdata.dbstates.known === true) &&
+            // use the first known IP in the data to see 
+            // if the column is valid.
+           (typeof staticdata.known[0][col] !== 'undefined')){
             for(var ix = 0; ix < staticdata.known.length; ix++) {
-                if(ipaddr === staticdata.known[ix].ip) {
+//                if(ipaddr === staticdata.known[ix].ip) {
+                if(unkn === staticdata.known[ix][col]) {
                     return staticdata.known[ix];
                 }
             }
@@ -147,7 +135,15 @@ module.exports = (function(pevts, _log)  {
     };
 
     function getIPInfo(get, ipaddr) {
-        let info = staticdata.isKnownIP(ipaddr);
+//        let info = staticdata.isKnownIP(ipaddr);
+        let info = staticdata.isKnown(ipaddr, 'ip');
+        if(info !== null) {
+            return info[get];
+        } else return null;
+    };
+
+    function getMACInfo(get, mac) {
+        let info = staticdata.isKnown(mac, 'mac');
         if(info !== null) {
             return info[get];
         } else return null;
@@ -173,6 +169,17 @@ module.exports = (function(pevts, _log)  {
         return getIPInfo('watch', ipaddr);
     };
 
+    staticdata.getAttackID = function(attcode) {
+        if(staticdata.dbstates.attacktypes === true) {
+            for(var ix = 0; ix < staticdata.attacktypes.length; ix++) {
+                if(attcode === staticdata.attacktypes[ix].attackcode) {
+                    return staticdata.attacktypes[ix].attackid;
+                }
+            }
+            return 0;
+        }
+        return null;
+    };
 
     return staticdata;
 });
