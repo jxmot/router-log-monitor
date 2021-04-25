@@ -157,6 +157,10 @@ module.exports = (function(pevts, _log)  {
         return getIPInfo('mac', ipaddr);
     };
 
+    staticdata.getMACIP = function(mac) {
+        return getMACInfo('ip', mac);
+    };
+
     staticdata.getIPCat = function(ipaddr) {
         return getIPInfo('ipcat', ipaddr);
     };
