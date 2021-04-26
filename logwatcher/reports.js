@@ -62,7 +62,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
     };
 
     const dns = require('dns');
-    function updateInvasionHosts(table, datarow) {
+    function updateHostname(table, datarow) {
         // isolate from the arg, so that we don't interfere with clean up
         let updrow = JSON.parse(JSON.stringify(datarow));
 
@@ -88,10 +88,10 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                 // update the row...
                 dbobj.updateRows(table, {hostname:updrow.hostname}, `entrynumb = ${updrow.entrynumb}`, (target, result, err) => {
                     if(err !== null) {
-                        log(`updateInvasionHosts(): ERROR err = ${err.message}`);
+                        log(`updateHostname(): ERROR err = ${err.message}`);
                         process.exit(0);
                     } else {
-                        if(!logmute) log(`updateInvasionHosts(): SUCCESS = ${result}`);
+                        if(!logmute) log(`updateHostname(): SUCCESS = ${result}`);
                     }
                 });
             }
@@ -175,7 +175,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                         };
                         // iterate through all rows returned to us...
                         for(var ix = 0; ix < data.length; ix++) {
-                            // only record an invasion if the MAC is not known
+                            // only record an attack if the IP is not known
                             if(isKnownIP(data[ix]) === null) {
                                 // not known...
                                 const atable  = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ATTACKS_IDX]}`;
@@ -224,6 +224,27 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                                 // write to TABLE_ATTACKS_IDX....
                                 log(`reportActions(${action}): ${JSON.stringify(newrow)}`);
 
+                                dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
+                                    if(err === null) {
+                                        if(!logmute) log(`reportActions(${action}): saved in ${target}`);
+                                        // post processing....
+                                        updateHostname(atable, datawr);
+                                    } else {
+                                        // duplicates are not an error, announce them but take no action
+                                        if(err.code === 'ER_DUP_ENTRY') {
+                                            if(!logmute) log(`reportActions(${action}): Duplicate = ${err.sqlMessage}`);
+                                        } else {
+                                            log(`reportActions(${action}): ERROR err = ${err.message}`);
+                                            // test for and handle recoverable errors...
+                                        }
+                                    }
+                                });
+                                // clean-up, the MySQL functions will "copy" the values to 
+                                // an internal SQL string. That occurs during the call to 
+                                // writeRow() and the subsequent calls to the MySQL functions.
+                                // This was verified by single-stepping into - 
+                                // node_modules/sqlstring/lib/SqlString.js:98(v2.3.1)
+                                newrow = null;
                             } else {
                                 // a known device is having trouble
                             }
@@ -267,7 +288,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                                     if(err === null) {
                                         if(!logmute) log(`reportActions(${action}): saved in ${target}`);
                                         // post processing....
-                                        updateInvasionHosts(itable, datawr);
+                                        updateHostname(itable, datawr);
                                     } else {
                                         // duplicates are not an error, announce them but take no action
                                         if(err.code === 'ER_DUP_ENTRY') {
