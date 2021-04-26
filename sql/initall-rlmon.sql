@@ -139,21 +139,39 @@ create table rlmonitor.attacks (
     logentry varchar(512) default null
 );
 
-
-create table rlmonitor.wlanrejs (
+create table rlmonitor.wlanrejects (
     tstamp bigint(16) not null, 
     -- NOTE: 'unique' should prevent duplication,
     -- since this field is copied from logentry
     entrynumb bigint(16) unique not null,
     mac varchar(20) not null,
     message varchar(128) not null,
-    ip varchar(40) not null,
     -- some MACs/IPs might be known
     known boolean default false,
+    knownip varchar(40) default null,
+    -- only if knownip is false
+    macmfr varchar(128) default null,
     -- temporary?
     logfile varchar(64) default null,
     logentry varchar(512) default null
 );
+
+
+-- import from 
+-- https://maclookup.app/downloads/json-database
+-- (downloaded on 2021-04-26)
+create table rlmonitor.macvendors (
+    -- macPrefix varchar(12) unique not null,
+    macPrefix varchar(12) not null,
+    vendorName varchar(128) not null,
+    private boolean not null,
+    blockType varchar(16) not null,
+    lastUpdate varchar(16) not null,
+    lastUpdateStamp bigint(16) not null
+);
+
+
+
 
 --------------------------------------------------------
 
