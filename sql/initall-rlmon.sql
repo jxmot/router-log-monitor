@@ -170,8 +170,9 @@ create table rlmonitor.macvendors (
     lastUpdateStamp bigint(16) not null
 );
 
+select macPrefix from rlmonitor.macvendors group by macPrefix having count(*) > 1;
 
-
+select * from rlmonitor.macvendors group by macPrefix where length(macPrefix) < 9;
 
 --------------------------------------------------------
 
