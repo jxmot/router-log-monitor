@@ -48,10 +48,15 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
             log(`reporting on data from -  ${wfile.path}${wfile.filename} during ${wfile.start} to ${wfile.stop}`);
-            //reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
-//            reportActions(constants.DOS_ATT, 0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DOS_ATT, 0, {start:wfile.start,stop:wfile.stop});
+            //reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
         }
     });
+
+    function isKnown(row, col) {
+        return staticdata.isKnown(row[col], col);
+    };
 
     function isKnownIP(row) {
         return staticdata.isKnown(row.ip, 'ip');
@@ -156,7 +161,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                     if(!logmute) log(`reportActions(${action}): got data, ${data.length} rows returned`);
                     // action-specific....
                     //
-
+/////////////////////////////////////////
                     // various external attacks DOS, FIN, STORM, etc...
                     if(action === constants.DOS_ATT) {
                         class Row {
@@ -190,7 +195,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                                         newrow[key] = data[ix][key];
                                     }
                                 });
-
+/****/
                                 // parse the attackcode, attackid, qty, and sec...
                                 /*
 
@@ -222,7 +227,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                                 newrow.sec = parseInt(s[5]);
 
                                 // write to TABLE_ATTACKS_IDX....
-                                log(`reportActions(${action}): ${JSON.stringify(newrow)}`);
+                                if(!logmute) log(`reportActions(${action}): ${JSON.stringify(newrow)}`);
+/****/
 
                                 dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
                                     if(err === null) {
@@ -247,11 +253,14 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                                 newrow = null;
                             } else {
                                 // a known device is having trouble
+                                if(!logmute) log(`reportActions(${action}): DOS_ATT - IP is known ${data[ix].ip}`)
                             }
                         }
                     }
+/////////////////////////////////////////
 
 /* **
+/////////////////////////////////////////
                     // LAN Access from External IPs
                     if(action === constants.LAN_ACC) {
                         class Row {
@@ -306,10 +315,11 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                                 // node_modules/sqlstring/lib/SqlString.js:98(v2.3.1)
                                 newrow = null;
                             } else {
-                                if(!logmute) log(`reportActions(${action}): IP is known ${data[ix].ip}`)
+                                if(!logmute) log(`reportActions(${action}): LAN_ACC - IP is known ${data[ix].ip}`);
                             }
                         }
                     } // ^LAN Access from External IPs
+/////////////////////////////////////////
 ** */
                 }
             });
