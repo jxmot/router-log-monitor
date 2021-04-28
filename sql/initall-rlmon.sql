@@ -157,22 +157,44 @@ create table rlmonitor.wlanrejects (
 );
 
 
--- import from 
--- https://maclookup.app/downloads/json-database
--- (downloaded on 2021-04-26)
+/*
+
+https://maclookup.app/api-v2/rate-limits
+
+https://maclookup.app/api-v2/documentation
+
+{
+  "success": true,
+  "found": true,
+  "macPrefix": "4C82CF",
+  "company": "Dish Technologies Corp",
+  "address": "94 Inverness Terrace E, Englewood CO 80112, US",
+  "country": "US",
+  "blockStart": "4C82CF000000",
+  "blockEnd": "4C82CFFFFFFF",
+  "blockSize": 16777215,
+  "blockType": "MA-L",
+  "updated": "2017-10-11",
+  "isRand": false,
+  "isPrivate": false
+}
+*/
+
 create table rlmonitor.macvendors (
-    -- macPrefix varchar(12) unique not null,
     macPrefix varchar(12) not null,
-    vendorName varchar(128) not null,
-    private boolean not null,
-    blockType varchar(16) not null,
-    lastUpdate varchar(16) not null,
-    lastUpdateStamp bigint(16) not null
+    company varchar(128) default null,
+    address varchar(128) default null,
+    country varchar(4) default null,
+    updated varchar(16) default null,
+    -- filled in after retrieval
+    updatedStamp bigint(16) default null,
+    -- date of addition to db table
+    checked varchar(16) default null,
+    checkedStamp bigint(16) default null
 );
 
-select macPrefix from rlmonitor.macvendors group by macPrefix having count(*) > 1;
-
-select * from rlmonitor.macvendors group by macPrefix where length(macPrefix) < 9;
+-- select macPrefix from rlmonitor.macvendors group by macPrefix having count(*) > 1;
+-- select * from rlmonitor.macvendors group by macPrefix where length(macPrefix) < 9;
 
 --------------------------------------------------------
 
