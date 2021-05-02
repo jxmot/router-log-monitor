@@ -181,17 +181,26 @@ https://maclookup.app/api-v2/documentation
 */
 
 create table rlmonitor.macvendors (
-    macPrefix varchar(12) not null,
+    macPrefix varchar(12) unique not null,
     company varchar(128) default null,
-    address varchar(128) default null,
+    address varchar(256) default null,
     country varchar(4) default null,
     updated varchar(16) default null,
     -- filled in after retrieval
     updatedStamp bigint(16) default null,
     -- date of addition to db table
-    checked varchar(16) default null,
-    checkedStamp bigint(16) default null
+    dbsaved varchar(16) default null,
+    dbsavedStamp bigint(16) default null
 );
+
+
+insert into rlmonitor.macvendors 
+(macPrefix,company,address,country,updated,updatedStamp,dbsaved,dbsavedStamp)
+values
+("DDEEFF","Sputz Intnl","5000 Sputz Way\nMiami, FL","US","2019-07-12",1562907600000,"2021-04-28",1619630222000),
+("BEEF00","Bovine Electronics","2121 Cow Ave\nBaldwin, WI","US","2020-03-05",1583388000000,"2021-03-15",1615799822000),
+("AABBCC","ACME Inc","1234 13th St.\nChicago, IL","US","2017-10-11",1507698000000,"2021-11-22",1606079822000);
+
 
 -- select macPrefix from rlmonitor.macvendors group by macPrefix having count(*) > 1;
 -- select * from rlmonitor.macvendors group by macPrefix where length(macPrefix) < 9;
