@@ -58,6 +58,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         return staticdata.isKnown(row[col], col);
     };
 
+// NOTE: where this is used will be replaced with isKnown()
     function isKnownIP(row) {
         return staticdata.isKnown(row.ip, 'ip');
     };

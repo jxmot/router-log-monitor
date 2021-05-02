@@ -123,14 +123,13 @@ module.exports = (function(pevts, _log)  {
         }
     };
 
-//    staticdata.isKnownIP = function(ipaddr) {
+// in use
     staticdata.isKnown = function(unkn, col) {
         if((staticdata.dbstates.known === true) &&
             // use the first known IP in the data to see 
             // if the column is valid.
            (typeof staticdata.known[0][col] !== 'undefined')){
             for(var ix = 0; ix < staticdata.known.length; ix++) {
-//                if(ipaddr === staticdata.known[ix].ip) {
                 if(unkn === staticdata.known[ix][col]) {
                     return staticdata.known[ix];
                 }
