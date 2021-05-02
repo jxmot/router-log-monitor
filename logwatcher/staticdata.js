@@ -139,41 +139,7 @@ module.exports = (function(pevts, _log)  {
         return null;
     };
 
-    function getIPInfo(get, ipaddr) {
-//        let info = staticdata.isKnownIP(ipaddr);
-        let info = staticdata.isKnown(ipaddr, 'ip');
-        if(info !== null) {
-            return info[get];
-        } else return null;
-    };
-
-    function getMACInfo(get, mac) {
-        let info = staticdata.isKnown(mac, 'mac');
-        if(info !== null) {
-            return info[get];
-        } else return null;
-    };
-
-    staticdata.getIPMAC = function(ipaddr) {
-        return getIPInfo('mac', ipaddr);
-    };
-
-    staticdata.getMACIP = function(mac) {
-        return getMACInfo('ip', mac);
-    };
-
-    staticdata.getIPCat = function(ipaddr) {
-        return getIPInfo('ipcat', ipaddr);
-    };
-
-    staticdata.getIPDevice = function(ipaddr) {
-        return getIPInfo('device', ipaddr);
-    };
-
-    staticdata.getIPWatch = function(ipaddr) {
-        return getIPInfo('watch', ipaddr);
-    };
-
+// in use
     staticdata.getAttackID = function(attcode) {
         if(staticdata.dbstates.attacktypes === true) {
             for(var ix = 0; ix < staticdata.attacktypes.length; ix++) {
