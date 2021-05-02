@@ -43,7 +43,7 @@ module.exports = (function(pevts, _log)  {
             log(`DB_OPEN: success`);
             dbcfg = dbobj.getDBCcfg();
 
-            staticdata.readAll();
+            readAll();
         } else {
             log(`DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
