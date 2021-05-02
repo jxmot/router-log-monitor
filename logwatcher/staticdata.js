@@ -10,12 +10,14 @@ module.exports = (function(pevts, _log)  {
         ipcats: [],
         known: [],
         attacktypes: [],
+        macvendors: [],
         dbstates: {
             actions: false,
             actioncats: false,
             ipcats: false,
             known: false,
             attacktypes: false
+            macvendors: false
         }
     };
 
