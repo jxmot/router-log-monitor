@@ -91,14 +91,17 @@ module.exports = (function(pevts, _log)  {
         staticdata.ipcats = [];
         staticdata.known = [];
         staticdata.attacktypes = [];
+        staticdata.macvendors = [];
         staticdata.dbstates.actions = false;
         staticdata.dbstates.actioncats = false;
         staticdata.dbstates.ipcats = false;
         staticdata.dbstates.known = false;
         staticdata.dbstates.attacktypes = false;
+        staticdata.dbstates.macvendors = false;
     };
 
-    staticdata.readAll = function() {
+//    staticdata.readAll = function() {
+    function readAll() {
         if(dbopen === true) {
             clearTables();
             // used primarily by logread.js, it's waiting
