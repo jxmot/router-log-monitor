@@ -335,8 +335,10 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 
     pevts.on('TEST_REPORT', () => {
         if(dbopen === true) {
+            // get all occurrences of WLAN_REJ
+            reportActions(constants.WLAN_REJ, 0);
             // get all occurrences of DOS_ATT
-            reportActions(constants.DOS_ATT, 0);
+            //reportActions(constants.DOS_ATT, 0);
             // get all occurrences in the past month of LAN_ACC
             //reportActions(constants.LAN_ACC);
         }
