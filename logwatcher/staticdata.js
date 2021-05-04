@@ -21,10 +21,6 @@ module.exports = (function(pevts, _log)  {
         }
     };
 
-    // needed for fs.watch(), fs.statSync(), and
-    // fs.accessSync()
-    var fs = require('fs');
-
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
@@ -100,7 +96,6 @@ module.exports = (function(pevts, _log)  {
         staticdata.dbstates.macvendors = false;
     };
 
-//    staticdata.readAll = function() {
     function readAll() {
         if(dbopen === true) {
             clearTables();
@@ -120,6 +115,8 @@ module.exports = (function(pevts, _log)  {
                     }
                 });
             }, 25);
+        } else {
+            log(`readAll() - ERROR database not open!`);
         }
     };
 
