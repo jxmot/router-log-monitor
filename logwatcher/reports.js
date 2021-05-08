@@ -48,6 +48,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
             log(`reporting on data from -  ${wfile.path}${wfile.filename} during ${wfile.start} to ${wfile.stop}`);
+
             reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
             reportActions(constants.DOS_ATT, 0, {start:wfile.start,stop:wfile.stop});
             //reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
@@ -56,15 +57,6 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 
     function isKnown(row, col) {
         return staticdata.isKnown(row[col], col);
-    };
-
-// NOTE: where this is used will be replaced with isKnown()
-    function isKnownIP(row) {
-        return staticdata.isKnown(row.ip, 'ip');
-    };
-
-    function isKnownMAC(row) {
-        return staticdata.isKnown(row.mac, 'mac');
     };
 
     const dns = require('dns');
