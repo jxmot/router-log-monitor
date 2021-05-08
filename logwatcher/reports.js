@@ -396,6 +396,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         mac       = '';
         known     = false;
         knownip   = '';
+        device    = '';
         macmfr    = '';
         logfile   = '';
         logentry  = '';
