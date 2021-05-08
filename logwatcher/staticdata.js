@@ -16,7 +16,7 @@ module.exports = (function(pevts, _log)  {
             actioncats: false,
             ipcats: false,
             known: false,
-            attacktypes: false
+            attacktypes: false,
             macvendors: false
         }
     };
@@ -120,7 +120,6 @@ module.exports = (function(pevts, _log)  {
         }
     };
 
-// in use
     staticdata.isKnown = function(unkn, col) {
         if((staticdata.dbstates.known === true) &&
             // use the first known IP in the data to see 
@@ -135,7 +134,6 @@ module.exports = (function(pevts, _log)  {
         return null;
     };
 
-// in use
     staticdata.getAttackID = function(attcode) {
         if(staticdata.dbstates.attacktypes === true) {
             for(var ix = 0; ix < staticdata.attacktypes.length; ix++) {
