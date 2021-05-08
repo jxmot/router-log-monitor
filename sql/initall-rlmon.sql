@@ -149,6 +149,8 @@ create table rlmonitor.wlanrejects (
     -- some MACs/IPs might be known
     known boolean default false,
     knownip varchar(40) default null,
+    -- get the device name if known
+    device varchar(64) default null,
     -- only if knownip is false
     macmfr varchar(128) default null,
     -- temporary?
