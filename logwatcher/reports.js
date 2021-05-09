@@ -165,7 +165,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                 log(`updbMACMFR(): ERROR err = ${err.message}`);
                 process.exit(0);
             } else {
-                if(!logmute) log(`updbMACMFR(): SUCCESS = ${result}`);
+                if(!logmute) log(`updbMACMFR(): SUCCESS = ${result}  entrynumb = ${rowdata.entrynumb}`);
             }
         });
     }
