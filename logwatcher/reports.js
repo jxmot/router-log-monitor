@@ -209,18 +209,25 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             if(subparser !== null) {
                newrow = Object.assign(newrow, subparser(data[ix]));
             }
-
-            // if we are going to get the MAC info then that type
-            // of report table will have these columns :
-            // known, knownip, device
-            const known = isKnown(data[ix], knowit);
-            // if it's a known device and MAC info retreival is 
-            // enabled then copy the known info
-            if((known !== null) && (getmacmfr === true)) {
-                newrow.known   = true;
-                newrow.knownip = known.ip;
-                newrow.device  = known.device;
-            } else newrow.known = false;
+            if(gethost === false) {
+                // if we are going to get the MAC info then that type
+                // of report table will have these columns :
+                // known, knownip, device
+                const known = isKnown(data[ix], knowit);
+                // if it's a known device and MAC info retreival is 
+                // enabled then copy the known info. at this time 
+                // only the DHCP_IP and WLAN_REJ log entries contain
+                // MAC addresses. 
+                if((known !== null) && (getmacmfr === true)) {
+                    newrow.known   = true;
+                    newrow.knownip = known.ip;
+                    newrow.device  = known.device;
+                    if(typeof newrow.givenip !== 'undefined') {
+                        newrow.givenip = data[ix].ip;
+                        newrow.errip   = (newrow.knownip === newrow.givenip ? false : true);
+                    }
+                } else newrow.known = false;
+            }
             // save to the report table...
             dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
                 if(err === null) {
