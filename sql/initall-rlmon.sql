@@ -139,6 +139,11 @@ create table rlmonitor.attacks (
     logentry varchar(512) default null
 );
 
+create table rlmonitor.dhcpip (
+    -- same as wlanrejects()
+);
+
+
 create table rlmonitor.wlanrejects (
     tstamp bigint(16) not null, 
     -- NOTE: 'unique' should prevent duplication,
@@ -157,7 +162,6 @@ create table rlmonitor.wlanrejects (
     logfile varchar(64) default null,
     logentry varchar(512) default null
 );
-
 
 /*
 
