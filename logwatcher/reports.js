@@ -196,9 +196,10 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // copy columns from the row into the new row...
             var newrow = new RowClass();
             const keys = Object.keys(data[ix]);
+            // use keys found in data[] to find matches in the new row
             keys.forEach((key) => {
                 // only copy what we need, that is determined by
-                // existing fields in the Row class.
+                // existing keys in the Row class. 
                 if(typeof newrow[key] !== 'undefined') {
                     newrow[key] = data[ix][key];
                 }
@@ -508,23 +509,24 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 // This is how testing was done. When STATICDATA_READY event occurs we will 
 // trigger the test(s).
 // 
-// The side benefit of testing (with about 100k of log entry data!) is that 
-// the report tables will be genereated here and when the app goes "live" then 
-// it will only have to deal with a days worth of log entries. 
+// The side benefit of testing (with over 100k log entries!) is that the report 
+// tables will be genereated here and when the app goes "live" then it will 
+// only have to deal with a days worth of log entries. 
 // 
-// The 
-    pevts.on('STATICDATA_READY', () => {
-        // for TESTING only, will be removed.
-        log(`initiate TEST_REPORT`);
-        pevts.emit('TEST_REPORT');
-    });
+// The following function is commented out when testing is complete
+//    pevts.on('STATICDATA_READY', () => {
+//        // for TESTING only, will be removed.
+//        log(`initiate TEST_REPORT`);
+//        pevts.emit('TEST_REPORT');
+//    });
 
     pevts.on('TEST_REPORT', () => {
         if(dbopen === true) {
+// tests complete - 2021-05-09
             // get all occurrences of in the past month DHCP_IP
             // because at this time there are 77K of DHCP records 
             // and anything older than 30 days is not useful.
-            reportActions(constants.DHCP_IP);
+            //reportActions(constants.DHCP_IP);
             // get all occurrences of WLAN_REJ
             //reportActions(constants.WLAN_REJ, 0);
             // get all occurrences of DOS_ATT
