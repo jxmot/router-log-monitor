@@ -361,6 +361,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsACC = null;
     };
 
+    // identical to DHCPRow
     class RejectRow {
         tstamp    = 0;
         entrynumb = 0;
@@ -390,6 +391,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsREJ = null;
     };
 
+    // identical to RejectRow
     class DHCPRow {
         tstamp    = 0;
         entrynumb = 0;
@@ -419,7 +421,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
     };
 
     // report tables that are written to here,
-    // if 'null' then do nothing
+    // if 'null' then do nothing.
+    // NOTE: The order here is the same as in 
+    // constants.js
     let reports = [
         null,               // ADM_LOG    
         reportDHCP_IP,      // DHCP_IP    
@@ -501,6 +505,14 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 
 
 //////////////////////////////////////////////////////////////////////////////
+// This is how testing was done. When STATICDATA_READY event occurs we will 
+// trigger the test(s).
+// 
+// The side benefit of testing (with about 100k of log entry data!) is that 
+// the report tables will be genereated here and when the app goes "live" then 
+// it will only have to deal with a days worth of log entries. 
+// 
+// The 
     pevts.on('STATICDATA_READY', () => {
         // for TESTING only, will be removed.
         log(`initiate TEST_REPORT`);
@@ -519,6 +531,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             //reportActions(constants.LAN_ACC);
         }
     });
+// end of testing code
+//////////////////////////////////////////////////////////////////////////////
 });
 
 
