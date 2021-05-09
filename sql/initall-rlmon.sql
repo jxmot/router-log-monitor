@@ -141,6 +141,11 @@ create table rlmonitor.attacks (
 
 create table rlmonitor.dhcpip (
     -- same as wlanrejects()
+
+    -- additions
+    givenip varchar(40) default null,
+    errip boolean default false,
+
 );
 
 
