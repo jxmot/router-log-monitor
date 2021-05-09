@@ -297,7 +297,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             newrow.attackid = constants.DOS_ATT_UNK;
         } else {
             if(newrow.attackid === null) {
-                log(`reportActions(${action}): ERROR staticdata is not ready`);
+                log(`parseAttack(): ERROR - staticdata is not ready`);
                 process.exit(0);
             }
         }
@@ -311,7 +311,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         let s = q[1].split(' ');
         newrow.sec = parseInt(s[5]);
 
-        if(!logmute) log(`reportActions(${action}): ${JSON.stringify(newrow)}`);
+        if(!logmute) log(`parseAttack(): SUCCESS - ${JSON.stringify(newrow)}`);
 
         return newrow;
     };
@@ -327,7 +327,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsATT.tableidx = dbcfg.TABLE_ATTACKS_IDX;
         argsATT.knowit   = 'ip';
         argsATT.gethost  = true;
-        argsREJ.getmacmfr= false;
+        argsATT.getmacmfr= false;
         argsATT.subparser= parseAttack;
         // write the data to the report table...
         genReportTable(argsATT);
@@ -353,9 +353,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsACC.RowClass = AccessRow;
         argsACC.data     = _data;
         argsACC.tableidx = dbcfg.TABLE_INVASIONS_IDX;
-        argsATT.knowit   = 'ip';
+        argsACC.knowit   = 'ip';
         argsACC.gethost  = true;
-        argsREJ.getmacmfr= false;
+        argsACC.getmacmfr= false;
         argsACC.subparser= null;
     
         genReportTable(argsACC);
