@@ -521,8 +521,10 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 
     pevts.on('TEST_REPORT', () => {
         if(dbopen === true) {
-            // get all occurrences of DHCP_IP
-            reportActions(constants.DHCP_IP, 0);
+            // get all occurrences of in the past month DHCP_IP
+            // because at this time there are 77K of DHCP records 
+            // and anything older than 30 days is not useful.
+            reportActions(constants.DHCP_IP);
             // get all occurrences of WLAN_REJ
             //reportActions(constants.WLAN_REJ, 0);
             // get all occurrences of DOS_ATT
