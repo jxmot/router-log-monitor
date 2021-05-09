@@ -51,7 +51,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 
             reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
             reportActions(constants.DOS_ATT, 0, {start:wfile.start,stop:wfile.stop});
-            //reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
         }
     });
 
