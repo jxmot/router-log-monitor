@@ -232,7 +232,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // save to the report table...
             dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
                 if(err === null) {
-                    if(!logmute) log(`reportActions(${action}): saved in ${target}`);
+                    if(!logmute) log(`genReportTable(${action}): saved in ${target}`);
                     // post processing.... (updates the table)
                     if(gethost === true) updateHostname(atable, datawr);
                     if(getmacmfr === true) {
@@ -244,9 +244,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                 } else {
                     // duplicates are not an error, announce them but take no action
                     if(err.code === 'ER_DUP_ENTRY') {
-                        if(!logmute) log(`reportActions(${action}): Duplicate = ${err.sqlMessage}`);
+                        if(!logmute) log(`genReportTable(${action}): Duplicate = ${err.sqlMessage}`);
                     } else {
-                        log(`reportActions(${action}): ERROR err = ${err.message}`);
+                        log(`genReportTable(${action}): ERROR err = ${err.message}`);
                         // test for and handle recoverable errors...
                     }
                 }
