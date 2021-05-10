@@ -88,6 +88,10 @@ create table rlmonitor.invasions (
     entrynumb bigint(16) unique not null,
 
     ip varchar(40) not null,
+
+    -- some IPs might be known
+    known boolean default false,
+
     port varchar(6) not null,
     toip varchar(40) not null,
     toport varchar(6) not null,
