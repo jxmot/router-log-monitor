@@ -189,7 +189,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         }
     };
 
-    function genReportTable({action, RowClass, data, tableidx, knowit, gethost = false, getmacmfr = false, subparser = null}) {
+    function genReportTable({action, RowClass, data, tableidx, knowit, gethost = false, getmacmfr = false, subparser = null, extra = null}) {
         const atable  = `${dbcfg.parms.database}.${dbcfg.tables[tableidx]}`;
         // iterate through all rows returned to us...
         for(var ix = 0; ix < data.length; ix++) {
@@ -268,6 +268,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         gethost   = false;
         getmacmfr = false;
         subparser = null;
+        extra     = null;
     };
 
     // database row
@@ -364,6 +365,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsACC.gethost  = true;
         argsACC.getmacmfr= false;
         argsACC.subparser= null;
+
+        argsACC.extra    = {hideknown: true};
     
         genReportTable(argsACC);
         argsACC = null;
