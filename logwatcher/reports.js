@@ -47,11 +47,12 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
     pevts.on('LOG_DBSAVED', (wfile) => {
         log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
-            log(`reporting on data from -  ${wfile.path}${wfile.filename} during ${wfile.start} to ${wfile.stop}`);
-
-            reportActions(constants.LAN_ACC, 0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.DOS_ATT, 0, {start:wfile.start,stop:wfile.stop});
+            log(`reporting on data from ${wfile.start} to ${wfile.stop}`);
+            reportActions(constants.LAN_ACC,  0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DOS_ATT,  0, {start:wfile.start,stop:wfile.stop});
             reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DHCP_IP,  0, {start:wfile.start,stop:wfile.stop});
+            log(`done reporting on data`);
         }
     });
 
