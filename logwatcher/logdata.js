@@ -1,25 +1,20 @@
+'use strict';
 /*
     logdata.js - this is where the log file will be parsed
     and written to the detabase
 */
-module.exports = (function(pevts, _log)  {
+module.exports = (function({constants, staticdata, pevts, _log})  {
     
-    logdata = {
-        actions: [],
-        actioncats: [],
-        known: [],
-        ipcats: []
-    };
+    var logdata = {};
 
-    // needed for fs.watch(), fs.statSync(), and
-    // fs.accessSync()
+    // needed for fs.watch(), fs.statSync(), and fs.accessSync()
     var fs = require('fs');
 
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} ${payload}`);
+        _log(`${scriptName} - ${payload}`);
     };
 
     var dbopen = false;
@@ -30,37 +25,30 @@ module.exports = (function(pevts, _log)  {
         if(_dbobj.state === true) {
             dbopen = true;
             dbobj = _dbobj.db;
-            log(`- DB_OPEN: success`);
+            log(`DB_OPEN: success`);
             dbcfg = dbobj.getDBCcfg();
-
-            readActions();
-            readActionCats();
-            readKnown();
-            readIPCats();
-
         } else {
-            log(`- DB_OPEN: ERROR ${_dbobj.db.err.message}`);
+            log(`DB_OPEN: ERROR ${_dbobj.db.err.message}`);
         }
     });
 
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;
         dbobj = {};
-        clearTables();
     });
 
     var logmute = true;
-    log(`- init`);
+    log(`init`);
 
     logdata.process = function(wfile) {
         if(dbopen === false) {
-            log(`- process(): database not open`);
+            log(`process(): database not open`);
             dbobj = {};
         } else {
             // parse the log data and write to database...
-            log(`- process(): ${wfile.path}${wfile.filename}`);
+            log(`process(): ${wfile.path}${wfile.filename}`);
             logToDB(wfile);
-            log(`- process(): done ${wfile.path}${wfile.filename}`);
+            log(`process(): done ${wfile.path}${wfile.filename}`);
             // announce completion...
             // NOTE: This is only the point where we've finished 
             // writing the entries to the database. It is NOT an
@@ -87,24 +75,24 @@ module.exports = (function(pevts, _log)  {
 
     function logToDB(wfile) {
         // make sure the file is valid
-        if(wfile !== undefined) {
-            if(!logmute) log(`- logToDB(): checking ${wfile.path}${wfile.filename}`);
+        if(typeof wfile !== 'undefined') {
+            if(!logmute) log(`logToDB(): checking ${wfile.path}${wfile.filename}`);
             try {
                 fs.accessSync(`${wfile.path}${wfile.filename}`, fs.constants.F_OK);
             } catch(err) {
                 if(err.code === 'ENOENT') {
-                    log(`- logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
+                    log(`logToDB(): does not exist: ${wfile.path}${wfile.filename}`);
                     // emit error?
                 }
                 return;
             }
             // valid, open and read it 
             // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_opensync_path_flags_mode
-            if(!logmute) log(`- logToDB(): opening ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): opening ${wfile.path}${wfile.filename}`);
             // Was using fs.readSync() but there was a bug. For info can be found
             // at - https://github.com/jxmot/nodejs-readSync-bug
             var logstr = fs.readFileSync(`${wfile.path}${wfile.filename}`, 'utf8');         
-            if(!logmute) log(`- logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);
 
             // body string to array of lines
             var logarr = logstr.split("\n");
@@ -113,12 +101,19 @@ module.exports = (function(pevts, _log)  {
             //      parse each line into object
             //      write object to db
             //      next line
-            if(!logmute) log(`- logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
+            if(!logmute) log(`logToDB(): found ${logarr.length} entries in ${wfile.path}${wfile.filename}`);
             const lineqty = logarr.length;
             var linecount = 0;
             var badcount = 0;
             logarr.forEach((entry, idx) => {
                 var newrow = parseEntry(entry, idx);
+                // create a range for this log, it will be used 
+                // later when reports are processed
+                if(idx === 0) {
+                    wfile.start = newrow.tstamp;
+                } else {
+                    wfile.stop  = newrow.tstamp;
+                }
                 // for debugging defective logs
                 newrow.logfile = wfile.filename;
                 // write the data...
@@ -128,11 +123,17 @@ module.exports = (function(pevts, _log)  {
                 //
                 // 
                 var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
-                dbobj.writeRow(dest, newrow, (result, target, data, insertId) => {
-                    if(result === true) {
-                        if(!logmute) log(`- logToDB(): success - ${target} ${JSON.stringify(data)}`);
+                // NOTE: The conditions that determine a "bad" record could be checked 
+                // before writing it to the database. However, we want 'entrynumb' to be 
+                // contiguous. And the gaps in count that end up in the logentry table are
+                // intentional and can be used later.
+                dbobj.writeRow(dest, newrow, (target, data, insertId, err) => {
+                    if(err === null) {
+                        if(!logmute) log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         // are "bad" records to be handled?
                         if(wfile.movebad === true) {
+                            // currently, only one indicator to use to determine 
+                            // if the log entry is bad...
                             // if the time stamp is BEFORE the "minimum" time 
                             // stamp then it's a bad record and won't be usable.
                             if(wfile.mintstamp > data.tstamp) {
@@ -150,39 +151,42 @@ module.exports = (function(pevts, _log)  {
                         if((linecount += 1) === lineqty) {
                             wfile.linecount = linecount;
                             wfile.badcount  = badcount;
-                            pevts.emit('LOG_DBSAVED', wfile);
+                            // throttling to allow the database host to catch up
+                            setTimeout(() => {
+                                pevts.emit('LOG_DBSAVED', wfile);
+                            }, 1000);
                         }
                     } else {
-                        log(`- logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
+                        log(`logToDB(): writeRow() FAIL - ${target} ${JSON.stringify(data)}`);
                     }
-                    delete data;
-                    delete newrow;
+                    newrow = null;
+                    data = null;
                 });
             });
         } else {
-            log(`- logToDB(): undefined - wfile`);
+            log(`logToDB(): undefined - wfile`);
         }
     };
 
     function saveBadEntry(badrec, wfile) {
         // write the data...
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
-        dbobj.writeRow(dest, badrec, (result, target, data, insertId) => {
-            if(result === true) {
-                if(!logmute) log(`- saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
+        dbobj.writeRow(dest, badrec, (target, data, insertId, err) => {
+            if(err === null) {
+                if(!logmute) log(`saveBadEntry(): saved bad entry, delbad = ${wfile.delbad}`);
                 if(wfile.delbad === true) {
                     // remove bad record from log entry table
                     var badplace = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRY_IDX]}`;
-                    dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (result, target, affected) => {
-                        if(result === true) {
-                            if(!logmute) log(`- saveBadEntry(): deleted bad entry in ${badplace}`);
+                    dbobj.deleteRow(badplace, `entrynumb = ${data.entrynumb}`, (table, keyfield, affected, err) => {
+                        if(err === null) {
+                            if(!logmute) log(`saveBadEntry(): deleted bad entry in ${badplace}`);
                         } else {
-                            log(`- saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
+                            log(`saveBadEntry(): FAILED to delete bad entry in ${badplace}`);
                         }
                     });
                 }
             } else {
-                log(`- saveBadEntry(): FAILED to save bad entry in ${dest}`);
+                log(`saveBadEntry(): FAILED to save bad entry in ${dest}`);
             }
         });
     };
@@ -200,21 +204,21 @@ module.exports = (function(pevts, _log)  {
         var actn = getAction(entry);
         if(actn.id === -1) {
             entObj.actionid = -1;
-            log(`- parseEntry(): ${actn.code}`);
+            log(`parseEntry(): ${actn.code}`);
         } else {
             entObj.actionid = actn.id;
             // 
             var parms = getActionParms(actn, entry);
-            if(parms.err !== undefined) {
-                log(`- parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
-                log(`- parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
-                log(`- parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);
+            if(typeof parms.err !== 'undefined') {
+                log(`parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
+                log(`parseEntry(): ERROR 2/3 - ${entObj.tstamp} ${_entry}`);
+                log(`parseEntry(): ERROR 3/3 - ${JSON.stringify(parms)}`);
                 // the err object cannot be written to the database
                 delete parms.err;
             }
             // 
             entObj = Object.assign(entObj, parms);
-            if(!logmute) log(`- parseEntry(): entObj = ${JSON.stringify(entObj)}`);
+            if(!logmute) log(`parseEntry(): entObj = ${JSON.stringify(entObj)}`);
         }
         // return the entry object
         return entObj;
@@ -233,7 +237,7 @@ module.exports = (function(pevts, _log)  {
         */
         var todstr = `${entarr[entarr.length - 3]} ${entarr[entarr.length - 2].replace(',',', ')} ${entarr[entarr.length - 1]}`;
         var tstamp = new Date(todstr).getTime();
-        if(!logmute) log(`- getTimestamp(): ${todstr} ${tstamp}`);
+        if(!logmute) log(`getTimestamp(): ${todstr} ${tstamp}`);
         return tstamp;
     };
 
@@ -242,8 +246,8 @@ module.exports = (function(pevts, _log)  {
             id: -1,
             code: ''
         };
-        if(logdata.actions.length > 0){
-            for(let act of logdata.actions) {
+        if(staticdata.actions.length > 0){
+            for(let act of staticdata.actions) {
                 if(entry.includes(act.description) === true) {
                     actID.id   = act.actionid;
                     actID.code = act.catcode;
@@ -256,11 +260,9 @@ module.exports = (function(pevts, _log)  {
         } else {
             actID.code = 'ERROR: no action data';
         }
-        if(!logmute) log(`- getAction(): ${JSON.stringify(actID)}`);
+        if(!logmute) log(`getAction(): ${JSON.stringify(actID)}`);
         return actID;
     };
-
-    var constants = require('./constants.js');
 
     function getActionParms(action, entry) {
         var actparms = {};
@@ -420,67 +422,6 @@ module.exports = (function(pevts, _log)  {
         };
         return riparms;
     };
-
-    //////////////////////////////////////////////////////////////////////////
-    // 
-    function readTable(dbtable, destarr) {
-        if(!logmute) log(`- readTable(): dbtable = ${dbtable}`);
-        dbobj.readAllRows(dbtable, (table, result) => {
-            if(result !== null) {
-                result.forEach((row, idx) => {
-                    destarr.push(JSON.parse(JSON.stringify(row)));
-                    if(!logmute) log(`- readTable(): destarr - ${JSON.stringify(row)}`);
-                });
-                pevts.emit('DATA_READY', dbtable);
-            } else {
-                log(`- readTable(): ERROR result is null for ${table}`);
-            }
-        });
-    };
-
-    // read the actions table from the database and populate
-    // an array of action objects
-    function readActions() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONS_IDX]}`;
-        // clear the array, could set the length to zero 
-        // but this is explcit
-        logdata.actions = [];
-        // read the database and save the data
-        readTable(dbtable, logdata.actions);
-    };
-
-    // read the action category table from the database and populate
-    // an array of action category objects
-    function readActionCats() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_ACTIONCATS_IDX]}`;
-        logdata.actioncats = [];
-        readTable(dbtable, logdata.actioncats);
-    };
-
-    // read the known table from the database and populate
-    // an array of known objects
-    function readKnown() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_KNOWN_IDX]}`;
-        logdata.known = [];
-        readTable(dbtable, logdata.known);
-    };
-
-    // read the IP category table from the database and populate
-    // an array of IP category objects
-    function readIPCats() {
-        var dbtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_IPCATS_IDX]}`;
-        logdata.ipcats = [];
-        readTable(dbtable, logdata.ipcats);
-    };
-
-    // clear the local copies of the data tables
-    function clearTables() {
-        logdata.actions = [];
-        logdata.actioncats = [];
-        logdata.known = [];
-        logdata.ipcats = [];
-    }
-
     return logdata;
 });
 

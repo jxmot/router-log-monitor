@@ -1,3 +1,4 @@
+'use strict';
 /* ************************************************************************ */
 // https://nodejs.org/docs/latest-v12.x/api/documentation.html
 var path = require('path');
@@ -5,7 +6,9 @@ var scriptName = path.basename(__filename);
 
 // Events
 const EventEmitter = require('events');
+// log "watcher" events
 const watch_evts = new EventEmitter();
+// app "process" events
 const procs_evts = new EventEmitter();
 
 // Run-Time Logging
@@ -18,22 +21,23 @@ function _log(payload) {
     if(logenable === true) logOut.writeTS(payload);
 };
 
+var logmute = true;
 function log(payload) {
-    _log(`${scriptName} ${payload}`);
+    _log(`${scriptName} - ${payload}`);
 };
 
 // start logging
 log('*******************************************');
-log(`- begin app init`);
+log(`begin app init`);
 
 // event error handlers, if handled here then they 
 // won't crash the app
 watch_evts.on('error', (err) => {
-    log(`- watch_evts ERROR ${err}`);
+    log(`watch_evts ERROR ${err}`);
 });
 
 procs_evts.on('error', (err) => {
-    log(`- procs_evts ERROR ${err}`);
+    log(`procs_evts ERROR ${err}`);
 });
 
 /*
@@ -56,41 +60,21 @@ function openDone(dbopen, errObj) {
     // did we have success?
     if(dbopen === false) {
         // no, log errors and end the transaction
-        log(`- ERROR : openDone() errObj = ${JSON.stringify(errObj)}`);
+        log(`openDone() - ERROR : errObj = ${JSON.stringify(errObj)}`);
     } else {
         // do some database stuff
-        log('- openDone() - success! ready for some database stuff');
+        log('openDone() - success! ready for some database stuff');
     }
     procs_evts.emit('DB_OPEN', {state:dbopen,db:(dbopen === true ? database : errObj)});
 };
 
-var fopt = process.argv[2];
-
-// can optionally read files instead of waiting for them to 
-// be created. NOTE: this works best when processing a large 
-// quantity of logs.
-if((fopt !== undefined) && (fopt === 'readfiles')) {
-    // read all new log files
-    const reader = require('./logread.js')(watch_evts, procs_evts, _log);
-} else {
-    // Watch for new log files
-    const watcher = require('./logwatch.js')(watch_evts, procs_evts, _log);
-}
-// Process the log files into the database
-const procs = require('./logprocess.js')(watch_evts, procs_evts, _log);
-// do not generate reports if reading files in bulk
-if((fopt === undefined) || (fopt !== 'readfiles')) {
-    // Generate static reports
-    const reports = require('./reports.js')(procs_evts, _log);
-}
-
 // handle database errors here, including when the server closes 
 // the connection after a period of being "idle".
 function onDatabaseError(err) {
-    log(`- onDatabaseError() err = ${err}`);
+    log(`onDatabaseError() err = ${err}`);
     if(err.message.includes('The server closed the connection') === true) {
         procs_evts.emit('DB_CLOSED', {state:false,db:null});
-        log(`- onDatabaseError() sent DB_CLOSED, reopening database...`);
+        log(`onDatabaseError() sent DB_CLOSED, reopening database...`);
         setTimeout(openDB,2500); 
     } else {
         console.log("*******************************\n");
@@ -106,5 +90,58 @@ function onDatabaseError(err) {
 function openDB() {
     database.openDB(openDone, onDatabaseError);
 };
+
+
+//var fopt = process.argv[2];
+//var fopt = 'watch';
+//var fopt = 'read';
+
+if(typeof fopt !== 'undefined') {
+    switch(fopt) {
+        case 'read':
+            const reader = require('./logread.js')(watch_evts, procs_evts, _log);
+            break;
+
+        case 'watch':
+            const watcher = require('./logwatch.js')(watch_evts, procs_evts, _log);
+            break;
+
+        default:
+            log(`ERROR unknown operation ${fopt}`);
+            process.exit(0);
+            break;
+    };
+} else {
+    const watcher = require('./logwatch.js')(watch_evts, procs_evts, _log);
+}
+
+/*
+    The "app" object, it contains anything that we need to pass on to
+    a module. 
+*/
+var app = {
+    constants: require('./constants.js'),
+    staticdata: require('./staticdata.js')(procs_evts, _log),
+    _log: _log,
+    pevts: procs_evts
+}
+
+// Process the log files into the database
+
+// the log processor
+const ldata = require('./logdata.js')(app);
+
+watch_evts.on('FILE_CREATED', (watchit) => {
+    if(!logmute) log(`FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
+    ldata.process(JSON.parse(JSON.stringify(watchit)));
+});
+
+// 
+watch_evts.on('FILE_DELETED', (watchit) => {
+    if(!logmute) log(`FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
+});
+
+// Generate static reports
+const reports = require('./reports.js')(app);
 
 openDB();
