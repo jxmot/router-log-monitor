@@ -210,11 +210,12 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             if(subparser !== null) {
                newrow = Object.assign(newrow, subparser(data[ix]));
             }
+            // if we are going to get the MAC info then that type
+            // of report table will have these columns :
+            // known, knownip, device
+            const known = isKnown(data[ix], knowit);
+
             if(gethost === false) {
-                // if we are going to get the MAC info then that type
-                // of report table will have these columns :
-                // known, knownip, device
-                const known = isKnown(data[ix], knowit);
                 // if it's a known device and MAC info retreival is 
                 // enabled then copy the known info. at this time 
                 // only the DHCP_IP and WLAN_REJ log entries contain
@@ -228,7 +229,21 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                         newrow.errip   = (newrow.knownip === newrow.givenip ? false : true);
                     }
                 } else newrow.known = false;
+            } else {
+                if(known !== null) {
+                    newrow.known = true;
+                    if(extra !== null) {
+                         if(typeof extra.hideknown !== 'undefined') {
+                            if(extra.hideknown === true) {
+                                if(!logmute) log(`genReportTable(${action}): not saving known ${knowit} - ${known[knowit]}`);
+                                newrow = null;
+                                continue;
+                            }
+                        }
+                    }
+                }
             }
+
             // save to the report table...
             dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
                 if(err === null) {
