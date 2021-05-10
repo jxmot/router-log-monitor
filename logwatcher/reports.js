@@ -523,11 +523,12 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 // only have to deal with a days worth of log entries. 
 // 
 // The following function is commented out when testing is complete
-//    pevts.on('STATICDATA_READY', () => {
-//        // for TESTING only, will be removed.
-//        log(`initiate TEST_REPORT`);
-//        pevts.emit('TEST_REPORT');
-//    });
+
+//   pevts.on('STATICDATA_READY', () => {
+//       // for TESTING only, will be removed.
+//       log(`initiate TEST_REPORT`);
+//       pevts.emit('TEST_REPORT');
+//   });
 
     pevts.on('TEST_REPORT', () => {
         if(dbopen === true) {
@@ -540,8 +541,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             //reportActions(constants.WLAN_REJ, 0);
             // get all occurrences of DOS_ATT
             //reportActions(constants.DOS_ATT, 0);
-            // get all occurrences in the past month of LAN_ACC
-            //reportActions(constants.LAN_ACC);
+            // get all occurrences of LAN_ACC
+            //reportActions(constants.LAN_ACC, 0);
         }
     });
 // end of testing code
