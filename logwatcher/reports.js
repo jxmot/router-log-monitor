@@ -347,6 +347,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         tstamp    = 0;
         entrynumb = 0;
         ip        = '';
+        known     = false;
         port      = '';
         toip      = '';
         toport    = '';
