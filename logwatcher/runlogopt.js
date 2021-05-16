@@ -1,8 +1,6 @@
 'use strict';
-
 module.exports = {
-    file:'logs/watcher',
-    extn:'log',
-    size:10485760
-    //size:1048576
+    logfile:'./logs/logwatcher.log',
+    // 10 MiB file size
+    logsize:10485760
 };
