@@ -214,13 +214,10 @@ The remaining tables are:
 
 ### Mailbox Utility
 
+# Future Enhancements
 
-
-
-
-
-
-
+* Auto-generate blacklist reports for external IP addresses that have been problematic. This action will also save blacklisted IPs in their own table. 
+* **TBD**
 
 ---
 <img src="http://webexperiment.info/extcounter/mdcount.php?id=router-log-monitor">
