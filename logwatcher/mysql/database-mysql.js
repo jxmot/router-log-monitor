@@ -15,13 +15,15 @@ module.exports = (function(_log) {
     // The Connection
     var connection;
 
-    var logmute = true;
-
+    // disable(mute) some log() calls
+    const logmute = true;
+    // enable/disable all logging in this module
+    const logenable = true;
     // set up run-time logging
     var path = require('path');
     var scriptName = path.basename(__filename);
     function log(payload) {
-        _log(`${scriptName} - ${payload}`);
+        if(logenable) _log(`${scriptName} - ${payload}`);
     };
 
     // gives module user access to config
