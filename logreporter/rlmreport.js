@@ -1,19 +1,19 @@
 'use strict';
 /* ************************************************************************ */
 // https://nodejs.org/docs/latest-v12.x/api/documentation.html
-var path = require('path');
-var scriptName = path.basename(__filename);
+const path = require('path');
+const scriptName = path.basename(__filename);
 
-// Events
-const EventEmitter = require('events');
-//// log "watcher" events
-//const watch_evts = new EventEmitter();
-//// app "process" events
-//const procs_evts = new EventEmitter();
+// // Events
+// const EventEmitter = require('events');
+// // log "watcher" events
+// const watch_evts = new EventEmitter();
+// // app "process" events
+// const procs_evts = new EventEmitter();
 
 // Run-Time Logging
-var Log = require('simple-text-log');
-var logOut = new Log(require('./runlogopt.js'));
+const Log = require('simple-text-log');
+const logOut = new Log(require('./runlogopt.js'));
 var logenable = true;
 // pass this function around to the other modules
 function _log(payload) {
@@ -35,7 +35,7 @@ log(`begin app init`);
 /*
     Database Interface Configure and other necessary things.
 */
-var database = require('./mysql/database-mysql.js')(_log);
+const database = require('./mysql/database-mysql.js')(_log);
 
 // "database is open" handler
 /*
@@ -83,5 +83,5 @@ function openDB() {
     database.openDB(openDone, onDatabaseError);
 };
 
-// openDB();
+openDB();
 
