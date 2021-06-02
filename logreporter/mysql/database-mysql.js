@@ -36,7 +36,9 @@ module.exports = (function(_log) {
             sql = fs.readFileSync(file, 'utf8');
         } catch(err) {
             if(err.code === 'ENOENT') {
-                consolelog(`${scriptname} - ${rules.file} does not exist`);
+                log(`${file} does not exist`);
+            } else {
+                log(`${file} ${err.code} ${err.message}`);
             }
         }
         return sql;
@@ -308,11 +310,18 @@ module.exports = (function(_log) {
             if(qry) {
                 connection.query(qry, function(error, result) {
                     if(error) {
+                        log(`database.runSQL() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
                         cb(null, error);
                     } else {
                         cb(result, null);
                     }
                 });
+            } else {
+                let err = {
+                    message: `cannot open/read ${file}`
+                };
+                log(`database.runSQL() - ERROR query: [${error.message}]`);
+                cb(null, err);
             }
         }
         return qry;
