@@ -4,12 +4,10 @@
 const path = require('path');
 const scriptName = path.basename(__filename);
 
-// // Events
-// const EventEmitter = require('events');
-// // log "watcher" events
-// const watch_evts = new EventEmitter();
-// // app "process" events
-// const procs_evts = new EventEmitter();
+// Events
+const EventEmitter = require('events');
+// app "process" events
+const procs_evts = new EventEmitter();
 
 // Run-Time Logging
 const Log = require('simple-text-log');
@@ -28,9 +26,6 @@ function log(payload) {
 // start logging
 log('*******************************************');
 log(`begin app init`);
-
-
-
 
 /*
     Database Interface Configure and other necessary things.
@@ -82,6 +77,11 @@ function onDatabaseError(err) {
 function openDB() {
     database.openDB(openDone, onDatabaseError);
 };
+
+const reports = require('./reports.js')(procs_evts, _log);
+
+const repserver = require('./repserver.js')(procs_evts, _log);
+repserver.start();
 
 openDB();
 
