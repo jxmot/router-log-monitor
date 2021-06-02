@@ -26,6 +26,22 @@ module.exports = (function(_log) {
         if(logenable) _log(`${scriptName} - ${payload}`);
     };
 
+
+    const fs = require('fs');
+
+    function getSQLFile(file) {
+        let sql;
+        try {
+            fs.accessSync(file, fs.constants.F_OK);
+            sql = fs.readFileSync(file, 'utf8');
+        } catch(err) {
+            if(err.code === 'ENOENT') {
+                consolelog(`${scriptname} - ${rules.file} does not exist`);
+            }
+        }
+        return sql;
+    };
+
     // gives module user access to config
     database.getDBCcfg = function() {
         return dbcfg;
@@ -283,6 +299,24 @@ module.exports = (function(_log) {
             _countCallBack(table, col, null, {errno:true, code:0, message:'database not open'});
         }
     };
+
+    database.runSQL = function(file, callme) {
+        let cb = callme;
+        let qry;
+        if(this.dbopen === true) {
+            qry = getSQLFile(file);
+            if(qry) {
+                connection.query(qry, function(error, result) {
+                    if(error) {
+                        cb(null, error);
+                    } else {
+                        cb(result, null);
+                    }
+                });
+            }
+        }
+        return qry;
+    }
 
     log(`init`);
     return database;
