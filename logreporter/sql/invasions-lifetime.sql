@@ -14,3 +14,16 @@ toport != 59018
 group by ip 
 order by count(ip) desc;
 -- invasions-lifetime.sql : returns all invasions, by IP hits with calculated date spans
+--      {
+--        "invasion_qty": 179,
+--        "ip": "166.170.220.135",
+--        "toport": "14843",
+--        "hostname": "mobile-166-170-220-135.mycingular.net",
+--        "epoch_dur": 204,
+--        "day_span": 0,
+--        "time_span": "00:03:24",
+--        "first_invade": "2018-10-09 @ 10:04:58",
+--        "first_entry": 8671,
+--        "last_invade": "2018-10-09 @ 10:08:22",
+--        "last_entry": 8849
+--      }
