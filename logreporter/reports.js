@@ -46,9 +46,8 @@ module.exports = (function(_pevts, _log)  {
 
     pevts.on('REPORTREQ', (reportid, readResp, res) => {
         log(`REPORTREQ: reportid = ${reportid}`);
-
         if(dbopen = true) {
-            dbobj.runSQL('./sql/test-report.sql', (data, err) => {
+            dbobj.runSQL(`./sql/${reportid}.sql`, (data, err) => {
                 log(`REPORTREQ: data here`);
                 if(!err) readResp(JSON.stringify(data), res);
                 else readResp(null, res);
