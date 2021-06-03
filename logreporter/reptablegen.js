@@ -9,27 +9,55 @@
 module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
 
     const tablename = _tname;
+    const rdata = JSON.parse(JSON.stringify(_rdata));
+//    const pevts = _pevts;
     const reportdefs = require('./reportdefs.js');
 
-    const rdata = JSON.parse(JSON.stringify(_rdata));
-    const pevts = _pevts;
-
-    // disable(mute) some log() calls
-    const logmute = false;
-    // enable/disable all logging in this module
-    const logenable = true;
-    // set up run-time logging
-    const scriptName = require('path').basename(__filename);
-    function log(payload) {
-        if(logenable) _log(`${scriptName} - ${payload}`);
-    };
+//    // disable(mute) some log() calls
+//    const logmute = false;
+//    // enable/disable all logging in this module
+//    const logenable = true;
+//    // set up run-time logging
+//    const scriptName = require('path').basename(__filename);
+//    function log(payload) {
+//        if(logenable) _log(`${scriptName} - ${payload}`);
+//    };
 
     let reptablegen = {
     };
 
+    const createCSS = () => `
+<style>
+  #${tablename}-title {
+    text-align:center;
+  }
+
+  #${tablename} {
+    width: 80%;
+    margin: 0 auto;
+  }
+
+  #${tablename}-table {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  #${tablename}-table td {
+    text-align:center;
+  }
+</style>
+`;
+
+    const createTitle = () => `
+<${reportdefs.rdefs[tablename].title[1]} id="${tablename}-title">
+  ${reportdefs.rdefs[tablename].title[0]}
+</${reportdefs.rdefs[tablename].title[1]}>
+<br>
+`;
+
     const createTable = (head, body) => `
 <div id="${tablename}" class="table-responsive">
- <table class="table table-striped table-sm table-borderless">
+ <table id="${tablename}-table" class="table table-striped table-sm table-borderless">
 ${head}${body}
  </table>
 </div>
@@ -73,7 +101,7 @@ ${head}${body}
     const tableHead = createHead();
 
     reptablegen.getReportTable = function () {
-        let table = createTable(tableHead, createBody(rdata));
+        let table = createCSS() + createTitle() + createTable(tableHead, createBody(rdata));
         return table;
     };
 
