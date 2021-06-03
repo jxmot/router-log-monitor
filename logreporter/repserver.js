@@ -8,7 +8,7 @@ module.exports = (function(_pevts, _log)  {
     var dbopen = false;
 
     // disable(mute) some log() calls
-    const logmute = false;
+    const logmute = true;
     // enable/disable all logging in this module
     const logenable = true;
     // set up run-time logging
@@ -37,6 +37,7 @@ module.exports = (function(_pevts, _log)  {
     function readResp(report = null, res = null) {
         if(report) {
             if(!logmute) log(`report response: ${report}`);
+            else log(`report response is ${report.length} bytes`);
             res.writeHead(200);
             res.end(report);
         } else {
