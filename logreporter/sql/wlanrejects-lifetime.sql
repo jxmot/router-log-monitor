@@ -15,3 +15,17 @@ known = 0
 group by mac
 order by count(mac) desc;
 -- wlanrejects-lifetime.sql: returns all WLAN rejections, by MAC hits with calculated date spans
+-- {
+--   "wlanrej_qty": 243,
+--   "mac": "4C:82:CF:47:F0:E4",
+--   "macmfr": "Dish Technologies Corp",
+--   "epoch_dur": 2646,
+--   "day_span": 0,
+--   "time_span": "00:44:06",
+--   "first_date": "2020-04-17",
+--   "first_time": "19:44:08",
+--   "first_entry": 53403,
+--   "last_date": "2020-04-17",
+--   "last_time": "20:28:14",
+--   "last_entry": 53645
+-- }
