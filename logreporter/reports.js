@@ -37,7 +37,7 @@ module.exports = (function(_pevts, _log)  {
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;
         dbobj = {};
-        // abort all reports
+        // abort all reports?
     });
 
     pevts.on('REPORTREQ', (reportid, readResp, res) => {
