@@ -1,5 +1,14 @@
 'use strict';
-/* ************************************************************************ */
+/* 
+    Router Log Monitor Project - LOg Report Generator
+
+    This application accesses the router log data that 
+    was parsed and saved by the Log Watcher.
+
+    An endpoint is provided for GET requests where the 
+    client can obtain predefined reports on logged events.
+
+*/
 // https://nodejs.org/docs/latest-v12.x/api/documentation.html
 const path = require('path');
 const scriptName = path.basename(__filename);
