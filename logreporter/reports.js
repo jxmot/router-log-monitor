@@ -15,10 +15,6 @@ module.exports = (function(_pevts, _log)  {
         if(logenable) _log(`${scriptName} - ${payload}`);
     };
 
-    // https://handlebarsjs.com/
-    const hbars = require('handlebars');
-    //const template = hbars.compile('Name: {{name}}');
-
     let reports = {
     };
 
