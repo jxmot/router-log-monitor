@@ -58,42 +58,44 @@ module.exports = (function(_pevts, _log)  {
     };
 
     /*
-        GET http://server:port/rep=[report ID]
+        GET http://server:port?rep=[report ID]
 
         where "report ID" is the identifying name given 
         to the SQL file that retrieves the data, 
     */
     function handleRequest(req, res) {
         if(req.method === 'GET') {
-                let urlParts = url.parse(req.url, true);
-                let urlQuery = urlParts.query;
-                let reportid = urlQuery.rep;
-
-                if(reportid) {
-                    if(dbopen === true) {
-                        log(`report request - ${reportid}`);
-                        procs_evts.emit('REPORTREQ', reportid, readResp, res);
-                    } else {
-                        log(`falied report request, database not open - ${reportid}`);
-                        res.writeHead(204);
-                        res.end();
-                    }
+            let urlParts = url.parse(req.url, true);
+            let urlQuery = urlParts.query;
+            let reportid = urlQuery.rep;
+            // did we get a report ID?
+            if(reportid) {
+                // yes, make sure the database is ready
+                if(dbopen === true) {
+                    log(`report request - ${reportid}`);
+                    procs_evts.emit('REPORTREQ', reportid, readResp, res);
                 } else {
-                    if(req.url.includes('favicon')) {
-                        log('GET favicon, sent 404');
-                        res.writeHead(404);
-                    } else {
-                        log('missing params in GET');
-                        res.writeHead(400);
-                    }
+                    log(`falied report request, database not open - ${reportid}`);
+                    res.writeHead(204);
                     res.end();
                 }
+            } else {
+                if(req.url.includes('favicon')) {
+                    log('GET favicon, sent 404');
+                    res.writeHead(404);
+                } else {
+                    log('missing params in GET');
+                    res.writeHead(400);
+                }
+                res.end();
+            }
         } else {
             // GET only!
             res.writeHead(405);
             res.end();
         }
     };
+
 
     procs_evts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {

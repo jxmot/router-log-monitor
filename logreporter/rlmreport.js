@@ -61,6 +61,7 @@ function openDone(dbopen, errObj) {
         // do some database stuff
         log('openDone() - success! ready for some database stuff');
     }
+    // event handlers will check for errors
     procs_evts.emit('DB_OPEN', {state:dbopen,db:(dbopen === true ? database : errObj)});
 };
 
@@ -87,10 +88,11 @@ function openDB() {
     database.openDB(openDone, onDatabaseError);
 };
 
+// handle report requests via the API
 const reports = require('./reports.js')(procs_evts, _log);
-
+// listen for, and handle API requests...
 const repserver = require('./repserver.js')(procs_evts, _log);
 repserver.start();
-
+// open the database...
 openDB();
-
+// and we're running....
