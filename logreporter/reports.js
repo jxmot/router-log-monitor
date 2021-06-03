@@ -46,19 +46,27 @@ module.exports = (function(_pevts, _log)  {
             dbobj.runSQL(`./sql/${reportid}.sql`, (data, err) => {
                 if(!err) {
                     log(`REPORTREQ: data here`);
-                    const report = require('./reptablegen.js')(reportid, data, pevts, _log);
+
+// NOTE: require() does caching of modules, info:
+//      https://bambielli.com/til/2017-04-30-node-require-cache/
+//
+// Also using every() instead of forEach() to allow the ability
+// to break the loop:
+//      https://masteringjs.io/tutorials/fundamentals/foreach-break
+                    Object.keys(require.cache).every( (key) => {
+                        if(key.includes('reptablegen.js')) {
+                            delete require.cache[key];
+                            return false;
+                        }
+                        return true;
+                    });
+
                     let report = require('./reptablegen.js')(reportid, data); //, pevts, _log);
                     const table = report.getReportTable();
                     readResp(table, res);
                 } else readResp(null, res);
             }); 
         }
-
-
-
-        // allow queueing?
-
-        // or isolate with settimeout?
     });
 
     return reports;

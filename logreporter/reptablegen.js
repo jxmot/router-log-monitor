@@ -11,6 +11,21 @@ module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
     const tablename = _tname;
     const rdata = JSON.parse(JSON.stringify(_rdata));
 //    const pevts = _pevts;
+
+    // NOTE: require() does caching of modules, info:
+    //      https://bambielli.com/til/2017-04-30-node-require-cache/
+    //
+    // Also using every() instead of forEach() to allow the ability
+    // to break the loop:
+    //      https://masteringjs.io/tutorials/fundamentals/foreach-break
+    Object.keys(require.cache).every( (key) => {
+        if(key.includes('reportdefs.js')) {
+            delete require.cache[key];
+            return false;
+        }
+        return true;
+    });
+
     const reportdefs = require('./reportdefs.js');
 
 //    // disable(mute) some log() calls
