@@ -1,5 +1,10 @@
 'use strict';
 /*
+    Report Table Generator 
+
+    Creates an HTML table using the database table data 
+    to fill in the table. The data columns used, and the
+    HTML table column headings are defined in reportdefs.js
 */
 module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
 
@@ -63,6 +68,8 @@ ${head}${body}
         return tb;
     };
 
+    // the table heading is static, and does not need 
+    // to be rendered each time.
     const tableHead = createHead();
 
     reptablegen.getReportTable = function () {
