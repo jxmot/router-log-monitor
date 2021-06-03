@@ -31,14 +31,16 @@ module.exports = (function(_pevts, _log)  {
 
     let server = {};
 
-    repserver.start = function() {
+    // start the API server...
+    repserver.start = function(port = null) {
         server = http.createServer(handleRequest);
         // Starts the server.
-        server.listen(srv_port, function() {
-            log(`Server is listening on PORT: ${srv_port}`);
+        server.listen((port === null ? srv_port : port), function() {
+            log(`Server is listening on PORT: ${(port === null ? srv_port : port)}`);
         });
     };
 
+    // callback for returning request responses
     function readResp(report = null, res = null) {
         if(report) {
             if(!logmute) log(`report response: ${report}`);
