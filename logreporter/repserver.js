@@ -74,8 +74,13 @@ module.exports = (function(_pevts, _log)  {
                         res.end();
                     }
                 } else {
-                    log('missing params in GET');
-                    res.writeHead(400);
+                    if(req.url.includes('favicon')) {
+                        log('GET favicon, sent 404');
+                        res.writeHead(404);
+                    } else {
+                        log('missing params in GET');
+                        res.writeHead(400);
+                    }
                     res.end();
                 }
         } else {
