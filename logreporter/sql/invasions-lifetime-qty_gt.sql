@@ -1,4 +1,4 @@
-select from(
+select * from(
     select count(ip) as invasion_qty,
         ip,toport,hostname, 
         (cast(((max(tstamp) - min(tstamp)) / 1000) as UNSIGNED)) as epoch_dur, 
@@ -16,10 +16,11 @@ select from(
     toport != 59018 
 -- where mod
     group by ip 
-    order by count(ip) desc;
+    order by count(ip) desc
 ) as tempdata 
 where
 -- adjust as needed
-invasion_qty > 1;
+invasion_qty > 1
+;
 -- invasions-lifetime-qty_gt.sql: identical to 'invasions-lifetime.sql', except that it 
 -- can be filtered by a minimum value for 'invasion_qty'.
