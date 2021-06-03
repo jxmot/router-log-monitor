@@ -1,7 +1,7 @@
 'use strict';
 /*
 */
-module.exports = (function(_tname, _rdata, _pevts, _log)  {
+module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
 
     const tablename = _tname;
     const reportdefs = require('./reportdefs.js');

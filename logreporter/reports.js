@@ -47,6 +47,7 @@ module.exports = (function(_pevts, _log)  {
                 if(!err) {
                     log(`REPORTREQ: data here`);
                     const report = require('./reptablegen.js')(reportid, data, pevts, _log);
+                    let report = require('./reptablegen.js')(reportid, data); //, pevts, _log);
                     const table = report.getReportTable();
                     readResp(table, res);
                 } else readResp(null, res);
