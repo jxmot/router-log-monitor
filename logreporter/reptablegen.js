@@ -10,7 +10,6 @@ module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
 
     const tablename = _tname;
     const rdata = JSON.parse(JSON.stringify(_rdata));
-//    const pevts = _pevts;
 
     // NOTE: require() does caching of modules, info:
     //      https://bambielli.com/til/2017-04-30-node-require-cache/
@@ -27,16 +26,6 @@ module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
     });
 
     const reportdefs = require('./reportdefs.js');
-
-//    // disable(mute) some log() calls
-//    const logmute = false;
-//    // enable/disable all logging in this module
-//    const logenable = true;
-//    // set up run-time logging
-//    const scriptName = require('path').basename(__filename);
-//    function log(payload) {
-//        if(logenable) _log(`${scriptName} - ${payload}`);
-//    };
 
     let reptablegen = {
     };
@@ -78,26 +67,26 @@ ${head}${body}
 </div>
 `;
 
+    // create the table header
     function createHead() {
-
         const thcols = reportdefs.rdefs[tablename].th;
         let th = '  <thead>\n    <tr>\n';
-
         Object.keys(thcols).forEach(function (colh) {
             if(thcols[colh] !== '') {
                 th = th + `      <th>${thcols[colh]}</th>\n`;
             }
         });
         th = th + '    </tr>\n  </thead>\n';
-
         return th;
     };
 
+    // create the table body, use the table 
+    // name (report ID) to access its definition
+    // of columns. 
     function createBody(data) {
         const thcols = reportdefs.rdefs[tablename].th;
         let tb = '  <tbody>\n';
         let tr = '';
-
         data.forEach((row, idx) => {
             tr = tr + '    <tr>\n';
             Object.keys(thcols).forEach(function (colh) {
@@ -115,6 +104,7 @@ ${head}${body}
     // to be rendered each time.
     const tableHead = createHead();
 
+    // get a complete report table...
     reptablegen.getReportTable = function () {
         let table = createCSS() + createTitle() + createTable(tableHead, createBody(rdata));
         return table;
