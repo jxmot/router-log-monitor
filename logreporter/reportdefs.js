@@ -3,6 +3,7 @@
 module.exports = {
     rdefs: {
         'invasions-lifetime' : {
+            getpage: false,
             title: ['LAN Access History','h3'],
             th: {
                 'invasion_qty':'Total',
@@ -22,6 +23,7 @@ module.exports = {
             }
         },
         'invasions-lifetime-qty_gt' : {
+            getpage: false,
             title: ['LAN Access History<br>(more than 1 event per IP)','h3'],
             th: {
                 'invasion_qty':'Total',
@@ -41,23 +43,28 @@ module.exports = {
             }
         },
         'invasions-lifetime-by_port' : {
+            getpage: true,
             title: ['LAN Access History<br>(ranked by port number)','h3'],
             th: {
                 'invasion_qty':'Total',
                 'toport':'Port #',
                 // empty column heading, do not display
                 'epoch_dur':'',
+
                 'day_span':'Days',
                 'time_span':'HH:MM:SS',
+
                 'first_date':'Date',
                 'first_time':'Time',
                 'first_entry':'',
+
                 'last_date':'Date',
                 'last_time':'Time',
                 'last_entry':''
             }
         },
         'wlanrejects-lifetime': {
+            getpage: false,
             title: ['WLAN Access Rejection History','h3'],
             th: {
                 'wlanrej_qty':'Total',
