@@ -3,6 +3,7 @@
 module.exports = {
     rdefs: {
         'invasions-lifetime' : {
+            title: ['LAN Access History','h3'],
             th: {
                 'invasion_qty':'Total',
                 'ip':'IP Addr',
@@ -21,6 +22,7 @@ module.exports = {
             }
         },
         'invasions-lifetime-qty_gt' : {
+            title: ['LAN Access History<br>(more than 1 event per IP)','h3'],
             th: {
                 'invasion_qty':'Total',
                 'ip':'IP Addr',
@@ -39,6 +41,7 @@ module.exports = {
             }
         },
         'invasions-lifetime-by_port' : {
+            title: ['LAN Access History<br>(ranked by port number)','h3'],
             th: {
                 'invasion_qty':'Total',
                 'toport':'Port #',
@@ -55,6 +58,7 @@ module.exports = {
             }
         },
         'wlanrejects-lifetime': {
+            title: ['WLAN Access Rejection History','h3'],
             th: {
                 'wlanrej_qty':'Total',
                 'mac':'MAC Addr',
