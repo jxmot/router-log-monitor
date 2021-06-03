@@ -44,10 +44,13 @@ module.exports = (function(_pevts, _log)  {
         log(`REPORTREQ: reportid = ${reportid}`);
         if(dbopen = true) {
             dbobj.runSQL(`./sql/${reportid}.sql`, (data, err) => {
-                log(`REPORTREQ: data here`);
-                if(!err) readResp(JSON.stringify(data), res);
-                else readResp(null, res);
-            });
+                if(!err) {
+                    log(`REPORTREQ: data here`);
+                    const report = require('./reptablegen.js')(reportid, data, pevts, _log);
+                    const table = report.getReportTable();
+                    readResp(table, res);
+                } else readResp(null, res);
+            }); 
         }
 
 
