@@ -1,10 +1,15 @@
 'use strict';
 /*
+    Log Report API Server
+
+    Listens for GET requests having a query. The query 
+    indicates which report to generate.
+
+    GET http[s]://someserver:[port]?rep=some-report-id
 */
 module.exports = (function(_pevts, _log)  {
 
     const procs_evts = _pevts;
-
     var dbopen = false;
 
     // disable(mute) some log() calls

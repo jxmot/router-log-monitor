@@ -45,8 +45,7 @@ module.exports = (function(_pevts, _log)  {
         if(dbopen = true) {
             dbobj.runSQL(`./sql/${reportid}.sql`, (data, err) => {
                 if(!err) {
-                    log(`REPORTREQ: data here`);
-
+                    log(`REPORTREQ: data found`);
 // NOTE: require() does caching of modules, info:
 //      https://bambielli.com/til/2017-04-30-node-require-cache/
 //
@@ -60,15 +59,15 @@ module.exports = (function(_pevts, _log)  {
                         }
                         return true;
                     });
-
-                    let report = require('./reptablegen.js')(reportid, data); //, pevts, _log);
+                    // let's get a fresh one...
+                    let report = require('./reptablegen.js')(reportid, data);
+                    // generate the HTML table and execute the callback...
                     const table = report.getReportTable();
                     readResp(table, res);
                 } else readResp(null, res);
             }); 
         }
     });
-
     return reports;
 });
 

@@ -49,6 +49,10 @@ module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
   #${tablename}-table td {
     text-align:center;
   }
+
+  #${tablename}-table th {
+    text-align:center;
+  }
 </style>
 `;
 
@@ -62,10 +66,15 @@ module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
     const createTable = (head, body) => `
 <div id="${tablename}" class="table-responsive">
  <table id="${tablename}-table" class="table table-striped table-sm table-borderless">
-${head}${body}
- </table>
+${head}${body} </table>
 </div>
 `;
+
+// https://www.w3.org/WAI/tutorials/tables/irregular/#table-with-two-tier-headers
+// need upper tier over 
+//  "Days" "HH:MM:SS" < "Time Span"
+//  "Date" "Time" < "First Event" & "Last Event"
+
 
     // create the table header
     function createHead() {
