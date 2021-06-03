@@ -53,7 +53,10 @@ module.exports = (function(_pevts, _log)  {
     };
     
     /*
-        GET http://server/rep=invasions
+        GET http://server/rep=[report ID]
+
+        where "report ID" is the identifying name given 
+        to the SQL file that retrieves the data, 
     */
     function handleRequest(req, res) {
         if(req.method === 'GET') {
