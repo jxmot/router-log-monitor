@@ -72,9 +72,9 @@ module.exports = {
                 'last_entry':''
             }
         },
-        'wlanrejects-lifetime': {
+        'wlanrejects-lifetime-qty_gt': {
             getpage: false,
-            title: ['WLAN Access Rejection History','h3'],
+            title: ['WLAN Access Rejection History<br>(more than 1 event per MAC)','h3'],
             thtop: {
                 'null':['null',3],
                 'timespan':['Time Span',2],
