@@ -22,4 +22,25 @@ So for this particular application PHP makes more sense than JavaScript on Node.
   <img src="./mdimg/log-collector-arch.png" alt="Index Page" txt="PHP v Node"  width="80%" height="80%"/>
 </p>
 
-### Design
+## Design
+
+## Running the Application
+
+### Configuration
+
+There are two JSON formatted files used for configuration:
+
+**`appoptions.json`**:
+
+
+**`imapaccnt.json`**: 
+
+### CRON
+
+
+### Command Line
+
+
+### Console Output
+
+
