@@ -30,10 +30,58 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 
 There are two JSON formatted files used for configuration:
 
-**`appoptions.json`**:
+**`appoptions.json`**: 
 
+```
+{
+    "outpath":"../logoutput/",
+    "delunk":false,
+    "procdelay":0
+}
+```
+
+* `"outpath"` - The folder path to where the router log files will be saved.
+* `"delunk"` - When false, "unknown"(*not from the router*) email messages will be marked as "seen". When true, unknown messages will be deleted.
+* `"procdelay"` - The number of seconds to delay in between creating log files. Unless there is a backlog of messages to read leave this at `0`. For backlogs, values like 2 or 3 work well. Adjust it to fit your run-time environment.
 
 **`imapaccnt.json`**: 
+
+```
+{
+    "host":"mail.yourhost.something",
+    "port":993,
+    "login":"someone@yourhost.something",
+    "pword":"passwordgoeshere",
+    "folder":"",
+    "comment":"the next 4 items control if, when, and how read messages are disposed.",
+    "isrdonly":false,
+    "disposemsg":"seen",
+    "expunge":false,
+    "expwhen":"onclose"
+}
+```
+
+* `"host"` - Your mail host.
+* `"port"` - Mail host port number, 993 is typical.
+* `"login"` - Your email account login.
+* `"pword"` - Your email account password.
+* `"folder"` - The **IMAP folder** on the host where the router log email messages are.
+* `"comment"` - N/A
+* `"isrdonly"` - `true` or `false`
+  * `true` - 
+  * `false` - 
+* `"disposemsg"` - `'seen'` or `'delete'`
+  * `'seen'` - 
+  * `'delete'` - 
+* `"expunge"` - `true` or `false`
+  * `true` - 
+  * `false` - 
+* `"expwhen"` - `'onclose'`, `'readbegin'`, or `'readend'`
+  * `'onclose'` - 
+  * `'readbegin'` - 
+  * `'readend'` - 
+
+**TIP**: Save your configuration file with a name beginning with an underscore ('_'). The `.gitignore` file in the parent directory will "hide" it from GitHub so that there is less chance of it accidentally getting checked in.
 
 ### CRON
 
