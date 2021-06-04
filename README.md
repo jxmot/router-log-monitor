@@ -27,6 +27,48 @@ There are three separate applications in this project. The first is written in P
 * Log Watcher (`logwatcher`): Node.js application, parses and writes log entries to one of several tables
 * Log Reporter (`logreporter`): Node.js application, creates human-readable tabular reports
 
+### Project Folders
+
+This is the folder structure of this project:
+
+```
+\router-log-monitor 
+    |
+    +---logcollector
+    |
+    +---logwatcher
+    |   +---keys
+    |   +---mysql
+    |   |
+    |   +---logs
+    |
+    +---logreporter
+    |   +---mysql
+    |   +---sql
+    |   +---public_html
+    |   |
+    |   +---logs
+    |
+    +---logoutput
+    |   +---oldlogs
+    |
+    +---sql
+```
+
+* **`router-log-monitor/logcollector`** : all of the PHP source and associated JSON configuration files
+* **`router-log-monitor/logwatcher`** : all of the JavaScript source and associated configuration files
+  * **`logwatcher/keys`** : Contains file(s) for MAC lookup API keys
+  * **`logwatcher/mysql`** : MySQL functions and configuration files
+  * **`logwatcher/logs`** : all run-time logs will be written here, Log.js manages the files and rolls over to the next when the current file reaches capacity(*configurable*)
+* **`router-log-monitor/logreporter`** : 
+  * **`logwatcher/mysql`** : MySQL functions and configuration files
+  * **`logwatcher/sql`** : 
+  * **`logwatcher/public_html`** : 
+  * **`logwatcher/logs`** : all run-time logs will be written here, Log.js manages the files and rolls over to the next when the current file reaches capacity(*configurable*)
+* **`router-log-monitor/logoutput`** : all files converted from log email messages go here
+  * **`logoutput/oldlogs`** :
+* **`router-log-monitor/sql`** : SQL files containing various statements for creating tables and seeding data
+
 # Additional Documentation
 
 * [Log Collector README](./logcollector/README.md)
