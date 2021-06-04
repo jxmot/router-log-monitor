@@ -19,7 +19,7 @@ So for this particular application PHP makes more sense than JavaScript on Node.
 # Application Architecture Overview 
 
 <p align="center">
-  <img src="./mdimg/log-collector-arch.png" alt="Index Page" txt="PHP v Node"  width="80%" height="80%"/>
+  <img src="./mdimg/log-collector-arch.png" alt="Index Page" txt="Log Collector Architecture"  width="60%" height="80%"/>
 </p>
 
 ## Design
