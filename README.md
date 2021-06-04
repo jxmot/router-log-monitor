@@ -21,10 +21,6 @@ The primary components in this project are:
   <img src="./mdimg/netgear-log-tool-overview.png" alt="" txt="" width="80%">
 </p>
 
-
-
-
-
 There are three separate applications in this project. The first is written in PHP and its purpose is to download the log email messages and write their content to a log file. The second part is a Node.js application that watches and waits for new log files to be created. When one or more is detected this application will read the log file, parse it, and write the results to a database across multiple tables. The third part is the report generator application. It reads the data previously processed by the log watcher and provides an endpoint for retrieving various reports.
 
 * Log Collector (`logcollector`): PHP log email message retrieval
@@ -33,11 +29,16 @@ There are three separate applications in this project. The first is written in P
 
 ## Advantages
 
-After all of the log entries have been parsed and saved in a database I've been able to get a much better view into what's been going on. Running SQL queries on that data has allowed me to try out various reports(data only) and 
-**********************
+After all of the log entries had been parsed and saved in a database I was able to get a much better view into what's been going on. Running SQL queries on that data has allowed me to try out various reports(data only) and 
+
+
 And it will be much easier to detect and identify problems, and remedy them. Once I'm able to detect them I can even create notifications such as SMS or email. 
 
+# Additional Documentation
 
+* Log Collector README
+* Log Watcher README
+* Log Reporter README
 
 ---
 <img src="http://webexperiment .info/extcounter/mdcount.php?id=router-log-monitor">
