@@ -3,7 +3,7 @@
 module.exports = {
     rdefs: {
         'invasions-lifetime' : {
-            getpage: false,
+            getpage: true,
             title: ['LAN Access History','h3'],
             th: {
                 'invasion_qty':'Total',
@@ -23,7 +23,7 @@ module.exports = {
             }
         },
         'invasions-lifetime-qty_gt' : {
-            getpage: false,
+            getpage: true,
             title: ['LAN Access History<br>(more than 1 event per IP)','h3'],
             th: {
                 'invasion_qty':'Total',
@@ -64,7 +64,7 @@ module.exports = {
             }
         },
         'wlanrejects-lifetime': {
-            getpage: false,
+            getpage: true,
             title: ['WLAN Access Rejection History','h3'],
             th: {
                 'wlanrej_qty':'Total',
