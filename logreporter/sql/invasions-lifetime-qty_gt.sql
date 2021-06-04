@@ -10,7 +10,7 @@ select * from(
         DATE_FORMAT(FROM_UNIXTIME(max(tstamp) / 1000), '%Y-%m-%d') as last_date,
         DATE_FORMAT(FROM_UNIXTIME(max(tstamp) / 1000), '%T') as last_time,
         max(entrynumb) as last_entry
-    FROM rlmonitor.invasions where 
+    from rlmonitor.invasions where 
     known = 0 
     and 
     toport != 59018 
@@ -21,6 +21,7 @@ select * from(
 where
 -- adjust as needed
 invasion_qty > 1
+-- where mod
 ;
 -- invasions-lifetime-qty_gt.sql: identical to 'invasions-lifetime.sql', except that it 
 -- can be filtered by a minimum value for 'invasion_qty'.
