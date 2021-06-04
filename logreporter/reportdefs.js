@@ -23,7 +23,7 @@ module.exports = {
             }
         },
         'invasions-lifetime-qty_gt' : {
-            getpage: true,
+            getpage: false,
             title: ['LAN Access History<br>(more than 1 event per IP)','h3'],
             thtop: {
                 'null':['null',4],
@@ -49,7 +49,7 @@ module.exports = {
             }
         },
         'invasions-lifetime-by_port' : {
-            getpage: true,
+            getpage: false,
             title: ['LAN Access History<br>(ranked by port number)','h3'],
             thtop: {
                 'null':['null',2],
@@ -73,7 +73,7 @@ module.exports = {
             }
         },
         'wlanrejects-lifetime': {
-            getpage: true,
+            getpage: false,
             title: ['WLAN Access Rejection History','h3'],
             thtop: {
                 'null':['null',3],
