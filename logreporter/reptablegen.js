@@ -6,7 +6,7 @@
     to fill in the table. The data columns used, and the
     HTML table column headings are defined in reportdefs.js
 */
-module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
+module.exports = (function(_tname, _rdata) {
 
     const tablename = _tname;
     const rdata = JSON.parse(JSON.stringify(_rdata));
@@ -25,6 +25,7 @@ module.exports = (function(_tname, _rdata) { //, _pevts, _log)  {
         return true;
     });
 
+    // get the report definitions
     const reportdefs = require('./reportdefs.js');
 
     let reptablegen = {
