@@ -12,10 +12,10 @@ Every once in a while I would find evidence of an unauthorized access to the WiF
 
 The primary components in this project are:
 
-* A Netgear R6400 router configured to email its logs. I've set mine up to email the log daily at midnight.
-* An email server, must be capable of IMAP and reachable by the router.
-* A LAMP stack server ***with Node.js(>v12)*** **and located on your local network**. I'm using a NAS as my server. Something smaller like a Raspberry Pi B+ >=3 should also work.
-* A web browser capable client on your local network.
+* <img src="./mdimg/circ-1.png" alt="" txt=""> A Netgear R6400 router configured to email its logs. I've set mine up to email the log daily at midnight.
+* <img src="./mdimg/circ-2.png" alt="" txt=""> An email server, must be capable of IMAP and reachable by the router.
+* <img src="./mdimg/circ-3.png" alt="" txt=""> A LAMP stack server ***with Node.js(>v12)*** **and located on your local network**. I'm using a NAS as my server. Something smaller like a Raspberry Pi B+ >=3 should also work.
+* <img src="./mdimg/circ-4.png" alt="" txt=""> A web browser capable client on your local network.
 
 <p align="center">
   <img src="./mdimg/netgear-log-tool-overview.png" alt="" txt="" width="80%">
