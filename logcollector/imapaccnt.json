@@ -8,5 +8,5 @@
     "isrdonly":true,
     "disposemsg":"seen",
     "expunge":false,
-    "expwhere":"onclose"
+    "expwhen":"onclose"
 }
