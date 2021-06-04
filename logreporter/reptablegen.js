@@ -24,7 +24,6 @@ module.exports = (function(_tname, _rdata) {
         }
         return true;
     });
-
     // get the report definitions
     const reportdefs = require('./reportdefs.js');
 
@@ -54,6 +53,35 @@ module.exports = (function(_tname, _rdata) {
   #${tablename}-table th {
     text-align:center;
   }
+
+  @media (max-width:767px) {
+    #${tablename} {
+      font-size:0.75rem;
+    }
+
+    #${tablename}-title {
+      font-size:1.25rem;
+    }
+  }
+
+  @media (max-width:567px) {
+    #${tablename}-tbody tbody {
+      font-size:0.5rem;
+      font-weight: bold;
+    }
+  }
+
+  .timespan {
+    background-color: lightgrey;
+  }
+
+  .firstevt {
+    background-color: lightgreen;
+  }
+
+  .lastevt {
+    background-color: orange;
+  }
 </style>
 `;
 
@@ -76,17 +104,37 @@ ${head}${body} </table>
 //  "Days" "HH:MM:SS" < "Time Span"
 //  "Date" "Time" < "First Event" & "Last Event"
 
+    function createTopHead() {
+        let th = '';
+        if(reportdefs.rdefs[tablename].thtop) {
+            th = '    <tr>\n';
+            const topcols = reportdefs.rdefs[tablename].thtop
+            Object.keys(topcols).forEach(function (colh) {
+                if(colh.includes('null')) {
+                    th = th + `      <th colspan="${topcols[colh][1]}" scope="colgroup"></th>\n`;
+                } else {
+                    th = th + `      <th colspan="${topcols[colh][1]}" scope="colgroup" class="${colh}">${topcols[colh][0]}</th>\n`;
+                }
+            });
+            th = th + '    </tr>\n';
+        }
+        return th;
+    };
 
     // create the table header
     function createHead() {
         const thcols = reportdefs.rdefs[tablename].th;
-        let th = '  <thead>\n    <tr>\n';
+        let th = '    <tr>\n';
         Object.keys(thcols).forEach(function (colh) {
             if(thcols[colh] !== '') {
-                th = th + `      <th>${thcols[colh]}</th>\n`;
+                if(typeof thcols[colh] === 'object') {
+                    th = th + `      <th scope="col" class="${thcols[colh][1]}">${thcols[colh][0]}</th>\n`;
+                } else {
+                    th = th + `      <th>${thcols[colh]}</th>\n`;
+                }
             }
         });
-        th = th + '    </tr>\n  </thead>\n';
+        th = th + '    </tr>\n';
         return th;
     };
 
@@ -95,7 +143,7 @@ ${head}${body} </table>
     // of columns. 
     function createBody(data) {
         const thcols = reportdefs.rdefs[tablename].th;
-        let tb = '  <tbody>\n';
+        let tb = `  <tbody id="${tablename}-tbody">\n`;
         let tr = '';
         data.forEach((row, idx) => {
             tr = tr + '    <tr>\n';
@@ -112,7 +160,7 @@ ${head}${body} </table>
 
     // the table heading is static, and does not need 
     // to be rendered each time.
-    const tableHead = createHead();
+    const tableHead = `  <thead id="${tablename}-thead">\n` + createTopHead() + createHead() + '  </thead>\n';
 
     const createPage = (table) => `
 <!DOCTYPE html>
