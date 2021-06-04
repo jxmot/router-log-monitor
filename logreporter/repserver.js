@@ -66,6 +66,7 @@ module.exports = (function(_pevts, _log)  {
         to the SQL file that retrieves the data, 
     */
     function handleRequest(req, res) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
         if(req.method === 'GET') {
             let urlParts = url.parse(req.url, true);
             let urlQuery = urlParts.query;
@@ -97,7 +98,6 @@ module.exports = (function(_pevts, _log)  {
             res.end();
         }
     };
-
 
     procs_evts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
