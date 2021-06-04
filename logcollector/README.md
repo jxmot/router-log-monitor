@@ -54,7 +54,7 @@ There are two JSON formatted files used for configuration:
     "pword":"passwordgoeshere",
     "folder":"",
     "comment":"the next 4 items control if, when, and how read messages are disposed.",
-    "isrdonly":false,
+    "isrdonly":true,
     "disposemsg":"seen",
     "expunge":false,
     "expwhen":"onclose"
@@ -68,20 +68,64 @@ There are two JSON formatted files used for configuration:
 * `"folder"` - The **IMAP folder** on the host where the router log email messages are.
 * `"comment"` - N/A
 * `"isrdonly"` - `true` or `false`
-  * `true` - 
-  * `false` - 
-* `"disposemsg"` - `'seen'` or `'delete'`
-  * `'seen'` - 
-  * `'delete'` - 
-* `"expunge"` - `true` or `false`
-  * `true` - 
-  * `false` - 
+  * `true` - If the mailbox is to be opened as "read only", and no changes will be made to its messages. The IMAP connection is opened with `OP_READONLY`. 
+  * `false` - If not "read only", then look at how a just-read message is to be handled. Either mark it as "seen" or mark it as "deleted".
+* `"disposemsg"` - `'seen'` or `'delete'`, checked if `"isrdonly"` is **false**
+  * `'seen'` - mark messages as "seen"
+  * `'delete'` - mark messages for deletion
+* `"expunge"` - `true` or `false`, if there messages are to be expunged (*either previously or currently marked as "deleted"*) then check `"expwhen"` for when to expunge.
+  * `true` - expunge marked messages
+  * `false` - do not expunge
 * `"expwhen"` - `'onclose'`, `'readbegin'`, or `'readend'`
-  * `'onclose'` - 
-  * `'readbegin'` - 
-  * `'readend'` - 
+  * `'onclose'` - messages will be expunged when the connection to the IMAP mail server is closed
+  * `'readbegin'` - messages will be expunged just before the message headers are read
+  * `'readend'` - messages will be expunged after all messages have been read and/or marked
 
-**TIP**: Save your configuration file with a name beginning with an underscore ('_'). The `.gitignore` file in the parent directory will "hide" it from GitHub so that there is less chance of it accidentally getting checked in.
+Examples:
+
+1)
+
+```
+    "isrdonly":true,
+    "disposemsg":"seen",
+    "expunge":false,
+    "expwhen":"onclose"
+```
+
+`"disposemsg"`, `"expunge"`, and `"expwhen"` will be ignored. No changes will be made to the IMAP folder (`"folder"`) and its messages.
+
+2) 
+```
+    "isrdonly":false,
+    "disposemsg":"seen",
+    "expunge":false,
+    "expwhen":"onclose"
+```
+
+`"expunge"`, and `"expwhen"` will be ignored. Messages will only be marked as "seen" after they are read.
+
+3)
+```
+    "isrdonly":false,
+    "disposemsg":"delete",
+    "expunge":false,
+    "expwhen":"onclose"
+```
+
+Same as #2 above, but messages will only be marked for "deletion" after they are read. The messages will not be deleted(*expunged*), just marked.
+
+4) 
+
+```
+    "isrdonly":false,
+    "disposemsg":"delete",
+    "expunge":true,
+    "expwhen":"onclose"
+```
+
+Messages that have been marked for "deletion" will be removed when the application closes the IMAP connection.
+
+**TIP**: Save your configuration file with a name beginning with an underscore ('_'). The `.gitignore` file in the parent directory of this repository will "hide" it from GitHub so that there is less chance of it accidentally getting checked in.
 
 ### CRON
 
