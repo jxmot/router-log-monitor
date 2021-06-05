@@ -83,7 +83,7 @@ There are two JSON formatted files used for configuration:
 
 Examples:
 
-1)
+1) Read messages, do not make changes
 
 ```
     "isrdonly":true,
@@ -94,7 +94,7 @@ Examples:
 
 `"disposemsg"`, `"expunge"`, and `"expwhen"` will be ignored. No changes will be made to the IMAP folder (`"folder"`) and its messages.
 
-2) 
+2) Read messages, mark as "seen"
 ```
     "isrdonly":false,
     "disposemsg":"seen",
@@ -104,7 +104,7 @@ Examples:
 
 `"expunge"`, and `"expwhen"` will be ignored. Messages will only be marked as "seen" after they are read.
 
-3)
+3) Read messages, mark for deletion
 ```
     "isrdonly":false,
     "disposemsg":"delete",
@@ -114,7 +114,7 @@ Examples:
 
 Same as #2 above, but messages will only be marked for "deletion" after they are read. The messages will not be deleted(*expunged*), just marked.
 
-4) 
+4) Read messages, mark for deletion and expunge
 
 ```
     "isrdonly":false,
@@ -129,9 +129,28 @@ Messages that have been marked for "deletion" will be removed when the applicati
 
 ### CRON
 
+This will run the logcollector at 00:15am every day:
 
+`15 0 * * * /path/to/run-logcollector.sh`
+
+My Linux platform is a NAS running BusyBox so my script may not work for you. But it is provided as an example:
+
+```
+#!/bin/sh
+#
+# NOTE: This file is specific to the NAS platform that I
+# use. It will likely require modification to work on any
+# other platform.
+# 
+# This command should be run as a CRON job at an interval 
+# of once per day.
+/usr/builtin/bin/php /volume1/NodeSrv/apps/rlmonitor/logcollector/logcollector.php
+```
 ### Command Line
 
+Run it with the following command from within the `/logcollector` folder:
+
+`php logcollector.php`
 
 ### Console Output
 
