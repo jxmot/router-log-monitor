@@ -16,17 +16,15 @@ And in 99% of PHP installations the proper IMAP module is already there. And the
 
 So for this particular application PHP makes more sense than JavaScript on Node.js. Well, at least for *part* of it. There is a Node.js side to this project. Its purpose will be to finish the processing and parsing of the files that were saved by the PHP side. It will also write the parsed data to a MySQL database and generate static report content each time it finishes processing a file.
 
-# Application Architecture Overview 
+## Log Collector Architecture Overview 
 
 <p align="center">
   <img src="./mdimg/log-collector-arch.png" alt="Index Page" txt="Log Collector Architecture"  width="60%" height="80%"/>
 </p>
 
-## Design
+# Running the Application
 
-## Running the Application
-
-### Configuration
+## Configuration
 
 There are two JSON formatted files used for configuration:
 
