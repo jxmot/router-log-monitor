@@ -140,7 +140,7 @@ watch_evts.on('FILE_DELETED', (watchit) => {
     if(!logmute) log(`FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
 });
 
-// Generate static reports
+// Generate report tables in the database...
 const reports = require('./reports.js')(app);
 
 openDB();
