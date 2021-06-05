@@ -1,9 +1,9 @@
 'use strict';
 /*
-    logread.js - Find all log files found in the specified
+    logread.js - Find all log files in the specified
     path and create a sorted list. Then notify the log 
-    processor that a file is ready for parsing and writing 
-    into the database.
+    processor that a file is ready for parsing and 
+    writing into the database.
 
     Unlike the log watcher this will run once and stop.
 
