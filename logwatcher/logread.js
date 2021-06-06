@@ -13,16 +13,15 @@
 
 */
 module.exports = (function(wevts, pevts, _log) {
-
     // set up run-time logging
     const path = require('path');
-    var scriptName = path.basename(__filename);
+    const scriptName = path.basename(__filename);
     function log(payload) {
         _log(`${scriptName} - ${payload}`);
     };
 
     // some run-time log messages can be muted
-    var logmute = true;
+    const logmute = true;
     log(`init`);
 
     // configure the path to the watched folder
@@ -93,6 +92,7 @@ module.exports = (function(wevts, pevts, _log) {
         }
     });
 
+    // called when there are no more log files to read
     function readEnd() {
         // check the options to see what we'll do with
         // the file now that we're done with it...
@@ -120,7 +120,7 @@ module.exports = (function(wevts, pevts, _log) {
                 }
             }
         }
-
+        // all done! exit?
         if(opt.readexit === true) {
             log(`readEnd(): exiting now...`);
             process.exit(0);

@@ -8,18 +8,19 @@
 */
 module.exports = (function(wevts, pevts, _log) {
     // set up run-time logging
-    var path = require('path');
-    var scriptName = path.basename(__filename);
+    const path = require('path');
+    const scriptName = path.basename(__filename);
     function log(payload) {
         _log(`${scriptName} - ${payload}`);
     };
 
-    var logmute = true;
+    // some run-time log messages can be muted
+    const logmute = true;
     log(`init`);
 
     // configure the path to the watched folder
     const opt = require('./watchopt.js');
-    log(`watching in ${opt.path}`);
+    log(`watching for log files in ${opt.path}`);
 
     // needed for fs.watch(), fs.statSync(), and
     // fs.accessSync()
@@ -142,6 +143,7 @@ module.exports = (function(wevts, pevts, _log) {
         }
     };
 
+    // recursively create a path
     function makePath(pathname) {
         const __dirname = path.resolve();
         // Remove leading directory markers, and remove ending /file-name.extension

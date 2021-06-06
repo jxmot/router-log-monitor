@@ -67,7 +67,7 @@ module.exports = (function(pevts, _log)  {
         }
     });
 
-    // databas has been closed, change state and clear 
+    // database has been closed, change state and clear 
     // objects and data...
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;

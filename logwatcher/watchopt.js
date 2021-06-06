@@ -22,6 +22,7 @@ module.exports = {
     // to the start of the file name.
     readren: false,
     renchar: '_',
-    // only used in logread.js
+    // only used in logread.js, leave set to 'true' 
+    // the 'false' setting is for debug purposes
     readexit: true
 };

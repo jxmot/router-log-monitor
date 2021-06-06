@@ -1,6 +1,6 @@
 'use strict';
 /*
-    logdata.js - this is where the log file will be parsed
+    logdata.js - this is where the log file will be processed
     and written to the detabase
 */
 module.exports = (function({constants, staticdata, pevts, _log})  {
@@ -17,10 +17,20 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         _log(`${scriptName} - ${payload}`);
     };
 
+    var logmute = true;
+    log(`init`);
+
+    /* ****************************************************
+        This module uses the database. We will keep 
+        track of the database state (open or closed) 
+        and react to the state change.
+    */
+    // database variables
     var dbopen = false;
     var dbobj = {};
     var dbcfg = {};
 
+    // when the database is open and ready
     pevts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
             dbopen = true;
@@ -32,14 +42,17 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         }
     });
 
+    // database has been closed, change state and clear 
+    // objects and data...
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;
         dbobj = {};
     });
 
-    var logmute = true;
-    log(`init`);
-
+    /* ****************************************************
+        Process the log file, parse it and extract the 
+        info from all of the log entries
+    */
     logdata.process = function(wfile) {
         if(dbopen === false) {
             log(`process(): database not open`);
@@ -59,6 +72,9 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         return dbopen;
     };
 
+    /* ****************************************************
+    */
+    // matches the database table rlmonitor.logentry
     class LogEntry {
         tstamp = 0;
         actionid = 0;
@@ -73,6 +89,8 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         logentry = '';
     };
 
+    // a file is ready to be processed, verify its 
+    // existence and then parse each entry in the file
     function logToDB(wfile) {
         // make sure the file is valid
         if(typeof wfile !== 'undefined') {
@@ -168,6 +186,8 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         }
     };
 
+    // "bad" log entries that cannot be parsed will 
+    // be written to their own table in the database
     function saveBadEntry(badrec, wfile) {
         // write the data...
         var dest = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_LOGENTRYBAD_IDX]}`;
@@ -191,6 +211,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         });
     };
 
+    // parse a single entry and return an object
     function parseEntry(_entry, idx) {
         var tmp    = _entry.replace("\n",'');
         var entry  = tmp.replace("\r",'');
@@ -207,7 +228,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
             log(`parseEntry(): ${actn.code}`);
         } else {
             entObj.actionid = actn.id;
-            // 
+            // get the parameters of the action...
             var parms = getActionParms(actn, entry);
             if(typeof parms.err !== 'undefined') {
                 log(`parseEntry(): ERROR 1/3 - ${parms.err.msg} ${parms.err.ent}`);
@@ -224,6 +245,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         return entObj;
     };
 
+    // extract the time stamp from the log entry
     function getTimestamp(entry) {
         var entarr = entry.split(' ');
         /*
@@ -241,6 +263,8 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         return tstamp;
     };
 
+    // parse the "action" and return its action ID 
+    // object
     function getAction(entry) {
         var actID = {
             id: -1,
@@ -264,6 +288,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         return actID;
     };
 
+    // get action parameters, return an object
     function getActionParms(action, entry) {
         var actparms = {};
         switch(action.code) {
@@ -342,6 +367,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         return actparms;
     };
 
+    // parse "router actions"
     function parseRA(action, entry) {
         var raparms = {};
         // 
@@ -387,6 +413,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         return raparms;
     };
 
+    // parse "router intrusions"
     function parseRI(action, entry) {
         var riparms = {};
         // 
@@ -422,6 +449,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         };
         return riparms;
     };
+
     return logdata;
 });
 
