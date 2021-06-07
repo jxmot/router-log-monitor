@@ -42,19 +42,26 @@ Here are the parts I need to parse from a log entry:
 * Which type *action* is the entry describing?
 * Other pieces of information that describe the *action*
 
+<mytag style="display:none;">
+I can hide stuff here!
+</mytag>
+
 First I needed to *categorize* the types of *actions* that the router could take:
 
 |    Description     |Category Code| 
-|--------------------|-------------|
+|--------------------|:-----------:|
 |Network Activity    |      NA     | 
 |Router Actions      |      RA     | 
 |Router Invasion     |      RI     | 
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
+|*Router Protection* |      RP     |
+
+**NOTE**: The category *Router Protection* and its actions have not been implemented.
 
 <br>
 
-And then each category contains specific *actions*:
+Then I looked at the possible *actions*, listed them and assigned them to a category:
 
 |Category Code|      Action Description         |
 |:-----------:|---------------------------------|
@@ -73,8 +80,13 @@ And then each category contains specific *actions*:
 |      RL     |DHCP IP                          |
 |-------------|---------------------------------|
 |      RU     |Initialized, firmware version    |
+|-------------|---------------------------------|
+
+**NOTE**: *Router Protection*  has not been implemented yet.
 
 <br>
+
+This is what has been implemented *so far*:
 
 |       Action Description        |Implemented?|Category Code|
 |---------------------------------|:----------:|:-----------:|
@@ -88,6 +100,8 @@ And then each category contains specific *actions*:
 |Internet connected               |      Y     |      RA     |
 |Internet disconnected            |      Y     |      RA     |
 |LAN access from remote           |      Y     |      NA     |
+|Log Cleared                      |            |      RA     |
+|Self2WAN ICMP type b Detected!   |            |      RP     |
 |Service blocked                  |            |      RP     |
 |Site allowed                     |            |      RP     |
 |Site blocked                     |            |      RP     |
@@ -96,7 +110,6 @@ And then each category contains specific *actions*:
 |USB device attached              |            |      RA     |
 |USB device detached              |            |      RA     |
 |WLAN access rejected             |      Y     |      RI     |
-
 
 <br>
 
