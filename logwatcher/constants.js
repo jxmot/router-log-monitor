@@ -1,60 +1,9 @@
 'use strict';
 /*
-
-|catcode|description         |
-|-------|--------------------|
-|NA     |Network Activity    |
-|RA     |Router Actions      |
-|RI     |Router Invasion     |
-|RL     |Router LAN Activity |
-|RU     |Router Updates      |
-
-
-Implemented so far:
-
-|actionid|description                      |catcode|
-|--------|---------------------------------|-------|
-|11      |UPnP set event                   |NA     |
-|8       |LAN access from remote           |NA     |
-|1       |Admin login                      |RA     |
-|4       |Dynamic DNS                      |RA     |
-|6       |Internet connected               |RA     |
-|7       |Internet disconnected            |RA     |
-|9       |Time synchronized with NTP server|RA     |
-|3       |DoS attack                       |RI     |
-|10      |WLAN access rejected             |RI     |
-|2       |DHCP IP                          |RL     |
-|5       |Initialized, firmware version    |RU     |
-
-
-Full List(?):
-
-|description                      |implemented?|catcode|
-|---------------------------------|------------|-------|
-|Admin login                      |Y           |       |
-|DHCP IP                          |Y           |       |
-|Dynamic DNS                      |Y           |       |
-|DoS attack                       |Y           |       |
-|email failed                     |            |RA     |
-|email sent to                    |            |RA     |
-|Initialized                      |Y           |       |
-|Internet connected               |Y           |       |
-|Internet disconnected            |Y           |       |
-|LAN access from remote           |Y           |       |
-|Service blocked                  |            |RP     |
-|Site allowed                     |            |RP     |
-|Site blocked                     |            |RP     |
-|Time synchronized with NTP server|Y           |       |
-|UPnP set event                   |Y           |       |
-|USB device attached              |            |RA     |
-|USB device detached              |            |RA     |
-|WLAN access rejected             |Y           |       |
-
-|catcode|description         |
-|-------|--------------------|
-|RP     |Router Protection   |
-
-
+    "Constants" - although not truly constant, the values 
+    here are used throughout the code and remembering a 
+    label is easier than remembering the value when code
+    is being written.
 */
 module.exports = {
     // netlog category codes and action IDs
