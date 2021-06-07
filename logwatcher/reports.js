@@ -17,10 +17,21 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         _log(`${scriptName} - ${payload}`);
     };
 
+    var logmute = true;
+    log(`init`);
+
+    /* ****************************************************
+        This module uses the database. We will keep 
+        track of the database state (open or closed) 
+        and react to the state change.
+    */
+    // database variables
     var dbopen = false;
     var dbobj = {};
     var dbcfg = {};
 
+    // when the database is open and ready we can 
+    // create report tables
     pevts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
             dbopen = true;
@@ -32,13 +43,12 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         }
     });
 
+    // database has been closed, change state and clear 
+    // objects and data...
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;
         dbobj = {};
     });
-
-    var logmute = true;
-    log(`init`);
 
     pevts.on('LOG_PROCESSED', (wfile) => {
         log(`last processed file: ${wfile.path}${wfile.filename}`);
@@ -60,6 +70,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         return staticdata.isKnown(row[col], col);
     };
 
+    /* ****************************************************
+        do a reverse DNS on external IP addresses
+    */
     const dns = require('dns');
     function updateHostname(table, datarow) {
         // isolate from the arg, so that we don't interfere with clean up
@@ -97,9 +110,24 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         });
     };
 
+    /* ****************************************************
+        MAC Manufacturer Look UP 
+
+        The "free" service is sufficient for our purposes,
+        more info at - 
+            https://maclookup.app/api-v2/rate-limits
+
+        A good attempt is made to limit the number of 
+        API hits. As MAC addresses are found via the API 
+        they're saved in a database table. Then when a 
+        MAC manufacturer is needed the database is searched
+        first, if found there then no call to the API is 
+        needed.
+    */
     const https = require('https');
     const mcfg = require('./macinfocfg.js');
 
+    // get MAC info via the API
     function getMACInfoAPI(mac, callback) {
         let opt = {
             hostname: mcfg.hostname,
@@ -146,6 +174,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         req.end();
     };
 
+    // get MAC info, this function is called first. 
     function getMACInfo(mac, callback) {
         // first, try to find the mac in staticdata.macvendors...
         let macv = staticdata.getMACVendor(mac);
@@ -159,37 +188,45 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         return macv;
     };
 
-    function updbMACMFR(table, rowdata) {
+    // update our MAC info database table
+    function updbMAC(table, rowdata) {
         // update the row...
         dbobj.updateRows(table, {macmfr:rowdata.macmfr}, `entrynumb = ${rowdata.entrynumb}`, (target, result, err) => {
             if(err !== null) {
-                log(`updbMACMFR(): ERROR err = ${err.message}`);
+                log(`updbMAC(): ERROR err = ${err.message}`);
                 process.exit(0);
             } else {
-                if(!logmute) log(`updbMACMFR(): SUCCESS = ${result}  entrynumb = ${rowdata.entrynumb}`);
+                if(!logmute) log(`updbMAC(): SUCCESS = ${result}  entrynumb = ${rowdata.entrynumb}`);
             }
         });
     }
 
+    // update the log entry's MAC information...
     function updateMACMfr(table, datarow) {
         // isolate from the arg, so that we don't interfere with clean up
         let updrow = JSON.parse(JSON.stringify(datarow));
-
         // look up MAC.... 
         //      check our local database first (staticdata)
         let macv = getMACInfo(updrow.mac, (err, data) => {
             // had to search the API, found and updated
             // static data and database
             updrow.macmfr = JSON.parse(data).company;
-            updbMACMFR(table, updrow);
+            updbMAC(table, updrow);
         });
-        if(macv !== 0) {
-            // on return, update table
-            updrow.macmfr = macv.company;
-            updbMACMFR(table, updrow);
-        }
+// NOTE: TEST!
+//        if(macv !== 0) {
+//            // on return, update table
+//            updrow.macmfr = macv.company;
+//            updbMAC(table, updrow);
+//        }
     };
 
+    /* ****************************************************
+        Generate a Report Database Table 
+
+        Generates a "report" table in the database using
+        a configuration block.
+    */
     function genReportTable({action, RowClass, data, tableidx, knowit, gethost = false, getmacmfr = false, subparser = null, extra = null}) {
         const atable  = `${dbcfg.parms.database}.${dbcfg.tables[tableidx]}`;
         // iterate through all rows returned to us...
@@ -275,6 +312,11 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         }
     };
 
+    /* ****************************************************
+        The Report Table Functions
+
+        
+    */
     // argument for report functions
     class grtArgs {
         action    =  -1;
@@ -287,7 +329,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         extra     = null;
     };
 
-    // database row
+    // matches the database table rlmonitor.attacks
     class AttackRow {
         tstamp    = 0;
         entrynumb = 0;
@@ -453,7 +495,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
     // report tables that are written to here,
     // if 'null' then do nothing.
     // NOTE: The order here is the same as in 
-    // constants.js
+    // constants.js for convenience.
     let reports = [
         null,               // ADM_LOG    
         reportDHCP_IP,      // DHCP_IP    

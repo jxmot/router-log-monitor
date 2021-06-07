@@ -1,5 +1,11 @@
-// _macinfocfg.js
+// macinfocfg.js - configuration for MAC manufacturer 
+// look ups.
+// 
+// NOTE: You will need to get your own API key, place 
+// in a file - ./keys/_maclookupapp.key
+// 
 module.exports = {
+    // https://maclookup.app/
     hostname: 'api.maclookup.app',
     // for developer refernce, as named on maclookup.app
     apikeyName: 'rlmonitor',

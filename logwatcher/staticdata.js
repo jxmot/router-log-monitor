@@ -182,7 +182,8 @@ module.exports = (function(pevts, _log)  {
     };
 
     // find the MAC vendor in the static MAC 
-    // lookup table
+    // lookup table, this table and its database
+    // table are managed in report.js
     staticdata.getMACVendor = function(mac) {
         if(staticdata.dbstates.macvendors === true) {
             // prep the mac string if necessary....
