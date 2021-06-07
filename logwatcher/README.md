@@ -34,17 +34,17 @@ Here is a sample of some typical log entries:
 [DoS attack: STORM] (1) attack packets in last 20 sec from ip [68.86.184.146], Wednesday, Jan 01,2020 00:07:27
 ```
 
-From those log entries it's possible to extract the pieces needed for the database:
+From those log entries it's possible to extract the pieces needed for the database. I wanted to be sure that there was sufficient details so that meaningful queries could be ran on the data.
+
+
 
 * Time stamp of the entry
 * Which type *action* is the entry describing
 * Other pieces of information that describe the *action*
 
-FIrst, the router's activities were categorized:
+First, the router's actions were categorized:
 
-
-|     Category       |Category Code| 
-|    Description     |  (catcode)  | 
+|    Description     |Category Code| 
 |--------------------|-------------|
 |Network Activity    |      NA     | 
 |Router Actions      |      RA     | 
@@ -52,60 +52,53 @@ FIrst, the router's activities were categorized:
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
 
+<br>
+
+Each category contains specific *actions*:
+
+|Category Code|      Action Description         |
+|-------------|---------------------------------|
+|      NA     |UPnP set event                   |
+|      NA     |LAN access from remote           |
+|-------------|---------------------------------|
+|      RA     |Admin login                      |
+|      RA     |Dynamic DNS                      |
+|      RA     |Internet connected               |
+|      RA     |Internet disconnected            |
+|      RA     |Time synchronized with NTP server|
+|-------------|---------------------------------|
+|      RI     |DoS attack                       |
+|      RI     |WLAN access rejected             |
+|-------------|---------------------------------|
+|      RL     |DHCP IP                          |
+|-------------|---------------------------------|
+|      RU     |Initialized, firmware version    |
 
 <br>
 
-
-
-
-
-
-|catcode|actionid|description                      |
-|-------|--------|---------------------------------|
-|NA     |11      |UPnP set event                   |
-|NA     |8       |LAN access from remote           |
-|RA     |1       |Admin login                      |
-|RA     |4       |Dynamic DNS                      |
-|RA     |6       |Internet connected               |
-|RA     |7       |Internet disconnected            |
-|RA     |9       |Time synchronized with NTP server|
-|RI     |3       |DoS attack                       |
-|RI     |10      |WLAN access rejected             |
-|RL     |2       |DHCP IP                          |
-|RU     |5       |Initialized, firmware version    |
-
-<br>
-
-| Action ID|       Action Description        |Implemented |Category Code|
-|  actnid  |       Action Description        |     Y/N    |   catcode   |
-|----------|---------------------------------|------------|-------------|
-|     1    |Admin login                      |      Y     |      RA     |
-|     2    |DHCP IP                          |      Y     |      RL     |
-|     3    |DoS attack                       |      Y     |      RI     |
-|     4    |Dynamic DNS                      |      Y     |      RA     |
-|          |email failed                     |            |      RA     |
-|          |email sent to                    |            |      RA     |
-|     5    |Initialized                      |      Y     |      RU     |
-|     6    |Internet connected               |      Y     |      RA     |
-|     7    |Internet disconnected            |      Y     |      RA     |
-|     8    |LAN access from remote           |      Y     |      NA     |
-|          |Service blocked                  |            |      RP     |
-|          |Site allowed                     |            |      RP     |
-|          |Site blocked                     |            |      RP     |
-|     9    |Time synchronized with NTP server|      Y     |      RA     |
-|    10    |UPnP set event                   |      Y     |      NA     |
-|          |USB device attached              |            |      RA     |
-|          |USB device detached              |            |      RA     |
-|    11    |WLAN access rejected             |      Y     |      RI     |
-<br>
-
-|catcode|description         |
-|-------|--------------------|
-|RP     |Router Protection   |
+|       Action Description        |Implemented?|Category Code|
+|---------------------------------|------------|-------------|
+|Admin login                      |      Y     |      RA     |
+|DHCP IP                          |      Y     |      RL     |
+|DoS attack                       |      Y     |      RI     |
+|Dynamic DNS                      |      Y     |      RA     |
+|email failed                     |            |      RA     |
+|email sent to                    |            |      RA     |
+|Initialized                      |      Y     |      RU     |
+|Internet connected               |      Y     |      RA     |
+|Internet disconnected            |      Y     |      RA     |
+|LAN access from remote           |      Y     |      NA     |
+|Service blocked                  |            |      RP     |
+|Site allowed                     |            |      RP     |
+|Site blocked                     |            |      RP     |
+|Time synchronized with NTP server|      Y     |      RA     |
+|UPnP set event                   |      Y     |      NA     |
+|USB device attached              |            |      RA     |
+|USB device detached              |            |      RA     |
+|WLAN access rejected             |      Y     |      RI     |
 
 
 <br>
-
 
 ### Event Usage
 
