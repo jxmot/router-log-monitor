@@ -36,13 +36,13 @@ Here is a sample of some typical log entries:
 
 From those log entries it's possible to extract the pieces needed for the database. I wanted to be sure that there was sufficient details so that meaningful queries could be ran on the data.
 
-
+Here are the parts I need to parse from a log entry:
 
 * Time stamp of the entry
-* Which type *action* is the entry describing
+* Which type *action* is the entry describing?
 * Other pieces of information that describe the *action*
 
-First, the router's actions were categorized:
+First I needed to *categorize* the types of *actions* that the router could take:
 
 |    Description     |Category Code| 
 |--------------------|-------------|
@@ -54,10 +54,10 @@ First, the router's actions were categorized:
 
 <br>
 
-Each category contains specific *actions*:
+And then each category contains specific *actions*:
 
 |Category Code|      Action Description         |
-|-------------|---------------------------------|
+|:-----------:|---------------------------------|
 |      NA     |UPnP set event                   |
 |      NA     |LAN access from remote           |
 |-------------|---------------------------------|
@@ -77,7 +77,7 @@ Each category contains specific *actions*:
 <br>
 
 |       Action Description        |Implemented?|Category Code|
-|---------------------------------|------------|-------------|
+|---------------------------------|:----------:|:-----------:|
 |Admin login                      |      Y     |      RA     |
 |DHCP IP                          |      Y     |      RL     |
 |DoS attack                       |      Y     |      RI     |
@@ -106,7 +106,7 @@ Each category contains specific *actions*:
 
 ### Database Report Tables
 
-
+For detailed information regarding the layout of the tables see THISDOCHERE.
 
 ## Running the Application
 
