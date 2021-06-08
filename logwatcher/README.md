@@ -1,10 +1,6 @@
 # Log Watcher
 
-This is part of the Router Log Monitor. And it is responsible for - 
-
-* Reading and parsing log files
-  * Writes parsed entries to database tables
-* 
+This is part of the Router Log Monitor. And this part is responsible for reading and parsing log files, and Writing parsed entries to database tables.
 
 ## Log Watcher Architecture Overview
 
@@ -36,15 +32,11 @@ Here is a sample of some typical log entries:
 
 From those log entries it's possible to extract the pieces needed for the database. I wanted to be sure that there was sufficient details so that meaningful queries could be ran on the data.
 
-Here are the parts I need to parse from a log entry:
+Here are the parts I needed to parse from a log entry:
 
 * Time stamp of the entry
 * Which type *action* is the entry describing?
 * Other pieces of information that describe the *action*
-
-<mytag style="display:none;">
-I can hide stuff here!
-</mytag>
 
 First I needed to *categorize* the types of *actions* that the router could take:
 
@@ -56,6 +48,8 @@ First I needed to *categorize* the types of *actions* that the router could take
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
 |*Router Protection* |      RP     |
+<p style="font-size:small;">(Table 1 - Action Categories)</p>
+<br>
 
 **NOTE**: The category *Router Protection* and its actions have not been implemented.
 
@@ -115,7 +109,26 @@ This is what has been implemented *so far*:
 
 ### Event Usage
 
+This application uses two *event emitters*. One for the events needed for log file watching & reading, and another for synchronizing other application operations like:
+
+* The database connection is opened or closed
+* Resources and data ready for use
+* Data saved to database
+
 ### "Static" Data
+
+Actually, "static" is just the term I'm using to describe data that is retrieved from the database and does not change during the application's run-time. The only exception is the MAC vendor database which can be updated during run-time.
+
+The majority of that data is used in the parsing of log entries. It's also used when generating the report tables for MAC lookups and event classifications.
+
+Here are the "static" data tables in the `rlmonitor` database:
+
+* `actioncats`
+* `actions`
+* `ipcats` - This table contains IP address categories that I have assigned to the equipment on my network. Each "IP Category" is assigned an ID, description, and the IP range.
+* `known` - All of the "known" devices attached to my network, this includes a description, MAC, and "IP Category".
+* `attacktypes`
+* `macvendors`
 
 ### Database Report Tables
 
