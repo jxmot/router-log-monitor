@@ -48,7 +48,7 @@ First I needed to *categorize* the types of *actions* that the router could take
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
 |*Router Protection* |      RP     |
-<div style="font-size:small;">(Table 1 - Action Categories)</div>
+<p>(Table 1 - Action Categories)</p>
 <br>
 
 **NOTE**: The category *Router Protection* and its actions have not been implemented.
@@ -75,7 +75,7 @@ Then I looked at the possible *actions*, listed them and assigned them to a cate
 |-------------|---------------------------------|
 |      RU     |Initialized, firmware version    |
 |-------------|---------------------------------|
-(Table 2 - Router Actions)
+<p>(Table 2 - Router Actions)</p>
 <br>
 
 **NOTE**: *Router Protection*  has not been implemented yet.
@@ -106,7 +106,7 @@ This is what has been implemented *so far*:
 |USB device attached              |            |      RA     |
 |USB device detached              |            |      RA     |
 |WLAN access rejected             |      Y     |      RI     |
-(Table 3 - Implmented Actions)
+<p>(Table 3 - Implemented Actions)</p>
 <br>
 
 ### Event Usage
@@ -125,12 +125,12 @@ The majority of that data is used in the parsing of log entries. It's also used 
 
 Here are the "static" data tables in the `rlmonitor` database:
 
-* `actioncats`
-* `actions`
+* `actioncats` - "Action Categories" as described above in "Table 1"
+* `actions` - "Router Actions" as described in "Table 2"
 * `ipcats` - This table contains IP address categories that I have assigned to the equipment on my network. Each "IP Category" is assigned an ID, description, and the IP range.
 * `known` - All of the "known" devices attached to my network, this includes a description, MAC, and "IP Category".
-* `attacktypes`
-* `macvendors`
+* `attacktypes` - Different types of DOS attacks. 
+* `macvendors` - This table contains MAC vendor information that was obtained via an API.
 
 ### Database Report Tables
 
