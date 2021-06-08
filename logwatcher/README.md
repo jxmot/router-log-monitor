@@ -48,7 +48,7 @@ First I needed to *categorize* the types of *actions* that the router could take
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
 |*Router Protection* |      RP     |
-<p style="font-size:small;">(Table 1 - Action Categories)</p>
+<div style="font-size:small;">(Table 1 - Action Categories)</div>
 <br>
 
 **NOTE**: The category *Router Protection* and its actions have not been implemented.
@@ -75,6 +75,8 @@ Then I looked at the possible *actions*, listed them and assigned them to a cate
 |-------------|---------------------------------|
 |      RU     |Initialized, firmware version    |
 |-------------|---------------------------------|
+(Table 2 - Router Actions)
+<br>
 
 **NOTE**: *Router Protection*  has not been implemented yet.
 
@@ -104,7 +106,7 @@ This is what has been implemented *so far*:
 |USB device attached              |            |      RA     |
 |USB device detached              |            |      RA     |
 |WLAN access rejected             |      Y     |      RI     |
-
+(Table 3 - Implmented Actions)
 <br>
 
 ### Event Usage
