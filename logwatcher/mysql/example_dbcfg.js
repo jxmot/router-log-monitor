@@ -1,3 +1,4 @@
+'use strict';
 /* ************************************************************************ */
 /*
     MySQL Connection Settings & Record Definition
