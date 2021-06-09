@@ -12,6 +12,7 @@ module.exports = {
     RI         : 'RI',  // Router Invasion    
     RL         : 'RL',  // Router LAN Activity
     RU         : 'RU',  // Router Updates   
+    RP         : 'RP',  // Router Protection (not implemented)
     MIN_ACTN   : 1,     // 
     ADM_LOG    : 1,     // RA
     DHCP_IP    : 2,     // RL
