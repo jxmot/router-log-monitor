@@ -159,6 +159,8 @@ module.exports = (function(pevts, _log)  {
             // use the first known IP in the data to see 
             // if the column is valid.
            (typeof staticdata.known[0][col] !== 'undefined')){
+            // the column is good, iterate through the table 
+            // to see if its value is "known"
             for(var ix = 0; ix < staticdata.known.length; ix++) {
                 if(unkn === staticdata.known[ix][col]) {
                     return staticdata.known[ix];
