@@ -42,7 +42,7 @@ First I needed to *categorize* the types of *actions* that the router could take
 
 |    Description     |Category Code| 
 |--------------------|:-----------:|
-|Network Activity    |      NA     | 
+|Network Access      |      NA     | 
 |Router Actions      |      RA     | 
 |Router Invasion     |      RI     | 
 |Router LAN Activity |      RL     | 
@@ -97,7 +97,7 @@ This is what has been implemented *so far*:
 |Internet disconnected            |      Y     |      RA     |
 |LAN access from remote           |      Y     |      NA     |
 |Log Cleared                      |            |      RA     |
-|Self2WAN ICMP type b Detected!   |            |      RP     |
+|Self2WAN ICMP type b Detected!   |            |      RI     |
 |Service blocked                  |            |      RP     |
 |Site allowed                     |            |      RP     |
 |Site blocked                     |            |      RP     |
@@ -142,9 +142,9 @@ For detailed information regarding the layout of the tables see THISDOCHERE.
 
 #### Database Tables
 
-There are SQL statment files in the `/sql` folder and sub-folders. They should be use to create and seed the "static" data tables.
+There are SQL statment files in the `/sql` folder and sub-folders. They should be use to create the database and tables, and create & seed the "static" data tables.
 
-* **`/sql`**
+* **`/sql`**:
   * `rlmonitor.sql` - creates the schema
 
 * **`/sql/dyndata`**:
