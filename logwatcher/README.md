@@ -48,7 +48,8 @@ First I needed to *categorize* the types of *actions* that the router could take
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
 |*Router Protection* |      RP     |
-<caption>(Table 1 - Action Categories)</caption>
+<p>(Table 1 - Action Categories)</p>
+<br>
 
 **NOTE**: The category *Router Protection* and its actions have not been implemented.
 
@@ -141,14 +142,23 @@ For detailed information regarding the layout of the tables see THISDOCHERE.
 
 #### Database Tables
 
-There are SQL statment files in the `/sql` folder. They should be use to create and seed the "static" data tables.
+There are SQL statment files in the `/sql` folder and sub-folders. They should be use to create and seed the "static" data tables.
 
-* `rlmonitor.sql` - creates the schema
-* `actions.sql` - create table and seed
-* `ipcats.sql` - create table and seed
-* `known.sql` - create table and seed with dummy data
-* `attacktypes.sql` - create table and seed
-* `macvendors.sql` - create table and seed with dummy data
+* **`/sql`**
+  * `rlmonitor.sql` - creates the schema
+
+* **`/sql/dyndata`**:
+  * `logentry.sql` - 
+  * `attacks.sql` - 
+  * 
+
+* **`/sql/staticdata`**:
+  * `actions.sql` - create table and seed
+  * `actioncats.sql` - create table and seed
+  * `ipcats.sql` - create table and seed
+  * `known.sql` - create table and seed with dummy data
+  * `attacktypes.sql` - create table and seed 
+  * `macvendors.sql` - create table and seed with dummy data
 
 ### Shell Script Files
 
