@@ -157,18 +157,13 @@ module.exports = (function(wevts, pevts, _log) {
     // do NOT start processing files until the necessary data 
     // table(s) are read from the database. only handle this
     // event one time, it's only needed to start things going.
-    pevts.once('STATICDATA_READY', (dbtable) => {
-        // this event will tell us which table has been read,
-        // if it's the last one (see staticdata.js:114) then 
-        // it's ok to start processing log files
-        if(dbtable.includes('known') === true) {
-            if(fready.length > 0) {
-                log(`STATICDATA_READY start log processing, ${fready.length} files to go`);
-                // start with the first file in the list
-                sendFC(Object.assign({}, fready[0]));
-                // remove it from the queue
-                fready.shift();
-            }
+    pevts.once('STATICDATA_READY', () => {
+        if(fready.length > 0) {
+            log(`STATICDATA_READY start log processing, ${fready.length} files to go`);
+            // start with the first file in the list
+            sendFC(Object.assign({}, fready[0]));
+            // remove it from the queue
+            fready.shift();
         }
     });
 });
