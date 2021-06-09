@@ -48,8 +48,7 @@ First I needed to *categorize* the types of *actions* that the router could take
 |Router LAN Activity |      RL     | 
 |Router Updates      |      RU     | 
 |*Router Protection* |      RP     |
-<p>(Table 1 - Action Categories)</p>
-<br>
+<caption>(Table 1 - Action Categories)</caption>
 
 **NOTE**: The category *Router Protection* and its actions have not been implemented.
 
@@ -140,6 +139,21 @@ For detailed information regarding the layout of the tables see THISDOCHERE.
 
 ### Configuration
 
-### "watch" VS "read"
+#### Database Tables
+
+There are SQL statment files in the `/sql` folder. They should be use to create and seed the "static" data tables.
+
+* `rlmonitor.sql` - creates the schema
+* `actions.sql` - create table and seed
+* `ipcats.sql` - create table and seed
+* `known.sql` - create table and seed with dummy data
+* `attacktypes.sql` - create table and seed
+* `macvendors.sql` - create table and seed with dummy data
+
+### Shell Script Files
+
+
+
+#### "watch" VS "read"
 
 
