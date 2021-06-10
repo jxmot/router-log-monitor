@@ -148,9 +148,11 @@ There are SQL statment files in the `/sql` folder and sub-folders. They should b
   * `rlmonitor.sql` - creates the schema
 
 * **`/sql/dyndata`**:
-  * `logentry.sql` - 
-  * `attacks.sql` - 
-  * 
+  * `logentry.sql` - main data table, contains parsed log entries. The table `logentry_bad` is also created and it will contain log entries that cannot be parsed.
+  * `attacks.sql` - contains all DOS attacks that were found in the log entries. That data exists here and in the `logentry` table.
+  * `lanaccess.sql` - contains all external accesses to internal IPs
+  * `dhcpip.sql` - contains all DHCP requests
+  * `wlanrejects.sql` - contains all failed attempts to connect via WiFi
 
 * **`/sql/staticdata`**:
   * `actions.sql` - create table and seed
