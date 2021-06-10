@@ -1,5 +1,5 @@
 select * from(
-    select count(ip) as invasion_qty,
+    select count(ip) as lanaccess_qty,
         ip,toport,hostname, 
         (cast(((max(tstamp) - min(tstamp)) / 1000) as UNSIGNED)) as epoch_dur, 
         floor(((max(tstamp) - min(tstamp)) / 1000) / 86400) as day_span,
@@ -10,7 +10,7 @@ select * from(
         DATE_FORMAT(FROM_UNIXTIME(max(tstamp) / 1000), '%Y/%m/%d') as last_date,
         DATE_FORMAT(FROM_UNIXTIME(max(tstamp) / 1000), '%T') as last_time,
         max(entrynumb) as last_entry
-    from rlmonitor.invasions where 
+    from rlmonitor.lanaccess where 
     known = 0 
     and 
     toport != 59018 
@@ -20,8 +20,8 @@ select * from(
 ) as tempdata 
 where
 -- adjust as needed
-invasion_qty > 1
+lanaccess_qty > 1
 -- where mod
 ;
--- invasions-lifetime-qty_gt.sql: identical to 'invasions-lifetime.sql', except that it 
--- can be filtered by a minimum value for 'invasion_qty'.
+-- lanaccess-lifetime-qty_gt.sql: identical to 'lanaccess-lifetime.sql', except that it 
+-- can be filtered by a minimum value for 'lanaccess_qty'.

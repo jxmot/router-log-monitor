@@ -1,9 +1,10 @@
 /*
-    Table for saving "RI" entry types: 
-
+    Table for saving "NA" entry types: 
+        * LAN access from remote
+        * UPnP set event
 
 */
-create table rlmonitor.invasions (
+create table rlmonitor.lanaccess (
     tstamp bigint(16) not null, 
 -- there can be duplicate time stamps for individual log 
 -- entries. The event TODs in the logs are measured in 

@@ -2,11 +2,11 @@
 
 module.exports = {
     rdefs: {
-        'invasions-lifetime' : {
+        'lanaccess-lifetime' : {
             getpage: true,
             title: ['LAN Access History','h3'],
             th: {
-                'invasion_qty':'Total',
+                'lanaccess_qty':'Total',
                 'ip':'IP Addr',
                 'toport':'Port #',
                 'hostname':'Host Name',
@@ -22,7 +22,7 @@ module.exports = {
                 'last_entry':''
             }
         },
-        'invasions-lifetime-qty_gt' : {
+        'lanaccess-lifetime-qty_gt' : {
             getpage: false,
             title: ['LAN Access History<br>(more than 1 event per IP)','h3'],
             thtop: {
@@ -32,7 +32,7 @@ module.exports = {
                 'lastevt':['Last Event',2]
             },
             th: {
-                'invasion_qty':'Total',
+                'lanaccess_qty':'Total',
                 'ip':'IP Addr',
                 'toport':'Port #',
                 'hostname':'Host Name',
@@ -48,7 +48,7 @@ module.exports = {
                 'last_entry':''
             }
         },
-        'invasions-lifetime-by_port' : {
+        'lanaccess-lifetime-by_port' : {
             getpage: false,
             title: ['LAN Access History<br>(ranked by port number)','h3'],
             thtop: {
@@ -58,7 +58,7 @@ module.exports = {
                 'lastevt':['Last Event',2]
             },
             th: {
-                'invasion_qty':'Total',
+                'lanaccess_qty':'Total',
                 'toport':'Port #',
                 // empty column heading, do not display
                 'epoch_dur':'',

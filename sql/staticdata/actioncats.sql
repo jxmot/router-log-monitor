@@ -6,7 +6,7 @@
     2 RI  Router Invasion
     3 RL  Router LAN Activity
     4 RU  Router Updates
-    5 NA  Network Activity
+    5 NA  Network Access
     6 RP  Router Protection
 */
 create table rlmonitor.actioncats (
