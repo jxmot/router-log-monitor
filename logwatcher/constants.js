@@ -7,7 +7,7 @@
 */
 module.exports = {
     // netlog category codes and action IDs
-    NA         : 'NA',  // Network Activity
+    NA         : 'NA',  // Network Access
     RA         : 'RA',  // Router Actions     
     RI         : 'RI',  // Router Invasion    
     RL         : 'RL',  // Router LAN Activity
