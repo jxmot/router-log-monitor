@@ -43,7 +43,9 @@ create table rlmonitor.macvendors (
     dbsavedStamp bigint(16) default null
 );
 
-
+/*
+    Seed data for testing
+*/
 insert into rlmonitor.macvendors 
 (macPrefix,company,address,country,updated,updatedStamp,dbsaved,dbsavedStamp)
 values
