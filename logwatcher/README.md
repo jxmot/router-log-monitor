@@ -1,6 +1,6 @@
 # Log Watcher
 
-This is part of the Router Log Monitor. And this part is responsible for reading and parsing log files, and Writing parsed entries to database tables.
+This is part of the Router Log Monitor. And this part is responsible for reading & parsing log files, and writing the parsed entries to database tables.
 
 ## Log Watcher Architecture Overview
 
@@ -107,7 +107,6 @@ This is what has been implemented *so far*:
 |USB device detached              |            |      RA     |
 |WLAN access rejected             |      Y     |      RI     |
 <p>(Table 3 - Implemented Actions)</p>
-<br>
 
 ### Event Usage
 
@@ -136,11 +135,152 @@ Here are the "static" data tables in the `rlmonitor` database:
 
 For detailed information regarding the layout of the tables see THISDOCHERE.
 
+* `logentry` - all parsed log entries
+* `logentry_bad` - any log entry that could not be parsed
+
+After a log file has been parsed, the following tables are populated with log entries that match the tables' criteria:
+
+* `attacks` - all DOS attacks
+* `lanaccess` - all LAN access from outside the local network
+* `dhcpip` - all DHCP events
+* `wlanrejects` - Wireless LAN access failures
+
 ## Running the Application
 
 ### Configuration
 
-#### Database Tables
+**`runlogopt.js`**
+```
+'use strict';
+module.exports = {
+    logfile:'./logs/logwatcher.log',
+    // 10 MiB file size, then roll over & archive
+    logsize:10485760
+};
+```
+
+**`watchopt.js`**
+```
+'use strict';
+// options and settings for logwatch.js and logread.js
+module.exports = {
+    path : './../logoutput/',
+    // log file names are: YYYYMMDD-HHMMSS-net.log
+    nameregexp: /^\d{8}-\d{6}-net\.log/g,
+    movebad : true,
+    mintstamp: 1523771032000,
+    delbad: true,
+    // used in logread.js, readdel has 
+    // priority over readmov and readren,
+    // and readmov has priority over readren
+    readdel: false,
+    readmov: true,
+    // NOTE: this is relative to "path", so things
+    // like "../folder/" will work. If the path does
+    // not exist it will be created. This will be
+    // added to 'path'.
+    movpath: 'oldlogs/',
+    // rename the file(s), renchar can be a string
+    // instead of a single character. It is added 
+    // to the start of the file name.
+    readren: false,
+    renchar: '_',
+    // only used in logread.js, leave set to 'true' 
+    // the 'false' setting is for debug purposes
+    readexit: true
+};
+```
+
+**`macinfocfg.js`**
+```
+// macinfocfg.js - configuration for MAC manufacturer 
+// look ups.
+// 
+// NOTE: You will need to get your own API key, place 
+// in a file - ./keys/_maclookupapp.key
+// 
+module.exports = {
+    // https://maclookup.app/
+    hostname: 'api.maclookup.app',
+    // for developer refernce, as named on maclookup.app
+    apikeyName: 'rlmonitor',
+    // API key
+    apikey: `${require('fs').readFileSync('./keys/_maclookupapp.key')}`,
+    // part of the URL
+    urlparts : [
+        '/v2/macs/',
+        '?apiKey='
+    ],
+    // Let's be "nice"...
+    useragent: 'rlmonitor application https://github.com/jxmot/router-log-monitor',
+    headeraccept: 'application/json',
+    // save when the API returns?
+    savemac: true
+};
+```
+
+**`example_dbcfg.js`**
+```
+'use strict';
+/* ************************************************************************ */
+/*
+    MySQL Connection Settings & Record Definition
+
+    For information on the contents of 'parms' see - 
+
+        https://www.npmjs.com/package/mysql#connection-options
+
+*/
+module.exports = {
+    // mysql 
+    parms: {
+        host     : 'localhost',
+        database : 'rlmonitor',
+        // add your info and save this file as 
+        // "_dbcfg.js"
+        user     : 'db_user_name',
+        password : 'db_user_password'
+    },
+    // the tables in our database, use tables[] and
+    // the indices below to retrieve the table names
+    tables : [
+        // static data tables
+        'actions',
+        'actioncats',
+        'ipcats',
+        'known',
+        'attacktypes',
+        'macvendors',
+        // dynamic data tables 
+        'logentry',
+        'logentry_bad',
+        'ipstats',
+        'invasions',
+        'attacks',
+        'wlanrejects',
+        'dhcpip'
+    ],
+    // static data table indices
+    TABLE_STATIC_BEGIN: 0,
+    TABLE_ACTIONS_IDX: 0,
+    TABLE_ACTIONCATS_IDX: 1,
+    TABLE_IPCATS_IDX: 2,
+    TABLE_KNOWN_IDX: 3,
+    TABLE_ATYPES_IDX: 4,
+    TABLE_MACVEND_IDX: 5,
+    TABLE_STATIC_END: 5,
+    // dynamic data table indices
+    TABLE_LOGENTRY_IDX: 6,
+    TABLE_LOGENTRYBAD_IDX: 7,
+    TABLE_IPSTATS_IDX: 8,
+    TABLE_LANACCESS_IDX: 9,
+    TABLE_ATTACKS_IDX: 10,
+    TABLE_WLANREJS_IDX: 11,
+    TABLE_DHCPIP_IDX: 12
+};
+```
+
+#### Database Table Creation and Seeding
 
 There are SQL statment files in the `/sql` folder and sub-folders. They should be use to create the database and tables, and create & seed the "static" data tables.
 
@@ -148,18 +288,18 @@ There are SQL statment files in the `/sql` folder and sub-folders. They should b
   * `rlmonitor.sql` - creates the schema
 
 * **`/sql/dyndata`**:
-  * `logentry.sql` - main data table, contains parsed log entries. The table `logentry_bad` is also created and it will contain log entries that cannot be parsed.
-  * `attacks.sql` - contains all DOS attacks that were found in the log entries. That data exists here and in the `logentry` table.
-  * `lanaccess.sql` - contains all external accesses to internal IPs
-  * `dhcpip.sql` - contains all DHCP requests
-  * `wlanrejects.sql` - contains all failed attempts to connect via WiFi
+  * `logentry.sql` - create table
+  * `attacks.sql` - create table
+  * `lanaccess.sql` -create table
+  * `dhcpip.sql` - create table
+  * `wlanrejects.sql` - create table
 
 * **`/sql/staticdata`**:
-  * `actions.sql` - create table and seed
-  * `actioncats.sql` - create table and seed
-  * `ipcats.sql` - create table and seed
+  * `actions.sql` - create table and seed data
+  * `actioncats.sql` - create table and seed data
+  * `ipcats.sql` - create table and seed data
   * `known.sql` - create table and seed with dummy data
-  * `attacktypes.sql` - create table and seed 
+  * `attacktypes.sql` - create table and seed data
   * `macvendors.sql` - create table and seed with dummy data
 
 ### Shell Script Files
