@@ -3,6 +3,8 @@
 module.exports = {
     path : './../logoutput/',
     // log file names are: YYYYMMDD-HHMMSS-net.log
+    // NOTE: the "net.log" portion must match the 
+    // 'outfile' setting in ../logcollector/appoptions.json
     nameregexp: /^\d{8}-\d{6}-net\.log/g,
     copybad : true,
     mintstamp: 1523771032000,
