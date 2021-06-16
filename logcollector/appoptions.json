@@ -1,5 +1,7 @@
 {
     "outpath":"../logoutput/",
+    "comment":"outfile must match part of 'nameregexp' in ../logwatcher/watchopt.js",
+    "outfile":"net.log",
     "delunk":false,
     "procdelay":0
 }
