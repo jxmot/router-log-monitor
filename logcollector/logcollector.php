@@ -9,6 +9,7 @@ require_once './rightnow.php';  // modified
 // load the application options
 $appopt = json_decode(file_get_contents('./appoptions.json'));
 define('_OUTPATH', $appopt->outpath);
+define('_OUTFILE', $appopt->outfile);
 // enable/disable the deletion of messages that do not have
 // the correct subject line
 define('_DELUNKOWN',$appopt->delunk);
