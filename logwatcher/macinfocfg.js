@@ -2,7 +2,7 @@
 // look ups.
 // 
 // NOTE: You will need to get your own API key, place 
-// in a file - ./keys/_maclookupapp.key
+// it in a file named - ./keys/_maclookupapp.key
 // 
 module.exports = {
     // https://maclookup.app/
