@@ -149,7 +149,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
                     if(err === null) {
                         if(!logmute) log(`logToDB(): success - ${target} ${JSON.stringify(data)}`);
                         // are "bad" records to be handled?
-                        if(wfile.movebad === true) {
+                        if(wfile.copybad === true) {
                             // currently, only one indicator to use to determine 
                             // if the log entry is bad...
                             // if the time stamp is BEFORE the "minimum" time 

@@ -32,7 +32,7 @@ module.exports = (function(wevts, pevts, _log) {
         path: opt.path,
         filename: '',
         now: 0,
-        movebad: opt.movebad,
+        copybad: opt.copybad,
         mintstamp: opt.mintstamp,
         delbad: opt.delbad
     };
@@ -108,7 +108,7 @@ module.exports = (function(wevts, pevts, _log) {
                                         path:wqueue[filename].path,
                                         filename:filename,
                                         size:stats.size,
-                                        movebad:wqueue[filename].movebad,
+                                        copybad:wqueue[filename].copybad,
                                         mintstamp:wqueue[filename].mintstamp,
                                         delbad:wqueue[filename].delbad
                                    });
@@ -172,6 +172,8 @@ module.exports = (function(wevts, pevts, _log) {
                     var moveto = makePath(opt.path+opt.movpath)+path.sep;
                     fs.renameSync(opt.path+wfile.filename, moveto+wfile.filename);
                     log(`LOG_DBSAVED MOVED from [${opt.path+wfile.filename}] to [${moveto+wfile.filename}]`);
+                } else {
+                    log(`LOG_DBSAVED DONE file left alone [${opt.path+wfile.filename}]`);
                 }
             }
         }

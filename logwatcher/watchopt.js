@@ -4,7 +4,7 @@ module.exports = {
     path : './../logoutput/',
     // log file names are: YYYYMMDD-HHMMSS-net.log
     nameregexp: /^\d{8}-\d{6}-net\.log/g,
-    movebad : true,
+    copybad : true,
     mintstamp: 1523771032000,
     delbad: true,
     // used in logread.js, readdel has 

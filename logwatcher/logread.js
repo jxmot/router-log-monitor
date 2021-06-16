@@ -44,7 +44,7 @@ module.exports = (function(wevts, pevts, _log) {
         filename = '';
         now = 0;
         size = 0;
-        movebad = false;            // opt.movebad
+        copybad = false;            // opt.copybad
         mintstamp = 0;              // opt.mintstamp
         delbad = false;             // opt.delbad
     };
@@ -85,7 +85,7 @@ module.exports = (function(wevts, pevts, _log) {
             readit.filename = fname,
             readit.now = Date.now();
             readit.size = stats.size;
-            readit.movebad = opt.movebad;
+            readit.copybad = opt.copybad;
             readit.mintstamp = opt.mintstamp;
             readit.delbad = opt.delbad;
             fready.push(readit);
