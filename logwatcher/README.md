@@ -162,15 +162,14 @@ module.exports = {
 };
 ```
 
-<details><summary>
-
 **`watchopt.js`**
-
-</summary>
-<p>
 
 Option settings for the `logwatcher` applciation:
 
+<details><summary>
+See File Contents
+</summary>
+<p>
 
 ```
 'use strict';
@@ -237,6 +236,12 @@ After the log file is read and parsed there are options to determine how that fi
 * "Rename file" - The filename is prepended with the character (or string) in `rechar` and the log file is left in its current location 
 
 **`macinfocfg.js`**
+
+<details><summary>
+See File Contents
+</summary>
+<p>
+
 ```
 // macinfocfg.js - configuration for MAC manufacturer 
 // look ups.
@@ -263,8 +268,15 @@ module.exports = {
     savemac: true
 };
 ```
+</p>
+</details>
 
 **`example_dbcfg.js`**
+
+<details><summary>
+See File Contents
+</summary>
+<p>
 ```
 'use strict';
 /* ************************************************************************ */
@@ -324,6 +336,8 @@ module.exports = {
     TABLE_DHCPIP_IDX: 12
 };
 ```
+</p>
+</details>
 
 #### Database Table Creation and Seeding
 
