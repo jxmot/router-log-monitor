@@ -10,8 +10,6 @@ This is part of the Router Log Monitor. And this part is responsible for reading
 
 ## Design Details Overview
 
-
-
 ### Anatomy of a Log Entry
 
 The logging provided by the Netgear N6400 is not the best, or the worst. And I'm sure that when the original engineer designed it they had no intent of it being parsed. 
@@ -167,7 +165,7 @@ module.exports = {
 Option settings for the `logwatcher` applciation:
 
 <details><summary>
-See File Contents
+<strong>See File Contents</strong>
 </summary>
 <p>
 
@@ -237,8 +235,10 @@ After the log file is read and parsed there are options to determine how that fi
 
 **`macinfocfg.js`**
 
+Configuration for looking up MAC addresses and retrieving vendor information via an API:
+
 <details><summary>
-See File Contents
+<strong>See File Contents</strong>
 </summary>
 <p>
 
@@ -271,12 +271,15 @@ module.exports = {
 </p>
 </details>
 
+If `savemac` is `true` then any MAC found via the API will be saved in the `macvendors` table.
+
 **`example_dbcfg.js`**
 
 <details><summary>
-See File Contents
+<strong>See File Contents</strong>
 </summary>
 <p>
+
 ```
 'use strict';
 /* ************************************************************************ */
@@ -339,6 +342,8 @@ module.exports = {
 </p>
 </details>
 
+The `parms` object is passed to `mysql`, and the rest is a list table names and usable indices.
+
 #### Database Table Creation and Seeding
 
 There are SQL statment files in the `/sql` folder and sub-folders. They should be use to create the database and tables, and create & seed the "static" data tables.
@@ -363,8 +368,49 @@ There are SQL statment files in the `/sql` folder and sub-folders. They should b
 
 ### Shell Script Files
 
+There are two script files, one for starting and the other for stopping the application. However, since my target platform runs Busybox the "stop" script is written for it.
 
+**`run.sh`**
 
-#### "watch" VS "read"
+This script will run the Log Watcher application *in the background* using `nohup`:
 
+```
+#!/bin/sh
+rm nohup.out
+# "watch" mode
+nohup node rlmonitor.js&
+echo "$(ps -ef | grep "[0-9] node rlmonitor.js")"
+exit 0
+```
+
+**`sand.sh`** (*Search And Destroy*)
+
+```
+#
+# NOTE: On the AS1002T NAS Busybox is used, so things
+# are a little diffenent from regular bash.
+# https://www.busybox.net/
+#
+# We will grep the output of the ps command and look
+# for strings that match the node instance we want.
+# In this case it is the one running rlmonitor.js. And
+# the output from the command will be placed into
+# separate variables ($1,$2, etc..). The one we want
+# is $1. It contains the PID.
+# 
+# The positional parameters are set to the arguments,
+# which means that the output - 
+#       26213 admin      0:04 node rlmonitor.js
+# is delimited by spaces and each part is loaded into
+# an argument.
+set -- $(ps -ef | grep "[0-9] node rlmonitor.js")
+kill -9 "$1"
+exit 0
+```
+
+### "watch" VS "read"
+
+By default, the Log Watcher will be in "watch" mode. But it can be run in "read" mode just by adding an argument:
+
+`node rlmonitor.js read`
 
