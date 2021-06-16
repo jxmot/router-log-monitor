@@ -150,6 +150,9 @@ After a log file has been parsed, the following tables are populated with log en
 ### Configuration
 
 **`runlogopt.js`**
+
+This configures the run-time logging. See the NPM package [simple-text-log](<https://www.npmjs.com/package/simple-text-log>) for details.
+
 ```
 'use strict';
 module.exports = {
@@ -160,14 +163,19 @@ module.exports = {
 ```
 
 **`watchopt.js`**
+
+Option settings for the `logwatcher` applciation:
+
 ```
 'use strict';
 // options and settings for logwatch.js and logread.js
 module.exports = {
     path : './../logoutput/',
     // log file names are: YYYYMMDD-HHMMSS-net.log
+    // NOTE: the "net.log" portion must match the 
+    // 'outfile' setting in ../logcollector/appoptions.json
     nameregexp: /^\d{8}-\d{6}-net\.log/g,
-    movebad : true,
+    copybad : true,
     mintstamp: 1523771032000,
     delbad: true,
     // used in logread.js, readdel has 
@@ -190,6 +198,35 @@ module.exports = {
     readexit: true
 };
 ```
+
+For handling unparsable ("bad") log entries the following options are available:
+
+* `copybad` - when `true` bad entries are copy into a separate database table for later examination
+* `delbad` - when `true` bad entries are deleted from the log entry table.
+
+| Bad Log Entry Disposition  |copybad| delbad|
+|----------------------------|:-----:|:-----:|
+| Copy to "bad entry" table  | true  | false |
+| Copy & Delete              | true  |  true |
+| Leave "bad entry" in table | false | false |
+<p>(Table 4 - Bad Log Entry Disposition)</p>
+
+**NOTE**: Each time a log entry is parsed an "entry sequence number" is created and save with that entry. This also includes "bad" log entries. This means that if bad entries are 
+deleted then there will be a gap in the sequence numbers found in the log entry table. This is intentional, and can be used for detecting router logging problems.
+
+After the log file is read and parsed there are options to determine how that file will be handled further:
+
+
+|        Operation         |readdel|readmov|readren|
+|--------------------------|:-----:|:-----:|:-----:|
+| Leave file "as is"       | false | false | false |
+| Delete File              |  true |  N/A  |  N/A  |
+| Move file into `movpath` | false |  true |  N/A  |
+| Rename file              | false | false |  true |
+<p>(Table 5 - Log File Handling Options)</p>
+
+* "Move file into `movpath`" - The destination path is `path`+`movpath`
+* "Rename file" - The filename is prepended with the character (or string) in `rechar` and the log file is left in its current location 
 
 **`macinfocfg.js`**
 ```
