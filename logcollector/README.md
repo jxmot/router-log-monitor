@@ -33,12 +33,15 @@ There are two JSON formatted files used for configuration:
 ```
 {
     "outpath":"../logoutput/",
+    "comment":"outfile must match part of 'nameregexp' in ../logwatcher/watchopt.js",
+    "outfile":"net.log",
     "delunk":false,
     "procdelay":0
 }
 ```
 
 * `"outpath"` - The folder path to where the router log files will be saved.
+* `"outfile"` - This part of the log file name must match `nameregexp` in `../logwatcher/watchopt.js`
 * `"delunk"` - When false, "unknown"(*not from the router*) email messages will be marked as "seen". When true, unknown messages will be deleted.
 * `"procdelay"` - The number of seconds to delay in between creating log files. Unless there is a backlog of messages to read leave this at `0`. For backlogs, values like 2 or 3 work well. Adjust it to fit your run-time environment.
 
