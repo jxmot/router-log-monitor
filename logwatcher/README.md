@@ -162,9 +162,15 @@ module.exports = {
 };
 ```
 
+<details><summary>
+
 **`watchopt.js`**
 
+</summary>
+<p>
+
 Option settings for the `logwatcher` applciation:
+
 
 ```
 'use strict';
@@ -198,10 +204,12 @@ module.exports = {
     readexit: true
 };
 ```
+</p>
+</details>
 
 For handling unparsable ("bad") log entries the following options are available:
 
-* `copybad` - when `true` bad entries are copy into a separate database table for later examination
+* `copybad` - when `true` bad entries are copied into a separate database table for later examination
 * `delbad` - when `true` bad entries are deleted from the log entry table.
 
 | Bad Log Entry Disposition  |copybad| delbad|
@@ -211,7 +219,7 @@ For handling unparsable ("bad") log entries the following options are available:
 | Leave "bad entry" in table | false | false |
 <p>(Table 4 - Bad Log Entry Disposition)</p>
 
-**NOTE**: Each time a log entry is parsed an "entry sequence number" is created and save with that entry. This also includes "bad" log entries. This means that if bad entries are 
+**NOTE**: Each time a log entry is parsed an "entry sequence number" is created and saved with that entry, including "bad" log entries. This means that if bad entries are 
 deleted then there will be a gap in the sequence numbers found in the log entry table. This is intentional, and can be used for detecting router logging problems.
 
 After the log file is read and parsed there are options to determine how that file will be handled further:
