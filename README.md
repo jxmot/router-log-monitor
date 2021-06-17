@@ -69,6 +69,10 @@ This is the folder structure of this project:
   * **`logoutput/oldlogs`** :
 * **`router-log-monitor/sql`** : SQL files containing various statements for creating tables and seeding data
 
+## Downloading this Repository
+
+It is **strongly recommended** that you download a release instead of cloning this repository. Releases > 1.0.0 should be OK for use, anything older than that is experimental and good results are not guaranteed.
+
 # Additional Documentation
 
 * [Log Collector README](./logcollector/README.md)

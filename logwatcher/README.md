@@ -10,6 +10,7 @@ This is part of the Router Log Monitor. And this part is responsible for reading
 
 ## Design Details Overview
 
+
 ### Anatomy of a Log Entry
 
 The logging provided by the Netgear N6400 is not the best, or the worst. And I'm sure that when the original engineer designed it they had no intent of it being parsed. 

@@ -128,7 +128,7 @@ Messages that have been marked for "deletion" will be removed when the applicati
 
 **TIP**: Save your configuration file with a name beginning with an underscore ('_'). The `.gitignore` file in the parent directory of this repository will "hide" it from GitHub so that there is less chance of it accidentally getting checked in.
 
-### CRON
+## CRON
 
 This will run the logcollector at 00:15am every day:
 
@@ -147,12 +147,42 @@ My Linux platform is a NAS running BusyBox so my script may not work for you. Bu
 # of once per day.
 /usr/builtin/bin/php /volume1/NodeSrv/apps/rlmonitor/logcollector/logcollector.php
 ```
-### Command Line
+## Command Line
 
 Run it with the following command from within the `/logcollector` folder:
 
 `php logcollector.php`
 
-### Console Output
+## Console Output
 
+
+## IMAP Utility
+
+While I was working on this part of the Router Log Monitor I needed to mark a bunch of messages in a "test" mailbox that I was using. And it was tedious marking and unmarking messages "by hand". So I created the "All Mark IMAP" utility. It can mark messages as "seen", "unseen", "for deletion", "deleted".
+
+**Usage**:
+
+`>php allmarkimap.php [-x] [-d -s] [-D -S]`
+
+**Where**:
+
+**`-x`**      debug mode, no changes made to the mailbox and there is some stuff sent to the console
+
+**`-v`**      verbose mode, tells you more than you probably want to know
+
+The following applies to all messages that are in the mailbox specified in ./imapaccnt.json.
+
+**`-d`**      all deleted messages, unmark for deletion
+**`-u`**      all seen messages, mark as unseen
+
+**`-D`**      mark all messages as deleted
+**`-s`**      mark all messages as seen
+
+**Examples**:
+
+Show this usage information:
+`>php allundelread.php`
+
+Enable debug mode:
+`>php allundelread.php -x`
 
