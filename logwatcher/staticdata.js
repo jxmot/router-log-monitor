@@ -145,7 +145,7 @@ module.exports = (function(pevts, _log)  {
                 });
             }, 25);
         } else {
-            log(`readAll() - ERROR database not open!`);
+            log(`readAll(): ERROR database not open!`);
         }
     };
 
@@ -191,10 +191,12 @@ module.exports = (function(pevts, _log)  {
             // prep the mac string if necessary....
             // 11:22:33:44:55:66 -> 112233445566 -> 112233
             let macPrefix = (mac.includes(':') ? mac.replace(/:/g,'').substr(0,6) : mac.substr(0,6));
+            log(`getMACVendor(): macPrefix = ${macPrefix}`);
             // find it....
             for(var ix = 0; ix < staticdata.macvendors.length; ix++) {
                 if(macPrefix === staticdata.macvendors[ix].macPrefix) {
                     // found!
+                    log(`getMACVendor(): Found MAC - ${JSON.stringify(staticdata.macvendors[ix])}`);
                     return staticdata.macvendors[ix];
                 }
             }
@@ -239,33 +241,34 @@ module.exports = (function(pevts, _log)  {
                 // create an epoch value from the mac info
                 row.updatedStamp = new Date(row.updated).getTime();
                 // update last check/save...
-                row.dbsavedStamp = Date.now();
+                //row.dbsavedStamp = Date.now();
                 row.dbsaved = tstamp('YYYY-MM-DD');
                 // should be the start of the day (midnight GMT)
                 row.dbsavedStamp = new Date(row.dbsaved).getTime();
     
                 // save a local copy
                 staticdata.macvendors.push(row);
+                log(`saveMACVendor(): pushed ${JSON.stringify(row)}`);
                 // write the macinfo to our database...
                 let mtable = `${dbcfg.parms.database}.${dbcfg.tables[dbcfg.TABLE_MACVEND_IDX]}`;
                 dbobj.writeRow(mtable, row, (target, datawr, insertId, err) => {
                     if(err === null) {
-                        if(!logmute) log(`saveMACVendor(${datawr.macPrefix}) - saved in ${target}`);
+                        log(`saveMACVendor(${datawr.macPrefix}) - saved in ${target}`);
                     } else {
                         // duplicates are not an error, announce them but take no action
                         if(err.code === 'ER_DUP_ENTRY') {
-                            if(!logmute) log(`saveMACVendor(${datawr.macPrefix}) - Duplicate = ${err.sqlMessage}`);
+                            if(!logmute) log(`saveMACVendor(${datawr.macPrefix}): Duplicate = ${err.sqlMessage}`);
                         } else {
-                            log(`saveMACVendor() - ERROR err = ${err.message}`);
+                            log(`saveMACVendor(): ERROR err = ${err.message}`);
                             // test for and handle recoverable errors...
                         }
                     }
                 });
             } else {
-                if(!logmute) log(`saveMACVendor(${macinfo.macPrefix}) - already saved`);
+                if(!logmute) log(`saveMACVendor(${macinfo.macPrefix}): already saved`);
             }
         } else {
-            log(`saveMACVendor() - ERROR database not open!`);
+            log(`saveMACVendor(): ERROR database not open!`);
         }
     };
 
