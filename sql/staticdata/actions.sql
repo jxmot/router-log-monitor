@@ -13,6 +13,7 @@
     RA Time synchronized with NTP server
     RI WLAN access rejected
     NA UPnP set event
+    RI Self2WAN ICMP type b Detected!
 */
 create table rlmonitor.actions (
     actionid integer(4) not null,
@@ -33,4 +34,6 @@ values
  (8,"LAN access from remote","NA"),
  (9,"Time synchronized with NTP server","RA"),
 (10,"WLAN access rejected","RI"),
-(11,"UPnP set event","NA");
+(11,"UPnP set event","NA"),
+(12,"Self2WAN ICMP type b Detected!","RI");
+
