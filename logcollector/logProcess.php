@@ -56,6 +56,7 @@ function logProcess($mnum, $hdate = null) {
     // would be the spot to reverse it to old -> new
     $neworder = array_reverse($lines);
     // save the file
-    writefile(_OUTPATH."{$filestamp._OUTFILE}", implode("\n",array_filter($neworder)), 'w');
+    $ofile = _OUTPATH.$filestamp._OUTFILE;
+    writefile("{$ofile}", implode("\n",array_filter($neworder)), 'w');
 }
 ?>
