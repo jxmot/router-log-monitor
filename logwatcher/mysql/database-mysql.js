@@ -26,6 +26,24 @@ module.exports = (function(_log) {
         if(logenable) _log(`${scriptName} - ${payload}`);
     };
 
+
+    const fs = require('fs');
+
+    function getSQLFile(file) {
+        let sql;
+        try {
+            fs.accessSync(file, fs.constants.F_OK);
+            sql = fs.readFileSync(file, 'utf8');
+        } catch(err) {
+            if(err.code === 'ENOENT') {
+                log(`${file} does not exist`);
+            } else {
+                log(`${file} ${err.code} ${err.message}`);
+            }
+        }
+        return sql;
+    };
+
     // gives module user access to config
     database.getDBCcfg = function() {
         return dbcfg;
@@ -123,6 +141,7 @@ module.exports = (function(_log) {
             connection.query('insert into '+table+' set ?', record, function(error, result) {
                 if(error) {
                     log(`database.writeRow() - ERROR query: [${error.message} -- ${error.code} -- ${error.errno}]`);
+                    log(`database.writeRow() - ERROR query: [${table} -- ${JSON.stringify(record)}]`);
 //                    _writeCallBack(false, table, record, error);
                     _writeCallBack(table, record, null, error);
                 } else {
@@ -283,6 +302,31 @@ module.exports = (function(_log) {
             _countCallBack(table, col, null, {errno:true, code:0, message:'database not open'});
         }
     };
+
+    database.runSQL = function(file, callme) {
+        let cb = callme;
+        let qry;
+        if(this.dbopen === true) {
+            qry = getSQLFile(file);
+            if(qry) {
+                connection.query(qry, function(error, result) {
+                    if(error) {
+                        log(`database.runSQL() - ERROR query: [${error.message}  ${error.code}  ${error.errno}]`);
+                        cb(null, error);
+                    } else {
+                        cb(result, null);
+                    }
+                });
+            } else {
+                let err = {
+                    message: `cannot open/read ${file}`
+                };
+                log(`database.runSQL() - ERROR query: [${error.message}]`);
+                cb(null, err);
+            }
+        }
+        return qry;
+    }
 
     log(`init`);
     return database;
