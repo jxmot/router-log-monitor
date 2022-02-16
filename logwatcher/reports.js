@@ -60,11 +60,16 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 // start the exit-watchdog if not already started
 
             log(`reporting on data from ${wfile.start} to ${wfile.stop}`);
-            reportActions(constants.LAN_ACC,  0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.DOS_ATT,  0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.DHCP_IP,  0, {start:wfile.start,stop:wfile.stop});
-            log(`done reporting on data`);
+            reportActions(constants.LAN_ACC,   0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DOS_ATT,   0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.WLAN_REJ,  0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DHCP_IP,   0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.INET_CONN, 0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.INET_DCONN,0, {start:wfile.start,stop:wfile.stop});
+/*
+            reportActions(constants.DYN_DNS,   0, {start:wfile.start,stop:wfile.stop});
+*/
+            log(`LOG_DBSAVED: done reporting on data`);
         }
     });
 
