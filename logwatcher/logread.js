@@ -66,10 +66,14 @@ module.exports = (function(wevts, pevts, _log) {
 
     // sort the list, oldest -> newest(by file name)
     var fsort = [];
-    if(flist.length > 1 ) {
+    if(flist.length > 0 ) {
         fsort = flist.sort((a, b) => {
             return a < b;
         });
+    } else {
+        log(`NO log files found, exiting now...`);
+        console.log(`NO log files found, exiting now...`);
+        process.exit(0);
     }
 
     // create an array of objects that describe the log file,
@@ -116,14 +120,15 @@ module.exports = (function(wevts, pevts, _log) {
                     fsort.forEach((file, idx) => {
                         fs.renameSync(opt.path+file, moveto+file);
                     });
-                    log(`readEnd(): moved all log files to ${moveto}.`);
+                    log(`readEnd(): moved all log files to [${moveto}]`);
                 }
             }
         }
         // all done! exit?
         if(opt.readexit === true) {
             log(`readEnd(): exiting now...`);
-            process.exit(0);
+            console.log(`readEnd(): exiting now...`);
+//            process.exit(0);
         }
     };
 
