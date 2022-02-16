@@ -32,10 +32,11 @@ module.exports = {
         'logentry',
         'logentry_bad',
         'ipstats',
-        'invasions',
+        'lanaccess',
         'attacks',
         'wlanrejects',
-        'dhcpip'
+        'dhcpip',
+        'inetconn'
     ],
     // static data table indices
     TABLE_STATIC_BEGIN: 0,
@@ -53,6 +54,7 @@ module.exports = {
     TABLE_LANACCESS_IDX: 9,
     TABLE_ATTACKS_IDX: 10,
     TABLE_WLANREJS_IDX: 11,
-    TABLE_DHCPIP_IDX: 12
+    TABLE_DHCPIP_IDX: 12,
+    TABLE_INETCONN_IDX: 13
 };
 
