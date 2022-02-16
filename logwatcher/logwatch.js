@@ -8,18 +8,19 @@
 */
 module.exports = (function(wevts, pevts, _log) {
     // set up run-time logging
-    var path = require('path');
-    var scriptName = path.basename(__filename);
+    const path = require('path');
+    const scriptName = path.basename(__filename);
     function log(payload) {
         _log(`${scriptName} - ${payload}`);
     };
 
-    var logmute = true;
+    // some run-time log messages can be muted
+    const logmute = false;
     log(`init`);
 
     // configure the path to the watched folder
     const opt = require('./watchopt.js');
-    log(`watching in ${opt.path}`);
+    log(`watching for log files in ${opt.path}`);
 
     // needed for fs.watch(), fs.statSync(), and
     // fs.accessSync()
@@ -31,7 +32,7 @@ module.exports = (function(wevts, pevts, _log) {
         path: opt.path,
         filename: '',
         now: 0,
-        movebad: opt.movebad,
+        copybad: opt.copybad,
         mintstamp: opt.mintstamp,
         delbad: opt.delbad
     };
@@ -107,7 +108,7 @@ module.exports = (function(wevts, pevts, _log) {
                                         path:wqueue[filename].path,
                                         filename:filename,
                                         size:stats.size,
-                                        movebad:wqueue[filename].movebad,
+                                        copybad:wqueue[filename].copybad,
                                         mintstamp:wqueue[filename].mintstamp,
                                         delbad:wqueue[filename].delbad
                                    });
@@ -142,6 +143,7 @@ module.exports = (function(wevts, pevts, _log) {
         }
     };
 
+    // recursively create a path
     function makePath(pathname) {
         const __dirname = path.resolve();
         // Remove leading directory markers, and remove ending /file-name.extension
@@ -170,6 +172,8 @@ module.exports = (function(wevts, pevts, _log) {
                     var moveto = makePath(opt.path+opt.movpath)+path.sep;
                     fs.renameSync(opt.path+wfile.filename, moveto+wfile.filename);
                     log(`LOG_DBSAVED MOVED from [${opt.path+wfile.filename}] to [${moveto+wfile.filename}]`);
+                } else {
+                    log(`LOG_DBSAVED DONE file left alone [${opt.path+wfile.filename}]`);
                 }
             }
         }

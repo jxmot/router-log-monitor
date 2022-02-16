@@ -40,10 +40,10 @@ module.exports = (function(_pevts, _log)  {
         // abort all reports?
     });
 
-    pevts.on('REPORTREQ', (reportid, readResp, res) => {
-        log(`REPORTREQ: reportid = ${reportid}`);
+    pevts.on('REPORTREQ', (report, readResp, res) => {
+        log(`REPORTREQ: report = ${JSON.stringify(report)}`);
         if(dbopen = true) {
-            dbobj.runSQL(`./sql/${reportid}.sql`, (data, err) => {
+            dbobj.runSQL(`./sql/${report.id}.sql`, (data, err) => {
                 if(!err) {
                     log(`REPORTREQ: data found`);
 // NOTE: require() does caching of modules, info:
@@ -60,9 +60,9 @@ module.exports = (function(_pevts, _log)  {
                         return true;
                     });
                     // let's get a fresh one...
-                    let report = require('./reptablegen.js')(reportid, data);
+                    let rep = require('./reptablegen.js')(report.id, data);
                     // generate the HTML table and execute the callback...
-                    const table = report.getReportTable();
+                    const table = rep.getReportTable(report.page);
                     readResp(table, res);
                 } else readResp(null, res);
             }); 

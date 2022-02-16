@@ -18,7 +18,7 @@ if(!defined('_IMAPSRV') || !defined('_MAILBOX')) {
 // marked for deletion before we read them.
 if((defined('_READONLY') && _READONLY === false) &&
    (defined('_EXPUNGE') && _EXPUNGE === true) &&
-   (defined('_EXPWHERE') && _EXPWHERE === 'readbegin')) {
+   (defined('_EXPWHEN') && _EXPWHEN === 'readbegin')) {
         imap_expunge(_MAILBOX);
 }
 
@@ -56,7 +56,7 @@ for($num = 1;$num <= $mcount; $num++) {
 // Is expungement enabled?
 if((defined('_READONLY') && _READONLY === false) &&
    (defined('_EXPUNGE') && _EXPUNGE === true) &&
-   (defined('_EXPWHERE') && _EXPWHERE === 'readend')) {
+   (defined('_EXPWHEN') && _EXPWHEN === 'readend')) {
         imap_expunge(_MAILBOX);
 }
 ?>

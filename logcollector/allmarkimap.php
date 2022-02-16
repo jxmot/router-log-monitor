@@ -56,6 +56,7 @@ if(isset($opts['s'])) {
     else $dosee = true;
 }
 
+// "usage" will be shown if there are no args
 if(($undel === false) && ($unsee === false) &&
    ($dodel === false) && ($dosee === false)) {
     echo file_get_contents('./allmarkimap.txt');
@@ -82,7 +83,7 @@ echoit(rightnow('log')." - {$mbox}\n\n");
 $mailbox = imap_open($mbox, $accnt->login, $accnt->pword);
 // check for success...
 if($mailbox === false) {
-    echo rightnow('log') . " - allundelread.php: Failed connection to server\n";
+    echo rightnow('log') . " - Failed connection to server\n";
     exit(0);
 }
 
@@ -139,7 +140,7 @@ for($num = 1;$num <= $mcount; $num++) {
 }
 // done, close the connection
 imap_close(_MAILBOX);
-echo rightnow('log') . " - allundelread.php: complete, normal exit\n";
+echo rightnow('log') . " - complete, normal exit\n";
 exit(0);
 
 // The following calls do NOT work:

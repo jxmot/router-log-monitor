@@ -17,10 +17,21 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         _log(`${scriptName} - ${payload}`);
     };
 
+    var logmute = false;
+    log(`init`);
+
+    /* ****************************************************
+        This module uses the database. We will keep 
+        track of the database state (open or closed) 
+        and react to the state change.
+    */
+    // database variables
     var dbopen = false;
     var dbobj = {};
     var dbcfg = {};
 
+    // when the database is open and ready we can 
+    // create report tables
     pevts.on('DB_OPEN', (_dbobj) => {
         if(_dbobj.state === true) {
             dbopen = true;
@@ -32,27 +43,33 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         }
     });
 
+    // database has been closed, change state and clear 
+    // objects and data...
     pevts.on('DB_CLOSED', (_dbobj) => {
         dbopen = false;
         dbobj = {};
     });
 
-    var logmute = true;
-    log(`init`);
-
     pevts.on('LOG_PROCESSED', (wfile) => {
-        log(`last processed file: ${wfile.path}${wfile.filename}`);
+        log(`LOG_PROCESSED: last processed file: ${wfile.path}${wfile.filename}`);
     });
 
     pevts.on('LOG_DBSAVED', (wfile) => {
-        log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
+        log(`LOG_DBSAVED: log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
+// start the exit-watchdog if not already started
+
             log(`reporting on data from ${wfile.start} to ${wfile.stop}`);
-            reportActions(constants.LAN_ACC,  0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.DOS_ATT,  0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.WLAN_REJ, 0, {start:wfile.start,stop:wfile.stop});
-            reportActions(constants.DHCP_IP,  0, {start:wfile.start,stop:wfile.stop});
-            log(`done reporting on data`);
+            reportActions(constants.LAN_ACC,   0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DOS_ATT,   0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.WLAN_REJ,  0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.DHCP_IP,   0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.INET_CONN, 0, {start:wfile.start,stop:wfile.stop});
+            reportActions(constants.INET_DCONN,0, {start:wfile.start,stop:wfile.stop});
+/*
+            reportActions(constants.DYN_DNS,   0, {start:wfile.start,stop:wfile.stop});
+*/
+            log(`LOG_DBSAVED: done reporting on data`);
         }
     });
 
@@ -60,6 +77,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         return staticdata.isKnown(row[col], col);
     };
 
+    /* ****************************************************
+        do a reverse DNS on external IP addresses
+    */
     const dns = require('dns');
     function updateHostname(table, datarow) {
         // isolate from the arg, so that we don't interfere with clean up
@@ -68,7 +88,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         // host lookup & update the row
         dns.reverse(updrow.ip, (err, hosts) => {
             if(err) {
-                log(`updateHosts(): dns.reverse() ${err.toString()}`);
+                if(!logmute) log(`updateHostname(): dns.reverse() ${err.toString()}`);
                 hosts = [];
                 hosts.push(`${err.code} - ${err.hostname}`);
             }
@@ -84,6 +104,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             }
 
             if(updrow.hostname !== null) {
+                if(!logmute) log(`updateHostname(): hostname = ${updrow.hostname}`);
                 // update the row...
                 dbobj.updateRows(table, {hostname:updrow.hostname}, `entrynumb = ${updrow.entrynumb}`, (target, result, err) => {
                     if(err !== null) {
@@ -97,9 +118,24 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         });
     };
 
+    /* ****************************************************
+        MAC Manufacturer Look UP 
+
+        The "free" service is sufficient for our purposes,
+        more info at - 
+            https://maclookup.app/api-v2/rate-limits
+
+        A good attempt is made to limit the number of 
+        API hits. As MAC addresses are found via the API 
+        they're saved in a database table. Then when a 
+        MAC manufacturer is needed the database is searched
+        first, if found there then no call to the API is 
+        needed.
+    */
     const https = require('https');
     const mcfg = require('./macinfocfg.js');
 
+    // get MAC info via the API
     function getMACInfoAPI(mac, callback) {
         let opt = {
             hostname: mcfg.hostname,
@@ -138,7 +174,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         });
 
         req.on('error', (err) => {
-            log(`getMACInfoAPI(): ERROR - ${err.message} - ${opt}`);
+            log(`getMACInfoAPI(): ERROR - ${err.message} - ${JSON.stringify(opt)}`);
             callback(true, err.message);
         }); 
     
@@ -146,6 +182,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         req.end();
     };
 
+    // get MAC info, this function is called first. 
     function getMACInfo(mac, callback) {
         // first, try to find the mac in staticdata.macvendors...
         let macv = staticdata.getMACVendor(mac);
@@ -159,37 +196,48 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         return macv;
     };
 
-    function updbMACMFR(table, rowdata) {
+    // update our MAC info database table
+    function updbMAC(table, rowdata) {
         // update the row...
         dbobj.updateRows(table, {macmfr:rowdata.macmfr}, `entrynumb = ${rowdata.entrynumb}`, (target, result, err) => {
             if(err !== null) {
-                log(`updbMACMFR(): ERROR err = ${err.message}`);
+                log(`updbMAC(): ERROR err = ${err.message}`);
                 process.exit(0);
             } else {
-                if(!logmute) log(`updbMACMFR(): SUCCESS = ${result}  entrynumb = ${rowdata.entrynumb}`);
+                if(!logmute) log(`updbMAC(): SUCCESS = ${result}  entrynumb = ${rowdata.entrynumb}`);
             }
         });
     }
 
+    // update the log entry's MAC information...
     function updateMACMfr(table, datarow) {
         // isolate from the arg, so that we don't interfere with clean up
         let updrow = JSON.parse(JSON.stringify(datarow));
-
         // look up MAC.... 
         //      check our local database first (staticdata)
         let macv = getMACInfo(updrow.mac, (err, data) => {
-            // had to search the API, found and updated
-            // static data and database
-            updrow.macmfr = JSON.parse(data).company;
-            updbMACMFR(table, updrow);
+            if(err === false) {
+                // had to search the API, found and updated
+                // static data and database
+                updrow.macmfr = JSON.parse(data).company;
+                updbMAC(table, updrow);
+            } else {
+                log(`updateMACMfr(): ERROR - ${table} -- ${JSON.stringify(updrow)}`)
+            }
         });
-        if(macv !== 0) {
+        if(macv) {
             // on return, update table
             updrow.macmfr = macv.company;
-            updbMACMFR(table, updrow);
+            updbMAC(table, updrow);
         }
     };
 
+    /* ****************************************************
+        Generate a Report Database Table 
+
+        Generates a "report" table in the database using
+        a configuration block.
+    */
     function genReportTable({action, RowClass, data, tableidx, knowit, gethost = false, getmacmfr = false, subparser = null, extra = null}) {
         const atable  = `${dbcfg.parms.database}.${dbcfg.tables[tableidx]}`;
         // iterate through all rows returned to us...
@@ -213,7 +261,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // if we are going to get the MAC info then that type
             // of report table will have these columns :
             // known, knownip, device
-            const known = isKnown(data[ix], knowit);
+            const known = (knowit === null ? null : isKnown(data[ix], knowit));
 
             if(gethost === false) {
                 // if it's a known device and MAC info retreival is 
@@ -228,7 +276,11 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                         newrow.givenip = data[ix].ip;
                         newrow.errip   = (newrow.knownip === newrow.givenip ? false : true);
                     }
-                } else newrow.known = false;
+                } else {
+                    // some tables do not have a "known" column, so 
+                    // "known" is only valid when "knowit" is not null
+                    if(knowit !== null) newrow.known = false;
+                }
             } else {
                 if(known !== null) {
                     newrow.known = true;
@@ -247,7 +299,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // save to the report table...
             dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
                 if(err === null) {
-                    if(!logmute) log(`genReportTable(${action}): saved in ${target}`);
+                    if(!logmute) log(`genReportTable(): ${datawr.entrynumb} saved in ${target}`);
+// pet the exit-watchdog
                     // post processing.... (updates the table)
                     if(gethost === true) updateHostname(atable, datawr);
                     if(getmacmfr === true) {
@@ -275,6 +328,11 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         }
     };
 
+    /* ****************************************************
+        The Report Table Functions
+
+        
+    */
     // argument for report functions
     class grtArgs {
         action    =  -1;
@@ -287,7 +345,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         extra     = null;
     };
 
-    // database row
+    // matches the database table rlmonitor.attacks
     class AttackRow {
         tstamp    = 0;
         entrynumb = 0;
@@ -377,7 +435,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsACC.action   = constants.LAN_ACC;
         argsACC.RowClass = AccessRow;
         argsACC.data     = _data;
-        argsACC.tableidx = dbcfg.TABLE_INVASIONS_IDX;
+        argsACC.tableidx = dbcfg.TABLE_LANACCESS_IDX;
         argsACC.knowit   = 'ip';
         argsACC.gethost  = true;
         argsACC.getmacmfr= false;
@@ -450,18 +508,46 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsDHCP = null;
     };
 
+    class INETCONNRow {
+        tstamp    = 0;
+        entrynumb = 0;
+        ip        = '';
+        logfile   = '';
+        logentry  = '';
+    };
+
+    function reportINETCONN(_data, action = constants.INET_CONN) {
+        let argsINET = new grtArgs();
+    
+        argsINET.action   = action;
+        argsINET.RowClass = INETCONNRow;
+        argsINET.data     = _data;
+        argsINET.tableidx = dbcfg.TABLE_INETCONN_IDX;
+        argsINET.knowit   = null;
+        argsINET.gethost  = false;
+        argsINET.getmacmfr= false;
+        argsINET.subparser= null;
+    
+        genReportTable(argsINET);
+        argsINET = null;
+    };
+
+    function reportINETDCONN(_data) {
+        reportINETCONN(_data, constants.INET_DCONN);
+    };
+
     // report tables that are written to here,
     // if 'null' then do nothing.
     // NOTE: The order here is the same as in 
-    // constants.js
+    // constants.js for convenience.
     let reports = [
         null,               // ADM_LOG    
         reportDHCP_IP,      // DHCP_IP    
         reportDOS_ATT,      // DOS_ATT    
         null,               // DYN_DNS    
         null,               // FIRMW_UP   
-        null,               // INET_CONN  
-        null,               // INET_DCONN 
+        reportINETCONN,     // INET_CONN  
+        reportINETDCONN,    // INET_DCONN 
         reportLAN_ACC,      // LAN_ACC    
         null,               // TIME_SYNC  
         reportWLAN_REJ,     // WLAN_REJ   
@@ -501,15 +587,18 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // was a 'depth' passed in?
             if(depth > 0) {
                 // get all newer than now minus the 'depth'
-                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by tstamp asc`;
+                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by entrynumb asc`;
+//                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by tstamp asc`;
             } else {
                 // no depth, range?
                 if(range === null) {
                     // get all with matching 'action'
-                    criteria = `actionid = ${action} order by tstamp asc`;
+                    criteria = `actionid = ${action} order by entrynumb asc`;
+//                    criteria = `actionid = ${action} order by tstamp asc`;
                 } else {
                     // get all within the specified date/time range
-                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by tstamp asc`;
+                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by entrynumb asc`;
+//                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by tstamp asc`;
                 }
             }
 
@@ -517,16 +606,23 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             dbobj.readRows(dbtable, criteria, (table, _criteria, data, err) => {
                 if(err !== null) {
                     if((err.errno === true) && (err.code === -1) && (err.message === 'not found')) {
-                        log(`reportActions(${action}): could not find in ${table} where [${_criteria}]`);
+                        if(!logmute) log(`reportActions(): could not find in ${table} where [${_criteria}]`);
                     } else {
-                        log(`reportActions(${action}): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
+                        log(`reportActions(): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
                         process.exit(0);
                     }
                 } else {
-                    if(!logmute) log(`reportActions(${action}): got data, ${data.length} rows returned`);
+                    if(!logmute) log(`reportActions(): got data, ${data.length} rows returned from ${table} where [${_criteria}]`);
                     // action-specific....
-                    if(reports[action - 1] !== null) {
-                        reports[action - 1](data);
+                    let tmp  = _criteria.split(' ');
+                    let actn = parseInt(tmp[2]);
+                    if(!logmute) log(`reportActions(): recovered Action = ${actn} from [${_criteria}]`);
+                    if(data.length > 0) {
+                        if(reports[actn - 1] !== null) {
+                            reports[actn - 1](data);
+                        }
+                    } else {
+                        if(!logmute) log(`reportActions(): no data found for action = ${actn}`);
                     }
                 }
             });
@@ -539,7 +635,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 // trigger the test(s).
 // 
 // The side benefit of testing (with over 100k log entries!) is that the report 
-// tables will be genereated here and when the app goes "live" then it will 
+// tables will be generated here and when the app goes "live" then it will 
 // only have to deal with a days worth of log entries. 
 // 
 // The following function is commented out when testing is complete
@@ -563,6 +659,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             //reportActions(constants.DOS_ATT, 0);
             // get all occurrences of LAN_ACC
             //reportActions(constants.LAN_ACC, 0);
+            // get all occurrences
+            //reportActions(constants.INET_CONN, 0);
+            //reportActions(constants.INET_DCONN, 0);
         }
     });
 // end of testing code

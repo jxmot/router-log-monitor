@@ -1,6 +1,13 @@
 'use strict';
-/* ************************************************************************ */
-// https://nodejs.org/docs/latest-v12.x/api/documentation.html
+/* 
+    Router Log Monitor - Log Watcher
+
+    Reads the log files created by logcollector and 
+    parses the entrie and writes the results to a 
+    database.
+
+
+*/
 var path = require('path');
 var scriptName = path.basename(__filename);
 
@@ -29,6 +36,8 @@ function log(payload) {
 log('*******************************************');
 log(`begin app init`);
 
+/* ****************************************************
+*/
 // event error handlers, if handled here then they 
 // won't crash the app
 watch_evts.on('error', (err) => {
@@ -39,8 +48,9 @@ procs_evts.on('error', (err) => {
     log(`procs_evts ERROR ${err}`);
 });
 
-/*
-    Database Interface Configure and other necessary things.
+/* ****************************************************
+    Database Interface Configure and other necessary 
+    things.
 */
 var database = require('./mysql/database-mysql.js')(_log);
 
@@ -90,10 +100,20 @@ function openDB() {
     database.openDB(openDone, onDatabaseError);
 };
 
+/* ****************************************************
+    Command line arguments:
 
-//var fopt = process.argv[2];
+        read =  Read the log files and process them, 
+                when finished exit.
+        watch = Read log files after they're created 
+                and process them, when finished continue 
+                waiting for more (this is the default)
+*/
+var fopt = process.argv[2];
 //var fopt = 'watch';
 //var fopt = 'read';
+
+log(`running in mode: ${(!fopt ? 'watch' : fopt)}`);
 
 if(typeof fopt !== 'undefined') {
     switch(fopt) {
@@ -114,9 +134,9 @@ if(typeof fopt !== 'undefined') {
     const watcher = require('./logwatch.js')(watch_evts, procs_evts, _log);
 }
 
-/*
-    The "app" object, it contains anything that we need to pass on to
-    a module. 
+/* ****************************************************
+    The "app" object, it contains anything that we 
+    need to pass on to a module. 
 */
 var app = {
     constants: require('./constants.js'),
@@ -125,22 +145,26 @@ var app = {
     pevts: procs_evts
 }
 
-// Process the log files into the database
-
+/* ****************************************************
+    Process the log files into the database
+*/
 // the log processor
 const ldata = require('./logdata.js')(app);
 
+// wait for the log file created event...
 watch_evts.on('FILE_CREATED', (watchit) => {
     if(!logmute) log(`FILE_CREATED: ${watchit.filename} in ${watchit.path}`);
     ldata.process(JSON.parse(JSON.stringify(watchit)));
 });
 
-// 
+// file deleted...
 watch_evts.on('FILE_DELETED', (watchit) => {
     if(!logmute) log(`FILE_DELETED: ${watchit.filename} in ${watchit.path}`);
 });
 
-// Generate static reports
+// Generate report tables in the database...
 const reports = require('./reports.js')(app);
 
+// open the database, if successful other modules will 
+// be notified with an event
 openDB();

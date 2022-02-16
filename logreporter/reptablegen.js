@@ -186,7 +186,8 @@ ${table}
     reptablegen.getReportTable = function (getpage = false) {
         let table = createCSS() + createTitle() + createTable(tableHead, createBody(rdata));
 
-        if(getpage === true || reportdefs.rdefs[tablename].getpage === true) {
+        if(getpage === true) {
+//        if(getpage === true || reportdefs.rdefs[tablename].getpage === true) {
             let page = createPage(table);
             return page;
         } else return table;

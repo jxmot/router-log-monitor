@@ -21,7 +21,10 @@ const procs_evts = new EventEmitter();
 // Run-Time Logging
 const Log = require('simple-text-log');
 const logOut = new Log(require('./runlogopt.js'));
-var logenable = true;
+
+var logenable = false;
+//var logenable = true;
+
 // pass this function around to the other modules
 function _log(payload) {
     if(logenable === true) logOut.writeTS(payload);

@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "mysql": "^2.18.1",
-    "simple-text-log": "0.0.1"
+    "simple-text-log": "0.0.1",
+    "time-stamp": "^2.2.0"
   }
 }

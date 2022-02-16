@@ -9,6 +9,7 @@ require_once './rightnow.php';  // modified
 // load the application options
 $appopt = json_decode(file_get_contents('./appoptions.json'));
 define('_OUTPATH', $appopt->outpath);
+define('_OUTFILE', $appopt->outfile);
 // enable/disable the deletion of messages that do not have
 // the correct subject line
 define('_DELUNKOWN',$appopt->delunk);
@@ -47,7 +48,7 @@ if(defined('_READONLY') &&  _READONLY === true) {
         // true or false
         define('_EXPUNGE', $accnt->expunge);
         // "onclose" "readbegin" "readend"
-        define('_EXPWHERE', $accnt->expwhere);
+        define('_EXPWHEN', $accnt->expwhen);
     }
 }
 
@@ -62,7 +63,7 @@ if(defined('_READONLY') && _READONLY === true) {
 } else {
     if((defined('_READONLY') && _READONLY === false) &&
        (defined('_EXPUNGE') && _EXPUNGE === true) &&
-       (defined('_EXPWHERE') && _EXPWHERE === 'onclose')) {
+       (defined('_EXPWHEN') && _EXPWHEN === 'onclose')) {
         $mailbox = imap_open($mbox, $accnt->login, $accnt->pword, CL_EXPUNGE);   
     } else {
         $mailbox = imap_open($mbox, $accnt->login, $accnt->pword);

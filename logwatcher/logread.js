@@ -1,9 +1,9 @@
 'use strict';
 /*
-    logread.js - Find all log files found in the specified
+    logread.js - Find all log files in the specified
     path and create a sorted list. Then notify the log 
-    processor that a file is ready for parsing and writing 
-    into the database.
+    processor that a file is ready for parsing and 
+    writing into the database.
 
     Unlike the log watcher this will run once and stop.
 
@@ -13,16 +13,15 @@
 
 */
 module.exports = (function(wevts, pevts, _log) {
-
     // set up run-time logging
     const path = require('path');
-    var scriptName = path.basename(__filename);
+    const scriptName = path.basename(__filename);
     function log(payload) {
         _log(`${scriptName} - ${payload}`);
     };
 
     // some run-time log messages can be muted
-    var logmute = true;
+    const logmute = true;
     log(`init`);
 
     // configure the path to the watched folder
@@ -45,7 +44,7 @@ module.exports = (function(wevts, pevts, _log) {
         filename = '';
         now = 0;
         size = 0;
-        movebad = false;            // opt.movebad
+        copybad = false;            // opt.copybad
         mintstamp = 0;              // opt.mintstamp
         delbad = false;             // opt.delbad
     };
@@ -67,10 +66,14 @@ module.exports = (function(wevts, pevts, _log) {
 
     // sort the list, oldest -> newest(by file name)
     var fsort = [];
-    if(flist.length > 1 ) {
+    if(flist.length > 0 ) {
         fsort = flist.sort((a, b) => {
             return a < b;
         });
+    } else {
+        log(`NO log files found, exiting now...`);
+        console.log(`NO log files found, exiting now...`);
+        process.exit(0);
     }
 
     // create an array of objects that describe the log file,
@@ -86,13 +89,14 @@ module.exports = (function(wevts, pevts, _log) {
             readit.filename = fname,
             readit.now = Date.now();
             readit.size = stats.size;
-            readit.movebad = opt.movebad;
+            readit.copybad = opt.copybad;
             readit.mintstamp = opt.mintstamp;
             readit.delbad = opt.delbad;
             fready.push(readit);
         }
     });
 
+    // called when there are no more log files to read
     function readEnd() {
         // check the options to see what we'll do with
         // the file now that we're done with it...
@@ -116,14 +120,15 @@ module.exports = (function(wevts, pevts, _log) {
                     fsort.forEach((file, idx) => {
                         fs.renameSync(opt.path+file, moveto+file);
                     });
-                    log(`readEnd(): moved all log files to ${moveto}.`);
+                    log(`readEnd(): moved all log files to [${moveto}]`);
                 }
             }
         }
-
+        // all done! exit?
         if(opt.readexit === true) {
             log(`readEnd(): exiting now...`);
-            process.exit(0);
+            console.log(`readEnd(): exiting now...`);
+//            process.exit(0);
         }
     };
 
@@ -157,18 +162,13 @@ module.exports = (function(wevts, pevts, _log) {
     // do NOT start processing files until the necessary data 
     // table(s) are read from the database. only handle this
     // event one time, it's only needed to start things going.
-    pevts.once('STATICDATA_READY', (dbtable) => {
-        // this event will tell us which table has been read,
-        // if it's the last one (see staticdata.js:114) then 
-        // it's ok to start processing log files
-        if(dbtable.includes('known') === true) {
-            if(fready.length > 0) {
-                log(`STATICDATA_READY start log processing, ${fready.length} files to go`);
-                // start with the first file in the list
-                sendFC(Object.assign({}, fready[0]));
-                // remove it from the queue
-                fready.shift();
-            }
+    pevts.once('STATICDATA_READY', () => {
+        if(fready.length > 0) {
+            log(`STATICDATA_READY start log processing, ${fready.length} files to go`);
+            // start with the first file in the list
+            sendFC(Object.assign({}, fready[0]));
+            // remove it from the queue
+            fready.shift();
         }
     });
 });

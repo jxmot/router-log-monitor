@@ -27,7 +27,8 @@ and
 rank <= 300
 -- where mod
 ;
--- wlanrejects-lifetime.sql: returns all WLAN rejections, by MAC hits with calculated date spans
+-- wlanrejects-lifetime-qty_gt-rank.sql: returns all WLAN rejections, by MAC 
+-- hits with calculated date spans
 -- {
 --   "wlanrej_qty": 243,
 --   "rank":11,

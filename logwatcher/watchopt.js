@@ -3,8 +3,10 @@
 module.exports = {
     path : './../logoutput/',
     // log file names are: YYYYMMDD-HHMMSS-net.log
+    // NOTE: the "net.log" portion must match the 
+    // 'outfile' setting in ../logcollector/appoptions.json
     nameregexp: /^\d{8}-\d{6}-net\.log/g,
-    movebad : true,
+    copybad : true,
     mintstamp: 1523771032000,
     delbad: true,
     // used in logread.js, readdel has 
@@ -22,6 +24,7 @@ module.exports = {
     // to the start of the file name.
     readren: false,
     renchar: '_',
-    // only used in logread.js
+    // only used in logread.js, leave set to 'true' 
+    // the 'false' setting is for debug purposes
     readexit: true
 };
