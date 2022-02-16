@@ -216,17 +216,20 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         // look up MAC.... 
         //      check our local database first (staticdata)
         let macv = getMACInfo(updrow.mac, (err, data) => {
-            // had to search the API, found and updated
-            // static data and database
-            updrow.macmfr = JSON.parse(data).company;
-            updbMAC(table, updrow);
+            if(err === false) {
+                // had to search the API, found and updated
+                // static data and database
+                updrow.macmfr = JSON.parse(data).company;
+                updbMAC(table, updrow);
+            } else {
+                log(`updateMACMfr(): ERROR - ${table} -- ${JSON.stringify(updrow)}`)
+            }
         });
-// NOTE: TEST!
-//        if(macv !== 0) {
-//            // on return, update table
-//            updrow.macmfr = macv.company;
-//            updbMAC(table, updrow);
-//        }
+        if(macv) {
+            // on return, update table
+            updrow.macmfr = macv.company;
+            updbMAC(table, updrow);
+        }
     };
 
     /* ****************************************************
@@ -258,7 +261,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // if we are going to get the MAC info then that type
             // of report table will have these columns :
             // known, knownip, device
-            const known = isKnown(data[ix], knowit);
+            const known = (knowit === null ? null : isKnown(data[ix], knowit));
 
             if(gethost === false) {
                 // if it's a known device and MAC info retreival is 
@@ -273,7 +276,11 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
                         newrow.givenip = data[ix].ip;
                         newrow.errip   = (newrow.knownip === newrow.givenip ? false : true);
                     }
-                } else newrow.known = false;
+                } else {
+                    // some tables do not have a "known" column, so 
+                    // "known" is only valid when "knowit" is not null
+                    if(knowit !== null) newrow.known = false;
+                }
             } else {
                 if(known !== null) {
                     newrow.known = true;
@@ -292,7 +299,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // save to the report table...
             dbobj.writeRow(atable, newrow, (target, datawr, insertId, err) => {
                 if(err === null) {
-                    if(!logmute) log(`genReportTable(${action}): saved in ${target}`);
+                    if(!logmute) log(`genReportTable(): ${datawr.entrynumb} saved in ${target}`);
+// pet the exit-watchdog
                     // post processing.... (updates the table)
                     if(gethost === true) updateHostname(atable, datawr);
                     if(getmacmfr === true) {
@@ -579,15 +587,18 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             // was a 'depth' passed in?
             if(depth > 0) {
                 // get all newer than now minus the 'depth'
-                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by tstamp asc`;
+                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by entrynumb asc`;
+//                criteria = `actionid = ${action} and tstamp >= ${(Date.now() - depth)} order by tstamp asc`;
             } else {
                 // no depth, range?
                 if(range === null) {
                     // get all with matching 'action'
-                    criteria = `actionid = ${action} order by tstamp asc`;
+                    criteria = `actionid = ${action} order by entrynumb asc`;
+//                    criteria = `actionid = ${action} order by tstamp asc`;
                 } else {
                     // get all within the specified date/time range
-                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by tstamp asc`;
+                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by entrynumb asc`;
+//                    criteria = `actionid = ${action} and tstamp >= ${range.start} and tstamp <= ${range.stop} order by tstamp asc`;
                 }
             }
 
@@ -595,16 +606,23 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             dbobj.readRows(dbtable, criteria, (table, _criteria, data, err) => {
                 if(err !== null) {
                     if((err.errno === true) && (err.code === -1) && (err.message === 'not found')) {
-                        log(`reportActions(${action}): could not find in ${table} where [${_criteria}]`);
+                        if(!logmute) log(`reportActions(): could not find in ${table} where [${_criteria}]`);
                     } else {
-                        log(`reportActions(${action}): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
+                        log(`reportActions(): ERROR err = ${JSON.stringify(err)} in ${table} seeking [${_criteria}]`);
                         process.exit(0);
                     }
                 } else {
-                    if(!logmute) log(`reportActions(${action}): got data, ${data.length} rows returned`);
+                    if(!logmute) log(`reportActions(): got data, ${data.length} rows returned from ${table} where [${_criteria}]`);
                     // action-specific....
-                    if(reports[action - 1] !== null) {
-                        reports[action - 1](data);
+                    let tmp  = _criteria.split(' ');
+                    let actn = parseInt(tmp[2]);
+                    if(!logmute) log(`reportActions(): recovered Action = ${actn} from [${_criteria}]`);
+                    if(data.length > 0) {
+                        if(reports[actn - 1] !== null) {
+                            reports[actn - 1](data);
+                        }
+                    } else {
+                        if(!logmute) log(`reportActions(): no data found for action = ${actn}`);
                     }
                 }
             });
