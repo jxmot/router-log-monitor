@@ -51,12 +51,14 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
     });
 
     pevts.on('LOG_PROCESSED', (wfile) => {
-        log(`last processed file: ${wfile.path}${wfile.filename}`);
+        log(`LOG_PROCESSED: last processed file: ${wfile.path}${wfile.filename}`);
     });
 
     pevts.on('LOG_DBSAVED', (wfile) => {
-        log(`log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
+        log(`LOG_DBSAVED: log saved to database, saved ${wfile.linecount - wfile.badcount} log entries from ${wfile.path}${wfile.filename}`);
         if(dbopen === true) {
+// start the exit-watchdog if not already started
+
             log(`reporting on data from ${wfile.start} to ${wfile.stop}`);
             reportActions(constants.LAN_ACC,  0, {start:wfile.start,stop:wfile.stop});
             reportActions(constants.DOS_ATT,  0, {start:wfile.start,stop:wfile.stop});
@@ -81,7 +83,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         // host lookup & update the row
         dns.reverse(updrow.ip, (err, hosts) => {
             if(err) {
-                log(`updateHosts(): dns.reverse() ${err.toString()}`);
+                if(!logmute) log(`updateHostname(): dns.reverse() ${err.toString()}`);
                 hosts = [];
                 hosts.push(`${err.code} - ${err.hostname}`);
             }
@@ -97,6 +99,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             }
 
             if(updrow.hostname !== null) {
+                if(!logmute) log(`updateHostname(): hostname = ${updrow.hostname}`);
                 // update the row...
                 dbobj.updateRows(table, {hostname:updrow.hostname}, `entrynumb = ${updrow.entrynumb}`, (target, result, err) => {
                     if(err !== null) {
@@ -166,7 +169,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         });
 
         req.on('error', (err) => {
-            log(`getMACInfoAPI(): ERROR - ${err.message} - ${opt}`);
+            log(`getMACInfoAPI(): ERROR - ${err.message} - ${JSON.stringify(opt)}`);
             callback(true, err.message);
         }); 
     
@@ -581,7 +584,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
 // trigger the test(s).
 // 
 // The side benefit of testing (with over 100k log entries!) is that the report 
-// tables will be genereated here and when the app goes "live" then it will 
+// tables will be generated here and when the app goes "live" then it will 
 // only have to deal with a days worth of log entries. 
 // 
 // The following function is commented out when testing is complete
@@ -605,6 +608,9 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
             //reportActions(constants.DOS_ATT, 0);
             // get all occurrences of LAN_ACC
             //reportActions(constants.LAN_ACC, 0);
+            // get all occurrences
+            //reportActions(constants.INET_CONN, 0);
+            //reportActions(constants.INET_DCONN, 0);
         }
     });
 // end of testing code
