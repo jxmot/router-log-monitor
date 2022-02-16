@@ -500,6 +500,34 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         argsDHCP = null;
     };
 
+    class INETCONNRow {
+        tstamp    = 0;
+        entrynumb = 0;
+        ip        = '';
+        logfile   = '';
+        logentry  = '';
+    };
+
+    function reportINETCONN(_data, action = constants.INET_CONN) {
+        let argsINET = new grtArgs();
+    
+        argsINET.action   = action;
+        argsINET.RowClass = INETCONNRow;
+        argsINET.data     = _data;
+        argsINET.tableidx = dbcfg.TABLE_INETCONN_IDX;
+        argsINET.knowit   = null;
+        argsINET.gethost  = false;
+        argsINET.getmacmfr= false;
+        argsINET.subparser= null;
+    
+        genReportTable(argsINET);
+        argsINET = null;
+    };
+
+    function reportINETDCONN(_data) {
+        reportINETCONN(_data, constants.INET_DCONN);
+    };
+
     // report tables that are written to here,
     // if 'null' then do nothing.
     // NOTE: The order here is the same as in 
@@ -510,8 +538,8 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         reportDOS_ATT,      // DOS_ATT    
         null,               // DYN_DNS    
         null,               // FIRMW_UP   
-        null,               // INET_CONN  
-        null,               // INET_DCONN 
+        reportINETCONN,     // INET_CONN  
+        reportINETDCONN,    // INET_DCONN 
         reportLAN_ACC,      // LAN_ACC    
         null,               // TIME_SYNC  
         reportWLAN_REJ,     // WLAN_REJ   
