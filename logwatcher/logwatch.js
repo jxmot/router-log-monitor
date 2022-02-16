@@ -15,7 +15,7 @@ module.exports = (function(wevts, pevts, _log) {
     };
 
     // some run-time log messages can be muted
-    const logmute = true;
+    const logmute = false;
     log(`init`);
 
     // configure the path to the watched folder

@@ -1,6 +1,7 @@
 select * from(
     select count(ip) as lanaccess_qty,
         ip,toport,hostname, 
+        -- common report columns
         (cast(((max(tstamp) - min(tstamp)) / 1000) as UNSIGNED)) as epoch_dur, 
         floor(((max(tstamp) - min(tstamp)) / 1000) / 86400) as day_span,
         SEC_TO_TIME(cast(mod(((max(tstamp) - min(tstamp)) / 1000), 86400) as UNSIGNED)) as time_span, 

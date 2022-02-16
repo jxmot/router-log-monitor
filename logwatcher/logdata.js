@@ -17,7 +17,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
         _log(`${scriptName} - ${payload}`);
     };
 
-    var logmute = true;
+    var logmute = false;
     log(`init`);
 
     /* ****************************************************
@@ -107,7 +107,7 @@ module.exports = (function({constants, staticdata, pevts, _log})  {
             // valid, open and read it 
             // https://nodejs.org/docs/latest-v12.x/api/fs.html#fs_fs_opensync_path_flags_mode
             if(!logmute) log(`logToDB(): opening ${wfile.path}${wfile.filename}`);
-            // Was using fs.readSync() but there was a bug. For info can be found
+            // Was using fs.readSync() but there was a bug. More info can be found
             // at - https://github.com/jxmot/nodejs-readSync-bug
             var logstr = fs.readFileSync(`${wfile.path}${wfile.filename}`, 'utf8');         
             if(!logmute) log(`logToDB(): read ${logstr.length} bytes of ${wfile.size} from ${wfile.path}${wfile.filename}`);

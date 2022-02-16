@@ -17,7 +17,7 @@ module.exports = (function({constants, staticdata, pevts, _log}) {
         _log(`${scriptName} - ${payload}`);
     };
 
-    var logmute = true;
+    var logmute = false;
     log(`init`);
 
     /* ****************************************************
