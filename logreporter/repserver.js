@@ -60,10 +60,13 @@ module.exports = (function(_pevts, _log)  {
     };
 
     /*
-        GET http://server:port?rep=[report ID]
+        GET http://server:port?rep=[report ID][&out=page|table]
 
         where "report ID" is the identifying name given 
-        to the SQL file that retrieves the data, 
+        to the SQL file that retrieves the data
+
+        where [&out=page|table] is optional, the default is 
+        "table" output
     */
     function handleRequest(req, res) {
         res.setHeader('Access-Control-Allow-Origin', '*');
@@ -71,12 +74,13 @@ module.exports = (function(_pevts, _log)  {
             let urlParts = url.parse(req.url, true);
             let urlQuery = urlParts.query;
             let reportid = urlQuery.rep;
+            let pageout  = (urlQuery.out ? (urlQuery.out === 'page' ? true : false) : false);
             // did we get a report ID?
             if(reportid) {
                 // yes, make sure the database is ready
                 if(dbopen === true) {
                     log(`report request - ${reportid}`);
-                    procs_evts.emit('REPORTREQ', reportid, readResp, res);
+                    procs_evts.emit('REPORTREQ', {id:reportid,page:pageout} readResp, res);
                 } else {
                     log(`falied report request, database not open - ${reportid}`);
                     res.writeHead(204);
